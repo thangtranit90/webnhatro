@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thêm tin bằng AI — HT HOME</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --blue:#1f5fd6;--blue-dark:#164bad;--navy:#132a5e;--orange:#ff6a00;
+    --green:#17a34a;--ink:#1f2a44;--muted:#6b7488;--line:#e7ebf3;--bg:#eef1f7;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Be Vietnam Pro",system-ui,sans-serif;color:var(--ink);background:var(--bg);height:100vh;display:flex;flex-direction:column}
+  button,input,textarea,select{font-family:inherit}
+  a{text-decoration:none;color:inherit}
+
+  .topbar{background:#fff;border-bottom:1px solid var(--line);padding:12px 22px;display:flex;align-items:center;gap:14px;flex-shrink:0}
+  .topbar .back{display:flex;align-items:center;gap:7px;color:var(--muted);font-weight:600;font-size:14px}
+  .topbar .back:hover{color:var(--blue)}
+  .topbar .back svg{width:18px;height:18px}
+  .topbar img{height:34px}
+  .topbar h1{font-size:16px;font-weight:800;color:var(--navy)}
+  .topbar .ai-pill{margin-left:auto;display:inline-flex;align-items:center;gap:7px;background:#f0ebfd;color:#7c3aed;font-weight:600;font-size:13px;padding:6px 12px;border-radius:20px}
+  .topbar .ai-pill svg{width:15px;height:15px}
+
+  .workspace{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:16px;min-height:0}
+
+  .col{background:#fff;border:1px solid var(--line);border-radius:16px;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  .col-head{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:9px;flex-shrink:0}
+  .col-head svg{width:18px;height:18px;color:var(--blue)}
+  .col-head h2{font-size:15px;font-weight:700;color:var(--navy)}
+  .col-head .hint{font-size:12px;color:var(--muted);margin-left:auto}
+
+  /* ---------- CHAT (left) ---------- */
+  .chat-body{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:12px}
+  .msg{max-width:86%;padding:11px 14px;border-radius:16px;font-size:14px;line-height:1.5;white-space:pre-wrap}
+  .msg.ai{background:#f2f5fb;color:var(--ink);border-bottom-left-radius:5px;align-self:flex-start}
+  .msg.me{background:var(--blue);color:#fff;border-bottom-right-radius:5px;align-self:flex-end}
+  .msg.me img{border-radius:10px;margin-top:8px;max-width:180px}
+  .msg.typing{color:var(--muted);font-style:italic}
+  .chat-input{border-top:1px solid var(--line);padding:12px;flex-shrink:0}
+  .attach-preview{display:none;align-items:center;gap:8px;margin-bottom:8px}
+  .attach-preview.show{display:flex}
+  .attach-preview img{width:44px;height:44px;object-fit:cover;border-radius:8px}
+  .attach-preview button{background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px}
+  .input-row{display:flex;align-items:flex-end;gap:8px}
+  .input-row textarea{flex:1;border:1px solid var(--line);border-radius:12px;padding:11px 14px;font-size:14px;resize:none;outline:none;max-height:120px;line-height:1.4}
+  .input-row textarea:focus{border-color:var(--blue)}
+  .ibtn{width:44px;height:44px;border-radius:12px;border:1px solid var(--line);background:#fff;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .ibtn:hover{border-color:var(--blue);color:var(--blue)}
+  .ibtn svg{width:20px;height:20px}
+  .send{background:var(--blue);border-color:var(--blue);color:#fff}
+  .send:hover{background:var(--blue-dark);color:#fff}
+  .send:disabled{opacity:.5;cursor:default}
+
+  /* ---------- FORM (right) ---------- */
+  .form-body{flex:1;overflow-y:auto;padding:18px}
+  .field-label{font-size:13px;font-weight:600;color:var(--ink);margin:14px 0 6px;display:block}
+  .field-label:first-child{margin-top:0}
+  .inp,.sel,.ta{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:14px;outline:none;color:var(--ink);background:#fff}
+  .inp:focus,.sel:focus,.ta:focus{border-color:var(--blue)}
+  .ta{resize:vertical;min-height:64px;line-height:1.5}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .just-filled{animation:flash 1.2s ease}
+  @keyframes flash{0%{background:#fff8e6;border-color:#ffcf66}100%{background:#fff;border-color:var(--line)}}
+
+  .tag-groups{margin-top:6px}
+  .tg{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid #f2f4f8}
+  .tg:last-child{border-bottom:none}
+  .tg-label{flex-shrink:0;width:72px;font-weight:700;font-size:13px;color:var(--ink);padding-top:6px}
+  .tg-chips{display:flex;flex-wrap:wrap;gap:7px}
+  .tchip{background:#fff;border:1px solid var(--line);color:#41495c;font-size:13px;padding:6px 12px;border-radius:16px;cursor:pointer;transition:.12s}
+  .tchip:hover{border-color:var(--blue);color:var(--blue)}
+  .tchip.on{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:600}
+  .unit-inp{display:flex;align-items:center;gap:8px}
+  .unit-inp input{flex:1}
+  .unit-inp span{font-size:12.5px;color:var(--muted);white-space:nowrap}
+  .fee-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .fee{display:flex;align-items:center;gap:8px}
+  .fee span{font-size:13px;color:#41495c;width:56px;flex-shrink:0}
+  .fee input{flex:1;min-width:0}
+  .fee small{font-size:11px;color:var(--muted);white-space:nowrap}
+  #contractChips{margin-top:2px}
+  .vid-status{font-size:12.5px;margin-top:6px;min-height:16px}
+  .vid-status.ok{color:var(--green)} .vid-status.warn{color:#d97706}
+  .vid-preview{margin-top:10px}
+  .vid-preview iframe{width:100%;max-width:280px;height:340px;border:0;border-radius:12px;background:#000;display:block}
+  .up-zone{border:2px dashed #cfd8e6;border-radius:12px;padding:20px;display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--muted);cursor:pointer;transition:.15s;text-align:center}
+  .up-zone:hover,.up-zone.drag{border-color:var(--blue);background:#f5f8ff;color:var(--blue)}
+  .up-zone svg{width:26px;height:26px}
+  .up-zone span{font-size:13.5px}
+  .up-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px;margin-top:10px}
+  .up-thumb{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;border:1px solid var(--line)}
+  .up-thumb img{width:100%;height:100%;object-fit:cover}
+  .up-thumb button{position:absolute;top:4px;right:4px;width:20px;height:20px;border-radius:50%;border:none;background:rgba(15,23,42,.65);color:#fff;cursor:pointer;font-size:12px;line-height:1;display:flex;align-items:center;justify-content:center}
+  .up-thumb button:hover{background:#e8332f}
+
+  .form-foot{border-top:1px solid var(--line);padding:12px 18px;display:flex;gap:10px;flex-shrink:0}
+  .btn{border:none;border-radius:10px;padding:11px 18px;font-weight:600;font-size:14px;cursor:pointer}
+  .btn-save{background:var(--orange);color:#fff;flex:1}
+  .btn-save:hover{background:#e85f00}
+  .btn-reset{background:#f1f4f9;color:#41495c}
+  .btn-reset:hover{background:#e6ebf3}
+
+  @media(max-width:860px){
+    body{height:auto}
+    .workspace{grid-template-columns:1fr;height:auto}
+    .col{height:auto}
+    .chat-body{min-height:280px;max-height:52vh}
+  }
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <a class="back" href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg> Quản lý</a>
+    <img src="ht-home-logo.png" alt="HT HOME">
+    <h1 id="pageTitle">Thêm tin bằng AI</h1>
+    <a class="back" href="chon-loai.html" style="margin-left:2px">· Đổi loại</a>
+    <span class="ai-pill"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 5.6L20 10l-5.6 2.4L12 18l-2.4-5.6L4 10l5.6-2.4L12 2Z"/></svg> Trợ lý AI</span>
+  </div>
+
+  <div class="workspace">
+    <!-- LEFT: CHAT -->
+    <div class="col">
+      <div class="col-head">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/></svg>
+        <h2>Trò chuyện với AI</h2>
+        <span class="hint">Dán thông tin lộn xộn</span>
+      </div>
+      <div class="chat-body" id="chat"></div>
+      <div class="chat-input">
+        <div class="input-row">
+          <textarea id="msgInput" rows="1" placeholder="VD: phong tro q go vap 20m2 gia 3tr5 co ban cong may lanh thang may, full noi that, gan dh cong nghiep"></textarea>
+          <button class="ibtn send" id="sendBtn" title="Gửi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7Z"/></svg></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: FORM -->
+    <div class="col">
+      <div class="col-head">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg>
+        <h2>Thông tin phòng</h2>
+        <span class="hint">AI điền — bạn kiểm tra & sửa</span>
+      </div>
+      <div class="form-body">
+        <label class="field-label">Ảnh phòng <span style="color:var(--muted);font-weight:400">(AI đọc ảnh để gợi ý đặc điểm)</span></label>
+        <div class="up-zone" id="upZone">
+          <input type="file" id="upInput" accept="image/*" multiple hidden>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5M12 3v13"/></svg>
+          <span>Kéo thả hoặc <b>bấm để tải ảnh lên</b> (nhiều ảnh)</span>
+        </div>
+        <div class="up-grid" id="upGrid"></div>
+
+        <label class="field-label">Tiêu đề</label>
+        <input class="inp" id="fTitle" placeholder="Tiêu đề tin đăng">
+
+        <div class="grid2">
+          <div><label class="field-label">Loại</label>
+            <select class="sel" id="fType"></select></div>
+          <div><label class="field-label">Giá / tháng</label>
+            <input class="inp" id="fPrice" placeholder="VD: 3,5 triệu"></div>
+        </div>
+        <div class="grid2">
+          <div><label class="field-label">Diện tích</label>
+            <input class="inp" id="fArea" placeholder="VD: 20m²"></div>
+          <div><label class="field-label">Khu vực</label>
+            <input class="inp" id="fLoc" placeholder="Quận …, Tỉnh/TP"></div>
+        </div>
+
+        <label class="field-label">Mô tả</label>
+        <textarea class="ta" id="fDesc" placeholder="Mô tả ngắn về phòng"></textarea>
+
+        <label class="field-label">Link video TikTok <span style="color:var(--muted);font-weight:400">(để nhúng review — tuỳ chọn)</span></label>
+        <input class="inp" id="fVideo" placeholder="Dán link, vd: https://www.tiktok.com/@.../video/12345...">
+        <div class="vid-status" id="videoStatus"></div>
+        <div class="vid-preview" id="videoPreview"></div>
+
+        <!-- Điều khoản thuê -->
+        <label class="field-label">Thời hạn hợp đồng <span style="color:var(--muted);font-weight:400">(chọn nhiều)</span></label>
+        <div class="tg-chips" id="contractChips">
+          <button type="button" class="tchip" data-term="6 tháng">6 tháng</button>
+          <button type="button" class="tchip on" data-term="12 tháng">12 tháng</button>
+          <button type="button" class="tchip" data-term="24 tháng">24 tháng</button>
+          <button type="button" class="tchip" data-term="36 tháng">36 tháng</button>
+        </div>
+        <div class="grid2">
+          <div><label class="field-label">Cọc</label>
+            <select class="sel" id="fDeposit"><option>1 tháng</option><option>1.5 tháng</option><option>2 tháng</option><option>3 tháng</option></select></div>
+          <div><label class="field-label">Hoa hồng</label>
+            <div class="unit-inp"><input class="inp" id="fCommission" inputmode="numeric" value="80"><span>% / 1 tháng cọc</span></div></div>
+        </div>
+
+        <!-- Phí dịch vụ: chỉ Phòng trọ & Căn hộ dịch vụ -->
+        <div id="serviceFees">
+          <label class="field-label">Phí dịch vụ</label>
+          <div class="fee-grid">
+            <div class="fee"><span>Điện</span><input class="inp" id="feeElec" value="4.000"><small>đ/kWh</small></div>
+            <div class="fee"><span>Nước</span><input class="inp" id="feeWater" value="100.000"><small>đ/người</small></div>
+            <div class="fee"><span>Xe</span><input class="inp" id="feeVehicle" value="100.000"><small>đ/xe</small></div>
+            <div class="fee"><span>Dịch vụ</span><input class="inp" id="feeService" value="150.000"><small>đ/phòng</small></div>
+          </div>
+        </div>
+
+        <!-- Phí quản lý: chỉ Chung cư -->
+        <div id="mgmtFee">
+          <label class="field-label">Phí quản lý</label>
+          <div class="unit-inp"><input class="inp" id="feeMgmt" value="11.000"><span>đ/m²</span></div>
+        </div>
+
+        <label class="field-label">Đặc điểm (tag)</label>
+        <div class="tag-groups" id="tagGroups"></div>
+      </div>
+      <div class="form-foot">
+        <button class="btn btn-reset" id="resetBtn">Làm lại</button>
+        <button class="btn btn-save" id="saveBtn">Lưu tin</button>
+      </div>
+    </div>
+  </div>
+
+<script src="data.js"></script>
+<script>
+  const CATS = ['Phòng trọ','Căn hộ dịch vụ','Ký túc xá','Chung cư','Nhà nguyên căn'];
+  const TYPE_TAGS = window.TYPE_TAGS || {};
+  // Loại đang chọn: lấy từ ?type=, mặc định 'Phòng trọ'
+  const params = new URLSearchParams(location.search);
+  let currentType = params.get('type');
+  if(!currentType || !CATS.includes(currentType)) currentType = 'Phòng trọ';
+
+  const groupsFor = t => TYPE_TAGS[t] || {};
+  const tagsFor   = t => Object.values(groupsFor(t)).flat();
+
+  // build select
+  document.getElementById('fType').innerHTML =
+    '<option value="">— Chọn loại —</option>' + CATS.map(c=>`<option>${c}</option>`).join('');
+  document.getElementById('fType').value = currentType;
+
+  // render tag groups theo loại
+  function renderTags(){
+    const groups = groupsFor(currentType);
+    document.getElementById('tagGroups').innerHTML = Object.entries(groups).map(([label, tags]) => `
+      <div class="tg"><span class="tg-label">${label}:</span>
+        <div class="tg-chips">${tags.map(t=>`<button type="button" class="tchip" data-tag="${t}">${t}</button>`).join('')}</div>
+      </div>`).join('') || '<div style="color:var(--muted);font-size:13px">Chưa cấu hình đặc điểm cho loại này.</div>';
+    document.querySelectorAll('.tchip').forEach(c => c.addEventListener('click', () => c.classList.toggle('on')));
+  }
+  renderTags();
+  document.getElementById('pageTitle').textContent = 'Thêm tin: ' + currentType;
+
+  // đổi loại -> đổi bộ tag + tiêu đề + phí theo loại
+  document.getElementById('fType').addEventListener('change', e => {
+    const v = e.target.value;
+    if(v && CATS.includes(v)){ currentType = v; renderTags(); updateTypeUI(v); document.getElementById('pageTitle').textContent = 'Thêm tin: ' + currentType; }
+  });
+
+  // Hợp đồng: chọn nhiều
+  document.querySelectorAll('#contractChips .tchip').forEach(c => c.addEventListener('click', () => c.classList.toggle('on')));
+
+  // Phí hiện theo loại: dịch vụ (Phòng trọ, Căn hộ dịch vụ) | quản lý (Chung cư)
+  function updateTypeUI(type){
+    document.getElementById('serviceFees').style.display = ['Phòng trọ','Căn hộ dịch vụ'].includes(type) ? '' : 'none';
+    document.getElementById('mgmtFee').style.display = (type === 'Chung cư') ? '' : 'none';
+  }
+  updateTypeUI(currentType);
+
+  // ---- chat helpers ----
+  const chat = document.getElementById('chat');
+  function addMsg(who, text, imgData){
+    const d = document.createElement('div');
+    d.className = 'msg ' + who;
+    d.textContent = text || '';
+    if(imgData){ const im = document.createElement('img'); im.src = imgData; d.appendChild(im); }
+    chat.appendChild(d); chat.scrollTop = chat.scrollHeight;
+    return d;
+  }
+  addMsg('ai', 'Chào bạn 👋 Tải ảnh phòng lên khung bên phải và dán thông tin phòng vào đây (viết tắt/lộn xộn cũng được). Mình sẽ đọc cả ảnh lẫn chữ để điền form giúp bạn.');
+
+  // ---- tải ảnh phòng (trên form) — AI đọc luôn các ảnh này ----
+  let roomImages = []; // [{media_type, data(base64), url, name}]
+  const upInput = document.getElementById('upInput');
+  const upZone = document.getElementById('upZone');
+  const upGrid = document.getElementById('upGrid');
+  function renderUpGrid(){
+    upGrid.innerHTML = roomImages.map((im,i)=>`
+      <div class="up-thumb"><img src="${im.url}" alt="${im.name}"><button data-i="${i}" aria-label="Xoá">✕</button></div>`).join('');
+  }
+  function addFiles(files){
+    [...files].filter(f=>f.type.startsWith('image/')).forEach(f=>{
+      const reader = new FileReader();
+      reader.onload = () => {
+        const url = reader.result;
+        roomImages.push({ media_type:f.type, data:url.split(',')[1], url, name:f.name });
+        renderUpGrid();
+      };
+      reader.readAsDataURL(f);
+    });
+  }
+  upZone.addEventListener('click', ()=>upInput.click());
+  upInput.addEventListener('change', ()=>{ addFiles(upInput.files); upInput.value=''; });
+  upGrid.addEventListener('click', e=>{ const b=e.target.closest('button[data-i]'); if(b){ roomImages.splice(+b.dataset.i,1); renderUpGrid(); } });
+  ;['dragover','dragenter'].forEach(ev=>upZone.addEventListener(ev, e=>{ e.preventDefault(); upZone.classList.add('drag'); }));
+  ;['dragleave','drop'].forEach(ev=>upZone.addEventListener(ev, e=>{ e.preventDefault(); upZone.classList.remove('drag'); }));
+  upZone.addEventListener('drop', e=>{ if(e.dataTransfer.files) addFiles(e.dataTransfer.files); });
+
+  // ---- link TikTok: kiểm tra + xem thử ----
+  function tiktokEmbed(url){
+    const m = (url||'').match(/\/video\/(\d+)/) || (url||'').match(/(\d{15,})/);
+    return m ? { id:m[1], src:'https://www.tiktok.com/embed/v2/'+m[1] } : null;
+  }
+  const vInput = document.getElementById('fVideo');
+  const vStatus = document.getElementById('videoStatus');
+  const vPrev = document.getElementById('videoPreview');
+  function checkVideo(){
+    const url = vInput.value.trim();
+    if(!url){ vStatus.textContent=''; vStatus.className='vid-status'; vPrev.innerHTML=''; return; }
+    const e = tiktokEmbed(url);
+    if(e){
+      vStatus.textContent = '✓ Đã nhận diện video (ID ' + e.id + ') — sẽ nhúng vào tin.';
+      vStatus.className = 'vid-status ok';
+      vPrev.innerHTML = '<iframe src="'+e.src+'" allow="encrypted-media; fullscreen" allowfullscreen scrolling="no"></iframe>';
+    } else {
+      vStatus.textContent = '⚠️ Link chưa đúng định dạng TikTok (cần dạng .../video/<id>).';
+      vStatus.className = 'vid-status warn';
+      vPrev.innerHTML = '';
+    }
+  }
+  vInput.addEventListener('input', checkVideo);
+
+  // ---- fill form from parsed data ----
+  function flash(el){ el.classList.remove('just-filled'); void el.offsetWidth; el.classList.add('just-filled'); }
+  function setField(id, val){ if(val){ const el=document.getElementById(id); el.value=val; flash(el); } }
+  function fillForm(d){
+    setField('fTitle', d.title);
+    if(d.type && CATS.includes(d.type) && d.type !== currentType){
+      currentType = d.type;
+      document.getElementById('fType').value = currentType;
+      renderTags(); updateTypeUI(currentType);
+      document.getElementById('pageTitle').textContent = 'Thêm tin: ' + currentType;
+    }
+    setField('fPrice', d.price);
+    setField('fArea', d.area);
+    setField('fLoc', d.location);
+    setField('fDesc', d.description);
+    if(d.video){ vInput.value = d.video; flash(vInput); checkVideo(); }
+    // đặc điểm (chỉ trong #tagGroups)
+    if(Array.isArray(d.tags)){
+      document.querySelectorAll('#tagGroups .tchip').forEach(c=>{
+        if(d.tags.includes(c.dataset.tag) && !c.classList.contains('on')){ c.classList.add('on'); flash(c); }
+      });
+    }
+    // hợp đồng (multi)
+    if(Array.isArray(d.contract) && d.contract.length){
+      document.querySelectorAll('#contractChips .tchip').forEach(c=>{
+        const on = d.contract.includes(c.dataset.term);
+        c.classList.toggle('on', on); if(on) flash(c);
+      });
+    }
+    // cọc / hoa hồng
+    if(d.deposit){ const s=document.getElementById('fDeposit'); const opt=[...s.options].find(o=>o.value.startsWith(String(d.deposit).replace(' tháng','').trim())); if(opt){ s.value=opt.value; flash(s); } }
+    if(d.commission){ const c=document.getElementById('fCommission'); c.value=String(d.commission).replace('%','').trim(); flash(c); }
+    // phí
+    if(d.fees){
+      const map={electricity:'feeElec',water:'feeWater',vehicle:'feeVehicle',service:'feeService',management:'feeMgmt'};
+      Object.entries(map).forEach(([k,id])=>{ if(d.fees[k]){ const el=document.getElementById(id); el.value=d.fees[k]; flash(el); } });
+    }
+  }
+
+  // ---- AI parse (Claude) with local fallback ----
+  const norm = s => (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  function localParse(text){
+    const t = norm(text);
+    const out = { type: currentType, tags: [] };
+    let m = text.match(/(\d+)[.,]?(\d+)?\s*(?:tri[eệ]u|tr|củ)\s*(\d{1,3})?/i);
+    if(m){ const dec = m[2] || m[3]; out.price = m[1] + (dec ? ','+dec : '') + ' triệu'; }
+    m = t.match(/(\d+)\s*m2?/); if(m) out.area = m[1] + 'm²';
+    tagsFor(currentType).forEach(tag=>{ if(t.includes(norm(tag))) out.tags.push(tag); });
+    // cọc: "coc 1 thang" / "coc 1.5"
+    let dm = t.match(/c[oọ]c\s*(\d+([.,]\d+)?)/);
+    if(dm) out.deposit = dm[1].replace(',','.') + ' tháng';
+    // hợp đồng: "hop dong 12 thang" / "hd 12t" / "ky 6 thang"
+    out.contract = [];
+    (t.match(/(6|12|24|36)\s*(?:thang|t\b)/g)||[]).forEach(x=>{ const n=x.match(/\d+/)[0]; out.contract.push(n+' tháng'); });
+    const qm = text.match(/(Qu[aậ]n[^,\n]*|Huy[eệ]n[^,\n]*|TP[^,\n]*)/i);
+    if(qm) out.location = qm[0].trim();
+    const vm = text.match(/https?:\/\/[^\s]*tiktok\.com[^\s]*/i);
+    if(vm) out.video = vm[0];
+    return out;
+  }
+
+  async function aiParse(text){
+    const schema = `Người dùng đang đăng tin loại: "${currentType}". Trả về DUY NHẤT một JSON (không giải thích, không markdown) dạng:
+{"title":"","type":"${currentType}","price":"","area":"","location":"","description":"","video":"","tags":[],"contract":[],"deposit":"","commission":"","fees":{"electricity":"","water":"","vehicle":"","service":"","management":""}}
+- Giữ nguyên type = "${currentType}".
+- video: nếu trong thông tin có link TikTok thì điền nguyên link, không thì để rỗng.
+- tags CHỈ chọn trong danh sách sau (đúng nguyên văn): ${tagsFor(currentType).join(', ')}
+- contract: mảng thời hạn hợp đồng, chọn trong ["6 tháng","12 tháng","24 tháng","36 tháng"].
+- deposit: "1 tháng" | "1.5 tháng" | "2 tháng" | "3 tháng".
+- commission: số phần trăm (vd "80").
+- fees: điện đ/kWh, nước đ/người, xe đ/xe, service đ/phòng, management đ/m² (nếu có nêu). Không rõ để rỗng.
+- price "3,5 triệu"; area "20m²"; location "Quận ..., Tỉnh/TP".
+- Nếu có ảnh, suy ra thêm tag phù hợp.`;
+    const content = [];
+    // Đưa ảnh đã tải trên form cho AI đọc (tối đa 4 ảnh)
+    roomImages.slice(0,4).forEach(im => content.push({type:'image', source:{type:'base64', media_type:im.media_type, data:im.data}}));
+    content.push({type:'text', text: schema + '\n\nThông tin phòng:\n' + text});
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:1000, messages:[{role:'user', content}] })
+    });
+    const data = await res.json();
+    const raw = (data.content||[]).filter(i=>i.type==='text').map(i=>i.text).join('').trim();
+    const clean = raw.replace(/```json|```/g,'').trim();
+    return JSON.parse(clean);
+  }
+
+  // ---- send ----
+  const input = document.getElementById('msgInput');
+  const sendBtn = document.getElementById('sendBtn');
+  input.addEventListener('input', ()=>{ input.style.height='auto'; input.style.height=Math.min(input.scrollHeight,120)+'px'; });
+  input.addEventListener('keydown', e=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); send(); } });
+  sendBtn.addEventListener('click', send);
+
+  async function send(){
+    const text = input.value.trim();
+    if(!text && roomImages.length === 0) return;
+    if(text) addMsg('me', text);
+    else addMsg('me', '(phân tích ' + roomImages.length + ' ảnh đã tải)');
+    input.value=''; input.style.height='auto';
+    const typing = addMsg('ai typing', 'Đang đọc ảnh & phân tích…');
+    sendBtn.disabled = true;
+    let parsed=null, usedAI=false;
+    try {
+      parsed = await aiParse(text);
+      usedAI = true;
+    } catch(err){
+      parsed = localParse(text);
+    }
+    typing.remove();
+    fillForm(parsed);
+    const filled = Object.entries(parsed).filter(([k,v])=>k!=='tags'&&v).map(([k])=>({title:'tiêu đề',type:'loại',price:'giá',area:'diện tích',location:'khu vực',description:'mô tả',video:'link video'}[k])).filter(Boolean);
+    const tagN = (parsed.tags||[]).length;
+    addMsg('ai',
+      (usedAI ? 'Mình đã phân tích xong ✅ ' : '⚠️ Chưa kết nối được AI nên mình tạm phân tích cơ bản (chỉ từ chữ). ') +
+      'Đã điền: ' + (filled.join(', ')||'—') + (tagN?` và ${tagN} tag đặc điểm.`:'.') +
+      '\nBạn xem lại bên phải, sửa chỗ nào chưa đúng rồi bấm "Lưu tin" nhé.');
+    sendBtn.disabled = false;
+  }
+
+  // ---- save (ghi thật vào danh mục dùng chung) / reset ----
+  const $ = id => document.getElementById(id);
+  function normPrice(s){                     // '3,5 triệu' / '3500000' / '12' → 'X,YTR'
+    s = String(s||'').trim();
+    const num = parseFloat(s.replace(/[^\d,\.]/g,'').replace(',','.'));
+    if(!num) return s || '0TR';
+    const trieu = num >= 1000 ? Math.round(num/100000)/10 : num;  // >=1000 coi là VND
+    return String(trieu).replace('.', ',') + 'TR';
+  }
+  function extractTikTok(v){
+    v = String(v||'').trim(); if(!v) return '';
+    const m = v.match(/video\/(\d+)/); if(m) return m[1];
+    return v;                                  // ID thuần hoặc URL → adapter tự xử lý
+  }
+  function extractQuan(loc){
+    const m = String(loc||'').match(/(Quận\s*\S+|Huyện\s*\S+|TP\.?\s*\S+|Thành phố\s*\S+)/i);
+    if(m) return m[1].trim();
+    const parts = String(loc||'').split(',').map(s=>s.trim()).filter(Boolean);
+    return parts.length >= 2 ? parts[parts.length-2] : (parts[0] || '');
+  }
+
+  $('saveBtn').addEventListener('click', ()=>{
+    const cat = $('fType').value || currentType;
+    const group = ['Chung cư','Nhà nguyên căn'].includes(cat) ? 'cc' : 'ptro';
+    const loai = (cat === 'Căn hộ dịch vụ') ? 'Căn hộ DV' : cat;
+    const title = $('fTitle').value.trim();
+    const loc = $('fLoc').value.trim();
+    if(!title){ alert('Vui lòng nhập tiêu đề tin.'); $('fTitle').focus(); return; }
+    if(!loc){ alert('Vui lòng nhập khu vực / địa chỉ.'); $('fLoc').focus(); return; }
+
+    const tags = [...document.querySelectorAll('#tagGroups .tchip.on')].map(c=>c.dataset.tag);
+    const contract = [...document.querySelectorAll('#contractChips .tchip.on')].map(c=>c.dataset.term);
+
+    // Chi phí theo loại
+    let chiPhi;
+    if($('serviceFees').style.display !== 'none'){
+      chiPhi = { loai:'tro',
+        dien:($('feeElec').value||'4.000')+'đ/kWh', nuoc:($('feeWater').value||'100.000')+'đ/người',
+        xe:($('feeVehicle').value||'150.000')+'đ/xe', dv:($('feeService').value||'100.000')+'đ/phòng' };
+    } else if($('mgmtFee').style.display !== 'none'){
+      chiPhi = { loai:'cc', note:'Điện nước theo đơn giá nhà nước', ql:($('feeMgmt').value||'45.000')+'đ/m²' };
+    } else if(loai === 'Ký túc xá'){
+      chiPhi = { loai:'ktx', note:'Bao gồm tất cả chi phí' };
+    } else {
+      chiPhi = { loai:'nha', note:'Điện nước theo đơn giá nhà nước' };
+    }
+
+    const m2 = $('fArea').value.replace(/m²|m2/gi,'').trim();
+    const imgs = roomImages.length ? roomImages.map(im=>im.url) : ['#c8d8ff,#a0b8f0'];
+
+    const building = {
+      bid: 'u_' + Date.now(),
+      addr: loc.split(',')[0].trim(),
+      addrFull: loc,
+      quan: extractQuan(loc),
+      nv: 'Nhân viên đăng tin',
+      chuNhaSdt: '', zaloNhom: '',
+      tiktokUrl: extractTikTok($('fVideo').value),
+      date: 'Hôm nay',
+      imgs: imgs,
+      tienich: tags.slice(),
+      rooms: [{
+        rid: 'ur_' + Date.now(),
+        loai: loai, tags: tags.slice(), noithat: [],
+        m2: m2 || '—', price: normPrice($('fPrice').value),
+        coc: $('fDeposit').value || '1 tháng', cocsố: '',
+        hh: $('fCommission').value ? ($('fCommission').value + '%') : '50%–80%',
+        hd: contract.join(' / ') || 'Linh hoạt',
+        chiPhi: chiPhi, soLuong: 1, soTrong: 1, status: 'open'
+      }]
+    };
+
+    if(typeof window.HT_addListing === 'function'){
+      const res = window.HT_addListing(building, group);
+      if(res === false){
+        alert('⚠️ Không lưu được tin: bộ nhớ trình duyệt đã đầy (ảnh quá lớn).\nHãy bớt ảnh hoặc dùng ảnh nhỏ hơn rồi thử lại.');
+        return;
+      }
+      alert('✅ Đã đăng tin "' + title + '".' +
+            (res === 'noimg' ? '\n(Lưu ý: ảnh quá lớn nên tạm không lưu kèm ảnh.)' : '') +
+            '\nTin xuất hiện ngay ở trang chủ và trong Giỏ hàng.');
+      location.href = 'dashboard.html';
+    } else {
+      alert('Không nạp được data.js — không thể lưu tin.');
+    }
+  });
+  document.getElementById('resetBtn').addEventListener('click', ()=>{
+    ['fTitle','fPrice','fArea','fLoc','fDesc'].forEach(id=>document.getElementById(id).value='');
+    document.querySelectorAll('.tchip.on').forEach(c=>c.classList.remove('on'));
+  });
+</script>
+</body>
+</html>

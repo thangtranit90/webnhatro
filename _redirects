@@ -1,0 +1,6 @@
+# Cloudflare Pages redirects
+# Các trang quản lý cũ đã được gộp vào dashboard.html → 301 để giữ link cũ.
+/admin.html       /dashboard.html   301
+/gio-hang.html    /dashboard.html   301
+/doanh-thu.html   /dashboard.html   301
+/bao-chot.html    /dashboard.html   301
