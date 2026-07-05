@@ -1,0 +1,29 @@
+# CI/CD: cu push code len nhanh master la web tu dong cap nhat len Cloudflare Pages
+name: Deploy len Cloudflare Pages
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch: {} # cho phep bam nut chay tay tren GitHub
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy website
+    steps:
+      - name: Lay code moi nhat
+        uses: actions/checkout@v4
+
+      - name: Gom rieng cac file website (khong dua tai lieu noi bo len web)
+        run: |
+          mkdir -p site-upload
+          cp index.html detail.html dashboard.html chon-loai.html them-tin.html \
+             data.js footer.js login.js ht-home-logo.png _headers _redirects \
+             site-upload/
+
+      - name: Deploy len Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy site-upload --project-name=webnhatro --branch=master
