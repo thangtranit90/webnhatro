@@ -22,8 +22,8 @@
 | **1. Nền tảng** | tokens/base/components CSS, ht-ui.js, PWA, deploy assets | ✅ DONE |
 | **2. Trang khách cốt lõi** | Trang chủ · Tìm phòng · Chi tiết (So sánh = modal trong Tìm phòng) | ✅ DONE + DEPLOYED |
 | **3. Trang khách phụ** | Đăng ký (`dangky.html`) · Tài khoản của tôi (`taikhoan.html`) · Chat (`chat.html`) · Đặt lịch (`datlich.html`) · Về chúng tôi (`vechungtoi.html`) · Điều khoản (`dieukhoan.html`) · Chính sách (`baomat.html`) · 404 (`404.html`) | ✅ DONE |
-| **4. Auth nội bộ** | Đăng nhập · Quên mật khẩu · Nhập OTP · Đặt mật khẩu mới | ⬜ TODO |
-| **5. Nghiệp vụ sale** | Dashboard · Kho phòng/Giỏ hàng · CRM · Deal & Hợp đồng · Doanh thu | ⬜ TODO |
+| **4. Auth nội bộ** | Đăng nhập (`dangnhap-noibo.html`) · Quên MK (`quenmatkhau.html`) · OTP (`nhap-otp.html`) · Đặt MK mới (`datmatkhau.html`) | ✅ DONE |
+| **5. Nghiệp vụ sale** | Dashboard (`dashboard.html`) · Kho phòng (`khophong.html`) · CRM (`crm.html`) · Deal (`deal.html`) · Doanh thu (`doanhthu.html`) + **Sidebar dùng chung** (`internal.css`, `ht-internal.js`) | ✅ DONE |
 | **6. Quản lý tòa nhà** | Quản lý tòa nhà · Chi tiết tòa nhà · Lịch hẹn dẫn xem · Wizard thêm phòng | ⬜ TODO |
 | **7. Admin** | Báo cáo tổng · Nhân viên · Phân quyền · Cài đặt · Quỹ nội bộ · Bảng tin · Territory Map | ⬜ TODO |
 | **8. Hoàn thiện + AI (cho đồ án)** | Self-host font, ảnh/video thật; AI cốt lõi: hỏi đáp thông tin phòng + tìm kiếm thông minh (Cloudflare Functions + Claude API) | ⬜ TODO |

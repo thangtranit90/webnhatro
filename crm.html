@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Khách hàng (CRM) — HT HOME Nội bộ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/tokens.css" />
+  <link rel="stylesheet" href="assets/css/base.css" />
+  <link rel="stylesheet" href="assets/css/components.css" />
+  <link rel="stylesheet" href="assets/css/internal.css" />
+  <style>
+    /* ---- Filters ---- */
+    .filters { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 18px; -webkit-overflow-scrolling: touch; }
+    .filters::-webkit-scrollbar { height: 0; }
+    .chip { flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 999px; border: 1px solid var(--border); background: var(--card); color: var(--muted-fg); font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all .15s; }
+    .chip:hover { color: var(--fg); border-color: var(--muted-fg); }
+    .chip.is-active { background: var(--fg); color: var(--card); border-color: var(--fg); }
+
+    /* ---- Kanban ---- */
+    .kanban { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 12px; -webkit-overflow-scrolling: touch; }
+    .kanban::-webkit-scrollbar { height: 8px; }
+    .kanban::-webkit-scrollbar-thumb { background: var(--border); border-radius: 999px; }
+    .kcol { flex: 0 0 84vw; max-width: 300px; background: var(--muted, #F3F5F8); border: 1px solid var(--border); border-radius: var(--radius-l); padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+    @media (min-width: 640px) { .kcol { flex-basis: 300px; } }
+    .kcol__head { display: flex; align-items: center; justify-content: space-between; padding: 2px 4px 6px; }
+    .kcol__title { font-size: 14px; font-weight: 700; color: var(--fg); }
+    .kcol__count { font-size: 12px; font-weight: 700; color: var(--muted-fg); background: var(--card); border: 1px solid var(--border); border-radius: 999px; padding: 1px 9px; }
+
+    /* ---- Thẻ khách ---- */
+    .kc { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-m, 12px); padding: 12px; box-shadow: var(--shadow-card); cursor: pointer; transition: box-shadow .15s, transform .15s; }
+    .kc:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(20,30,50,.08); }
+    .kc__top { display: flex; align-items: center; gap: 10px; }
+    .kc__name { font-size: 14px; font-weight: 700; color: var(--fg); line-height: 1.2; }
+    .kc__phone { font-size: 12px; color: var(--muted-fg); margin-top: 1px; }
+    .kc__tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .tag { font-size: 11px; font-weight: 600; border-radius: 999px; padding: 3px 9px; background: var(--muted, #F3F5F8); color: var(--muted-fg); }
+    .tag--hot { background: var(--danger-soft); color: var(--danger); }
+    .tag--warm { background: var(--warning-soft); color: var(--warning); }
+    .tag--cold { background: var(--info-soft); color: var(--info); }
+    .kc__meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin-top: 10px; font-size: 12px; color: var(--muted-fg); }
+    .kc__meta .dot { width: 3px; height: 3px; border-radius: 50%; background: var(--border); display: inline-block; }
+    .kc__meta strong { color: var(--fg); font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="app-sidebar" id="ht-sidebar" data-active="crm"></div>
+    <main class="app-main">
+      <!-- Topbar -->
+      <header class="app-topbar">
+        <div style="display:flex;align-items:center;gap:12px">
+          <button class="btn-sidebar" id="btnSidebar" aria-label="Menu"></button>
+          <div>
+            <div class="app-topbar__title">Khách hàng</div>
+            <div class="app-topbar__sub">8 khách đang chăm · 2 sắp hết khóa 30 ngày</div>
+          </div>
+        </div>
+        <div class="app-topbar__actions">
+          <button class="btn btn--primary btn--sm" id="btnAdd">Thêm khách</button>
+        </div>
+      </header>
+
+      <div class="app-content">
+        <!-- Chip lọc -->
+        <div class="filters" id="filters"></div>
+
+        <!-- Kanban -->
+        <div class="kanban" id="kanban"></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="assets/js/ht-ui.js"></script>
+  <script src="assets/js/ht-internal.js"></script>
+  <script>
+    var I = HTI.icon;
+    document.getElementById('btnSidebar').innerHTML = I('menu', 22);
+    document.getElementById('btnAdd').innerHTML = I('plus', 16) + 'Thêm khách';
+
+    /* ---- Chip lọc ---- */
+    var filters = [
+      { t: 'Tất cả', n: 24, active: true }, { t: 'Của tôi', n: 8 },
+      { t: 'Sắp hết khóa', n: 2 }, { t: 'Hot 🔥', n: 5 },
+      { t: 'Warm 🌤️', n: 11 }, { t: 'Cold ❄️', n: 8 }
+    ];
+    var elFilters = document.getElementById('filters');
+    elFilters.innerHTML = filters.map(function (f) {
+      return '<button class="chip' + (f.active ? ' is-active' : '') + '">' + f.t + ' (' + f.n + ')</button>';
+    }).join('');
+    elFilters.addEventListener('click', function (e) {
+      var chip = e.target.closest('.chip');
+      if (!chip) return;
+      elFilters.querySelectorAll('.chip').forEach(function (c) { c.classList.remove('is-active'); });
+      chip.classList.add('is-active');
+    });
+
+    /* ---- Dữ liệu mẫu ---- */
+    // heat: 'hot' | 'warm' | 'cold'  → tự map ra nhãn + màu
+    var HEAT = {
+      hot:  { label: 'Hot 🔥',   cls: 'tag--hot' },
+      warm: { label: 'Warm 🌤️', cls: 'tag--warm' },
+      cold: { label: 'Cold ❄️', cls: 'tag--cold' }
+    };
+    var columns = [
+      { title: 'Khách mới', cards: [
+        { av: 'VN', name: 'Trần Văn Nam', phone: '09xx234567', type: '🎓 SV', heat: 'cold', budget: '2-3 tr', source: 'Facebook', time: '20 phút' },
+        { av: 'TM', name: 'Lê Thị Mai', phone: '08xx891122', type: '💼 Đi làm', heat: 'warm', budget: '4-5 tr', source: 'TikTok', time: '1 giờ' },
+        { av: 'HL', name: 'Hoàng Thị Loan', phone: '07xx445566', type: '🎓 SV', heat: 'cold', budget: '2 tr', source: 'SEO Google', time: '2 giờ' }
+      ]},
+      { title: 'Đã tư vấn', cards: [
+        { av: 'ĐA', name: 'Nguyễn Đức Anh', phone: '09xx778899', type: '💼 Đi làm', heat: 'warm', budget: '3-4 tr', source: 'SEO Google', time: '3 giờ' },
+        { av: 'SJ', name: 'Sarah Johnson', phone: '09xx102030', type: '🌏 Nước ngoài', heat: 'hot', budget: '$500', source: 'Referral', time: 'Hôm qua' },
+        { av: 'PT', name: 'Phan Thanh Tú', phone: '08xx334455', type: '💼 Đi làm', heat: 'warm', budget: '4 tr', source: 'Facebook', time: 'Hôm qua' }
+      ]},
+      { title: 'Đã gửi phòng', cards: [
+        { av: 'QA', name: 'Phạm Quỳnh Anh', phone: '09xx556677', type: '🎓 SV', heat: 'warm', budget: '3 tr', source: 'TikTok', time: '2 ngày' },
+        { av: 'BT', name: 'Vũ Bảo Trân', phone: '07xx889900', type: '💼 Đi làm', heat: 'hot', budget: '5-6 tr', source: 'Referral', time: '2 ngày' }
+      ]},
+      { title: 'Đã dẫn xem', cards: [
+        { av: 'MK', name: 'Đỗ Minh Khoa', phone: '09xx223344', type: '💼 Đi làm', heat: 'hot', budget: '5 tr', source: 'SEO Google', time: '3 ngày' },
+        { av: 'LN', name: 'Lý Ngọc Ngân', phone: '08xx667788', type: '🎓 SV', heat: 'warm', budget: '3-4 tr', source: 'Facebook', time: '4 ngày' }
+      ]},
+      { title: 'Đã chốt', cards: [
+        { av: 'TD', name: 'Trịnh Anh Dũng', phone: '09xx990011', type: '💼 Đi làm', heat: 'hot', budget: '6 tr', source: 'Referral', time: 'Tuần này' },
+        { av: 'KO', name: 'Kim Oanh', phone: '07xx121314', type: '🌏 Nước ngoài', heat: 'hot', budget: '$600', source: 'TikTok', time: 'Tuần này' }
+      ]}
+    ];
+
+    function cardHTML(c) {
+      var h = HEAT[c.heat] || HEAT.cold;
+      return '<div class="kc">' +
+        '<div class="kc__top">' +
+          '<span class="avatar">' + c.av + '</span>' +
+          '<span style="flex:1;min-width:0">' +
+            '<span class="kc__name" style="display:block">' + c.name + '</span>' +
+            '<span class="kc__phone">' + c.phone + '</span>' +
+          '</span>' +
+        '</div>' +
+        '<div class="kc__tags">' +
+          '<span class="tag">' + c.type + '</span>' +
+          '<span class="tag ' + h.cls + '">' + h.label + '</span>' +
+        '</div>' +
+        '<div class="kc__meta">' +
+          '<span><strong>' + c.budget + '</strong></span><span class="dot"></span>' +
+          '<span>' + c.source + '</span><span class="dot"></span>' +
+          '<span>' + c.time + '</span>' +
+        '</div>' +
+      '</div>';
+    }
+
+    document.getElementById('kanban').innerHTML = columns.map(function (col) {
+      return '<div class="kcol">' +
+        '<div class="kcol__head"><span class="kcol__title">' + col.title + '</span>' +
+        '<span class="kcol__count">' + col.cards.length + '</span></div>' +
+        col.cards.map(cardHTML).join('') +
+      '</div>';
+    }).join('');
+  </script>
+</body>
+</html>

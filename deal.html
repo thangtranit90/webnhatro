@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chốt deal mới — HT HOME Nội bộ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/tokens.css" />
+  <link rel="stylesheet" href="assets/css/base.css" />
+  <link rel="stylesheet" href="assets/css/components.css" />
+  <link rel="stylesheet" href="assets/css/internal.css" />
+  <style>
+    /* Topbar back + breadcrumb */
+    .deal-back { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--muted-fg); border: 1px solid var(--border); background: var(--card); border-radius: var(--radius-s); padding: 7px 12px; }
+    .deal-back:hover { border-color: var(--muted-fg); color: var(--fg); }
+    .crumb { font-size: 12px; color: var(--muted-fg); margin-top: 3px; }
+    .crumb b { color: var(--fg); font-weight: 700; }
+
+    /* Tabs */
+    .tabs { display: flex; gap: 4px; background: var(--muted); padding: 4px; border-radius: var(--radius-m); margin-bottom: 20px; width: fit-content; max-width: 100%; overflow-x: auto; }
+    .tabs__btn { border: 0; background: transparent; color: var(--muted-fg); font-family: inherit; font-size: 13px; font-weight: 600; padding: 9px 16px; border-radius: var(--radius-s); cursor: pointer; white-space: nowrap; }
+    .tabs__btn.is-active { background: var(--card); color: var(--fg); box-shadow: var(--shadow-card); }
+
+    /* Layout form + summary */
+    .deal-cols { display: grid; grid-template-columns: 1fr; gap: 20px; }
+    @media (min-width: 1100px) { .deal-cols { grid-template-columns: 1.7fr 1fr; align-items: start; } }
+    .stack { display: flex; flex-direction: column; gap: 20px; }
+
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-l); box-shadow: var(--shadow-card); }
+    .card__head { padding: 16px 20px; border-bottom: 1px solid var(--border); }
+    .card__head h3 { font-size: 15px; font-weight: 700; color: var(--fg); }
+    .card__head .sub { font-size: 12px; color: var(--muted-fg); margin-top: 2px; }
+    .card__body { padding: 18px 20px; }
+
+    /* Form fields */
+    .field { display: block; margin-bottom: 14px; }
+    .field:last-child { margin-bottom: 0; }
+    .field > label { display: block; font-size: 13px; font-weight: 600; color: var(--fg); margin-bottom: 6px; }
+    .field .hint { font-size: 11px; color: var(--muted-fg); font-weight: 500; }
+    .ctrl { width: 100%; font-family: inherit; font-size: 14px; color: var(--fg); background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-s); padding: 11px 12px; }
+    .ctrl:focus { outline: none; border-color: var(--muted-fg); }
+    .ctrl:disabled, .ctrl[readonly] { background: var(--muted); color: var(--muted-fg); cursor: not-allowed; }
+    select.ctrl { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236B7688' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+    .grid2 { display: grid; grid-template-columns: 1fr; gap: 14px; }
+    @media (min-width: 560px) { .grid2 { grid-template-columns: 1fr 1fr; } }
+
+    .banner { display: flex; gap: 10px; align-items: flex-start; background: var(--info-soft); color: var(--info); border-radius: var(--radius-s); padding: 11px 13px; font-size: 12.5px; font-weight: 500; line-height: 1.5; }
+    .banner .ic { flex-shrink: 0; margin-top: 1px; }
+
+    .price-lead { font-size: 22px; font-weight: 800; color: var(--fg); }
+    .price-unit { font-size: 13px; font-weight: 500; color: var(--muted-fg); }
+    .link-alt { display: inline-block; margin-top: 6px; font-size: 12.5px; font-weight: 600; color: var(--info); cursor: pointer; }
+    .link-alt:hover { text-decoration: underline; }
+
+    /* Summary panel */
+    .sum-row { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; font-size: 13px; border-bottom: 1px dashed var(--border); }
+    .sum-row:last-of-type { border-bottom: 0; }
+    .sum-row span:first-child { color: var(--muted-fg); }
+    .sum-row span:last-child { font-weight: 700; color: var(--fg); }
+    .sum-total { display: flex; justify-content: space-between; margin-top: 8px; padding-top: 12px; border-top: 2px solid var(--border); }
+    .sum-total span:first-child { font-weight: 700; color: var(--fg); }
+    .sum-total span:last-child { font-size: 18px; font-weight: 800; color: var(--fg); }
+
+    .submit-note { font-size: 11.5px; color: var(--muted-fg); margin-top: 12px; text-align: center; line-height: 1.5; }
+    .ok-toast { display: none; margin-bottom: 16px; }
+    .ok-toast.show { display: flex; }
+    .ok-toast { gap: 10px; align-items: center; background: var(--success-soft); color: var(--success); border-radius: var(--radius-s); padding: 12px 14px; font-size: 13px; font-weight: 600; }
+    .is-hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="app-sidebar" id="ht-sidebar" data-active="deal"></div>
+    <main class="app-main">
+      <!-- Topbar -->
+      <header class="app-topbar">
+        <div style="display:flex;align-items:center;gap:12px">
+          <button class="btn-sidebar" id="btnSidebar" aria-label="Menu"></button>
+          <a class="deal-back" href="deal.html">← Danh sách Deal</a>
+          <div class="crumb">Deal &amp; Hợp đồng / <b>Chốt deal mới</b></div>
+        </div>
+        <div class="app-topbar__actions">
+          <button class="btn btn--ghost btn--sm" type="button" id="btnDraft">Lưu nháp</button>
+        </div>
+      </header>
+
+      <div class="app-content">
+        <!-- Tabs -->
+        <div class="tabs" role="tablist">
+          <button class="tabs__btn is-active" type="button" data-tab="incart">Giao dịch trong giỏ hàng</button>
+          <button class="tabs__btn" type="button" data-tab="outcart">Giao dịch ngoài giỏ hàng</button>
+        </div>
+
+        <form id="dealForm" class="deal-cols">
+          <!-- Cột form -->
+          <div class="stack">
+            <div class="ok-toast" id="okToast">✓ Đã chốt deal thành công! (demo)</div>
+
+            <!-- 1. Thông tin căn hộ -->
+            <section class="card">
+              <div class="card__head"><h3>Thông tin căn hộ</h3><div class="sub">Chọn toà nhà và phòng từ dữ liệu giỏ hàng</div></div>
+              <div class="card__body">
+                <div class="field">
+                  <label for="fBuilding">Địa chỉ toà nhà</label>
+                  <select class="ctrl" id="fBuilding">
+                    <option>Duplex Nguyễn Oanh · 45 Nguyễn Oanh, Gò Vấp</option>
+                    <option>HT Lê Đức Thọ · 112 Lê Đức Thọ, Gò Vấp</option>
+                    <option>Studio Phạm Văn Đồng · 8 Phạm Văn Đồng, Thủ Đức</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="fRoom">Mã phòng <span class="hint">(chỉ hiện phòng còn trống)</span></label>
+                  <select class="ctrl" id="fRoom">
+                    <option>P.201 · Duplex · Tầng 2</option>
+                    <option>P.204 · Studio · Tầng 2</option>
+                    <option>P.302 · 1PN · Tầng 3</option>
+                  </select>
+                </div>
+                <div class="banner">
+                  <span class="ic" id="icBanner"></span>
+                  <span>Đã tự động lấy: <b>giá thuê, tiền cọc, phí phụ thu, ma trận hoa hồng</b> từ Data.</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- 2. Giá thuê & Thông số -->
+            <section class="card">
+              <div class="card__head"><h3>Giá thuê &amp; Thông số giao dịch</h3><div class="sub">Giá auto-fill từ Data · Có thể chốt giá khác</div></div>
+              <div class="card__body">
+                <div class="field">
+                  <label>Giá thuê / tháng <span class="hint">(theo Data)</span></label>
+                  <div class="price-lead">2.800.000 <span class="price-unit">đ/tháng</span></div>
+                  <span class="link-alt" id="linkAltPrice">Chốt với giá khác</span>
+                </div>
+                <div class="grid2">
+                  <div class="field">
+                    <label for="fTerm">Thời hạn thuê</label>
+                    <select class="ctrl" id="fTerm">
+                      <option>12 tháng</option>
+                      <option>6 tháng</option>
+                      <option>24 tháng</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label for="fMoveIn">Ngày dọn vào</label>
+                    <input class="ctrl" id="fMoveIn" type="date" value="2026-07-20" />
+                  </div>
+                </div>
+                <div class="grid2">
+                  <div class="field">
+                    <label for="fPeople">Số người ở</label>
+                    <input class="ctrl" id="fPeople" type="number" min="1" value="2" />
+                  </div>
+                  <div class="field">
+                    <label for="fVehicles">Số lượng xe</label>
+                    <input class="ctrl" id="fVehicles" type="number" min="0" value="1" />
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- 3. Đặt cọc -->
+            <section class="card">
+              <div class="card__head"><h3>Thông tin đặt cọc</h3><div class="sub">Cọc bổ sung tự tính theo Cọc − Cọc trước</div></div>
+              <div class="card__body">
+                <div class="grid2">
+                  <div class="field">
+                    <label for="fDeposit">Số tiền cọc <span class="hint">(từ Data)</span></label>
+                    <input class="ctrl" id="fDeposit" type="text" inputmode="numeric" value="2.800.000" />
+                  </div>
+                  <div class="field">
+                    <label for="fPrepaid">Số tiền cọc trước <span class="hint">(Sale nhập)</span></label>
+                    <input class="ctrl" id="fPrepaid" type="text" inputmode="numeric" value="1.500.000" />
+                  </div>
+                </div>
+                <div class="grid2">
+                  <div class="field" id="fldExtra">
+                    <label for="fExtra">Cọc bổ sung <span class="hint">(tự tính)</span></label>
+                    <input class="ctrl" id="fExtra" type="text" value="1.300.000" readonly />
+                  </div>
+                  <div class="field" id="fldExtraDue">
+                    <label for="fExtraDue">Hạn cọc bổ sung</label>
+                    <input class="ctrl" id="fExtraDue" type="date" value="2026-07-25" />
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- 4. Phí phụ thu -->
+            <section class="card">
+              <div class="card__head"><h3>Các khoản phí phụ thu</h3><div class="sub">Auto-fill từ Data toà nhà · Không sửa được</div></div>
+              <div class="card__body">
+                <div class="grid2" style="grid-template-columns:1fr">
+                  <div class="grid2">
+                    <div class="field"><label>Giá điện</label><input class="ctrl" type="text" value="4.000 đ/kWh" readonly /></div>
+                    <div class="field"><label>Giá nước</label><input class="ctrl" type="text" value="150.000 đ/người" readonly /></div>
+                  </div>
+                  <div class="field" style="margin-bottom:0"><label>Phí dịch vụ</label><input class="ctrl" type="text" value="200.000 đ/phòng" readonly /></div>
+                </div>
+              </div>
+            </section>
+
+            <div>
+              <button class="btn btn--primary btn--block" type="submit">Chốt deal</button>
+              <div class="submit-note">Kiểm tra kỹ thông tin trước khi chốt. Sau khi chốt, deal sẽ chuyển sang bước ký hợp đồng.</div>
+            </div>
+          </div>
+
+          <!-- Cột tóm tắt -->
+          <aside class="card" style="position:sticky;top:16px">
+            <div class="card__head"><h3>Tóm tắt giao dịch</h3><div class="sub">Xem nhanh trước khi chốt</div></div>
+            <div class="card__body">
+              <div class="sum-row"><span>Toà nhà</span><span>Duplex Nguyễn Oanh</span></div>
+              <div class="sum-row"><span>Phòng</span><span>P.201 · Duplex</span></div>
+              <div class="sum-row"><span>Giá thuê / tháng</span><span>2.800.000 đ</span></div>
+              <div class="sum-row"><span>Thời hạn</span><span>12 tháng</span></div>
+              <div class="sum-row"><span>Tiền cọc</span><span>2.800.000 đ</span></div>
+              <div class="sum-row"><span>Cọc trước</span><span>1.500.000 đ</span></div>
+              <div class="sum-row" id="sumExtraRow"><span>Cọc bổ sung</span><span id="sumExtra">1.300.000 đ</span></div>
+              <div class="sum-total"><span>Cần thu hôm nay</span><span>1.500.000 đ</span></div>
+            </div>
+          </aside>
+        </form>
+      </div>
+    </main>
+  </div>
+
+  <script src="assets/js/ht-ui.js"></script>
+  <script src="assets/js/ht-internal.js"></script>
+  <script>
+    (function () {
+      'use strict';
+      var I = HTI.icon;
+      document.getElementById('btnSidebar').innerHTML = I('menu', 22);
+      document.getElementById('icBanner').innerHTML = I('shield-check', 16);
+
+      // Chuyển tab (demo tĩnh)
+      var tabBtns = document.querySelectorAll('.tabs__btn');
+      tabBtns.forEach(function (b) {
+        b.addEventListener('click', function () {
+          tabBtns.forEach(function (x) { x.classList.remove('is-active'); });
+          b.classList.add('is-active');
+        });
+      });
+
+      // Parse số có dấu chấm ngăn cách nghìn -> number
+      function parseVnd(s) {
+        var n = parseInt(String(s).replace(/[^\d]/g, ''), 10);
+        return isNaN(n) ? 0 : n;
+      }
+      function fmtVnd(n) {
+        return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+      }
+
+      var elDeposit = document.getElementById('fDeposit');
+      var elPrepaid = document.getElementById('fPrepaid');
+      var elExtra = document.getElementById('fExtra');
+      var fldExtra = document.getElementById('fldExtra');
+      var fldExtraDue = document.getElementById('fldExtraDue');
+      var sumExtra = document.getElementById('sumExtra');
+      var sumExtraRow = document.getElementById('sumExtraRow');
+
+      // Tính cọc bổ sung = cọc - cọc trước; nếu cọc trước >= cọc -> ẩn ô cọc bổ sung + hạn
+      function recalcExtra() {
+        var deposit = parseVnd(elDeposit.value);
+        var prepaid = parseVnd(elPrepaid.value);
+        var extra = deposit - prepaid;
+        if (extra <= 0) {
+          fldExtra.classList.add('is-hidden');
+          fldExtraDue.classList.add('is-hidden');
+          sumExtraRow.classList.add('is-hidden');
+          elExtra.value = '0';
+        } else {
+          fldExtra.classList.remove('is-hidden');
+          fldExtraDue.classList.remove('is-hidden');
+          sumExtraRow.classList.remove('is-hidden');
+          elExtra.value = fmtVnd(extra);
+          sumExtra.textContent = fmtVnd(extra) + ' đ';
+        }
+      }
+      elDeposit.addEventListener('input', recalcExtra);
+      elPrepaid.addEventListener('input', recalcExtra);
+      recalcExtra();
+
+      // Chốt với giá khác (demo)
+      document.getElementById('linkAltPrice').addEventListener('click', function () {
+        var v = window.prompt('Nhập giá thuê chốt khác (đ/tháng):', '2.800.000');
+        if (v) alert('Đã ghi nhận giá chốt: ' + v + ' đ/tháng (demo).');
+      });
+
+      // Lưu nháp
+      document.getElementById('btnDraft').addEventListener('click', function () {
+        alert('Đã lưu nháp deal (demo).');
+      });
+
+      // Submit
+      document.getElementById('dealForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        var toast = document.getElementById('okToast');
+        toast.classList.add('show');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    })();
+  </script>
+</body>
+</html>

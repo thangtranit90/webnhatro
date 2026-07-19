@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Doanh thu của tôi — HT HOME Nội bộ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/tokens.css" />
+  <link rel="stylesheet" href="assets/css/base.css" />
+  <link rel="stylesheet" href="assets/css/components.css" />
+  <link rel="stylesheet" href="assets/css/internal.css" />
+  <style>
+    /* Nhóm nút chọn kỳ */
+    .seg { display: inline-flex; gap: 3px; background: var(--muted); padding: 3px; border-radius: var(--radius-m); }
+    .seg__btn { border: 0; background: transparent; color: var(--muted-fg); font-family: inherit; font-size: 13px; font-weight: 600; padding: 8px 15px; border-radius: var(--radius-s); cursor: pointer; }
+    .seg__btn.is-active { background: var(--card); color: var(--fg); box-shadow: var(--shadow-card); }
+
+    /* KPI */
+    .kpi-row { display: grid; grid-template-columns: 1fr; gap: 16px; }
+    @media (min-width: 560px) { .kpi-row { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 1200px) { .kpi-row { grid-template-columns: repeat(4, 1fr); } }
+    .kpi { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-l); padding: 18px; box-shadow: var(--shadow-card); }
+    .kpi__top { display: flex; align-items: center; justify-content: space-between; color: var(--muted-fg); font-size: 13px; font-weight: 500; }
+    .kpi__ic { width: 34px; height: 34px; border-radius: var(--radius-s); background: var(--gold-soft); color: var(--gold); display: inline-flex; align-items: center; justify-content: center; }
+    .kpi__val { font-size: 26px; font-weight: 800; color: var(--fg); margin-top: 10px; }
+    .kpi__delta { font-size: 12px; margin-top: 4px; color: var(--muted-fg); }
+    .kpi__delta.up { color: var(--success); }
+
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-l); box-shadow: var(--shadow-card); }
+    .card__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 20px; border-bottom: 1px solid var(--border); }
+    .card__head h3 { font-size: 16px; font-weight: 700; color: var(--fg); }
+    .card__head .sub { font-size: 12px; color: var(--muted-fg); margin-top: 2px; }
+    .card__body { padding: 18px 20px; }
+    .mt20 { margin-top: 20px; }
+
+    /* Thẻ level-up */
+    .lvl-pct { font-size: 22px; font-weight: 800; color: var(--gold); }
+    .prog { margin-bottom: 16px; }
+    .prog:last-child { margin-bottom: 0; }
+    .prog__lbl { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px; }
+    .prog__lbl span:first-child { color: var(--fg); font-weight: 600; }
+    .prog__lbl span:last-child { color: var(--muted-fg); font-weight: 700; }
+    .prog__bar { height: 9px; background: var(--muted); border-radius: 999px; overflow: hidden; }
+    .prog__fill { display: block; height: 100%; background: var(--gold); border-radius: 999px; }
+
+    /* Bảng */
+    .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    table.deals { width: 100%; border-collapse: collapse; min-width: 640px; }
+    table.deals th { text-align: left; font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted-fg); padding: 10px 12px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    table.deals td { font-size: 13.5px; color: var(--fg); padding: 13px 12px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    table.deals tr:last-child td { border-bottom: 0; }
+    table.deals td.rev { font-weight: 700; }
+    .deal-id { font-weight: 700; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="app-sidebar" id="ht-sidebar" data-active="doanhthu"></div>
+    <main class="app-main">
+      <!-- Topbar -->
+      <header class="app-topbar">
+        <div style="display:flex;align-items:center;gap:12px">
+          <button class="btn-sidebar" id="btnSidebar" aria-label="Menu"></button>
+          <div>
+            <div class="app-topbar__title">Doanh thu của tôi</div>
+            <div class="app-topbar__sub">Theo dõi hoa hồng &amp; tiến độ thăng cấp</div>
+          </div>
+        </div>
+        <div class="app-topbar__actions">
+          <div class="seg" role="tablist">
+            <button class="seg__btn is-active" type="button">Tháng này</button>
+            <button class="seg__btn" type="button">Quý</button>
+            <button class="seg__btn" type="button">Năm</button>
+          </div>
+        </div>
+      </header>
+
+      <div class="app-content">
+        <!-- KPI -->
+        <div class="kpi-row" id="kpiRow"></div>
+
+        <!-- Thẻ Level-up -->
+        <section class="card mt20">
+          <div class="card__head">
+            <div><h3>Tiến độ thăng cấp lên Sale 1</h3><div class="sub">3 tiêu chí · đủ cả 3 → Admin duyệt</div></div>
+            <span class="lvl-pct">68%</span>
+          </div>
+          <div class="card__body" id="lvlBody"></div>
+        </section>
+
+        <!-- Bảng deal -->
+        <section class="card mt20">
+          <div class="card__head">
+            <div><h3>Chi tiết deal của tôi tháng này</h3></div>
+            <button class="btn btn--ghost btn--sm" type="button" id="btnExport">Xuất Excel</button>
+          </div>
+          <div class="card__body" style="padding-top:8px">
+            <div class="table-wrap">
+              <table class="deals">
+                <thead>
+                  <tr><th>Deal</th><th>Khách</th><th>Ngày chốt</th><th>Vai trò</th><th>Hoa hồng</th><th>Trạng thái</th></tr>
+                </thead>
+                <tbody id="dealRows"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script src="assets/js/ht-ui.js"></script>
+  <script src="assets/js/ht-internal.js"></script>
+  <script>
+    (function () {
+      'use strict';
+      var I = HTI.icon;
+      document.getElementById('btnSidebar').innerHTML = I('menu', 22);
+
+      // KPI
+      var kpis = [
+        { label: 'Đã nhận', ic: 'wallet', val: '1,68 tr', delta: '6 deal đã chi' },
+        { label: 'Chờ nhận', ic: 'clock', val: '0,84 tr', delta: '3 deal · checkin+7' },
+        { label: 'Dự kiến', ic: 'file-text', val: '0,90 tr', delta: '2 deal đã cọc' },
+        { label: 'Tổng tháng', ic: 'wallet', val: '3,42 tr', delta: '+38% so tháng trước', up: true }
+      ];
+      document.getElementById('kpiRow').innerHTML = kpis.map(function (k) {
+        var ico = (k.ic === 'clock' && window.HT && HT.icon) ? HT.icon('clock', 18) : HTI.icon(k.ic, 18);
+        return '<div class="kpi"><div class="kpi__top"><span>' + k.label + '</span><span class="kpi__ic">' + ico + '</span></div>' +
+          '<div class="kpi__val">' + k.val + '</div><div class="kpi__delta' + (k.up ? ' up' : '') + '">' + k.delta + '</div></div>';
+      }).join('');
+
+      // Level-up progress
+      var progs = [
+        { t: 'Số deal chốt (3 tháng)', v: '12/15', pct: 80 },
+        { t: 'Doanh thu hoa hồng', v: '38tr/45tr', pct: 84 },
+        { t: 'Tỷ lệ khách vào ở', v: '72%/80%', pct: 90 }
+      ];
+      document.getElementById('lvlBody').innerHTML = progs.map(function (p) {
+        return '<div class="prog"><div class="prog__lbl"><span>' + p.t + '</span><span>' + p.v + '</span></div>' +
+          '<div class="prog__bar"><span class="prog__fill" style="width:' + p.pct + '%"></span></div></div>';
+      }).join('');
+
+      // Bảng deal
+      var STA = {
+        'Đã nhận': 'success',
+        'Chờ nhận': 'warning',
+        'Dự kiến': 'muted'
+      };
+      var rows = [
+        { id: '#1039', kh: 'Sarah Johnson', ngay: '03/07', vt: 'Sale chốt', hh: '1,28 tr', st: 'Đã nhận' },
+        { id: '#1041', kh: 'Hoàng Minh Trí', ngay: '01/07', vt: 'Sale chốt', hh: '1,63 tr', st: 'Đã nhận' },
+        { id: '#1035', kh: 'Nguyễn Thu Hà', ngay: '28/06', vt: 'Sale hỗ trợ', hh: '0,45 tr', st: 'Đã nhận' },
+        { id: '#1044', kh: 'Trần Quốc Bảo', ngay: '08/07', vt: 'Sale chốt', hh: '0,84 tr', st: 'Chờ nhận' },
+        { id: '#1047', kh: 'Lê Lan Anh', ngay: '12/07', vt: 'Sale chốt', hh: '0,52 tr', st: 'Dự kiến' },
+        { id: '#1049', kh: 'Phạm Đức Huy', ngay: '15/07', vt: 'Sale chốt', hh: '0,38 tr', st: 'Dự kiến' }
+      ];
+      function badge(st) {
+        var key = STA[st] || 'muted';
+        if (key === 'muted') {
+          return '<span class="badge" style="background:var(--muted);color:var(--muted-fg)"><span class="badge__dot" style="background:var(--muted-fg)"></span>' + st + '</span>';
+        }
+        return '<span class="badge badge--' + key + '"><span class="badge__dot"></span>' + st + '</span>';
+      }
+      document.getElementById('dealRows').innerHTML = rows.map(function (r) {
+        return '<tr>' +
+          '<td class="deal-id">' + r.id + '</td>' +
+          '<td>' + r.kh + '</td>' +
+          '<td>' + r.ngay + '</td>' +
+          '<td>' + r.vt + '</td>' +
+          '<td class="rev">' + r.hh + '</td>' +
+          '<td>' + badge(r.st) + '</td>' +
+          '</tr>';
+      }).join('');
+
+      // Nút kỳ (demo tĩnh)
+      var segBtns = document.querySelectorAll('.seg__btn');
+      segBtns.forEach(function (b) {
+        b.addEventListener('click', function () {
+          segBtns.forEach(function (x) { x.classList.remove('is-active'); });
+          b.classList.add('is-active');
+        });
+      });
+
+      document.getElementById('btnExport').addEventListener('click', function () {
+        alert('Đang xuất file Excel doanh thu (demo).');
+      });
+    })();
+  </script>
+</body>
+</html>

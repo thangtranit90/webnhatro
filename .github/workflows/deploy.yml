@@ -21,7 +21,8 @@ jobs:
              vechungtoi.html dieukhoan.html baomat.html 404.html \
              dangky.html taikhoan.html chat.html datlich.html \
              dangnhap-noibo.html quenmatkhau.html nhap-otp.html datmatkhau.html \
-             dashboard.html chon-loai.html them-tin.html \
+             dashboard.html khophong.html crm.html deal.html doanhthu.html \
+             chon-loai.html them-tin.html \
              data.js footer.js login.js ht-home-logo.png \
              manifest.json sw.js _headers _redirects \
              site-upload/

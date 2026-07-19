@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Giỏ hàng / Kho phòng — HT HOME Nội bộ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/tokens.css" />
+  <link rel="stylesheet" href="assets/css/base.css" />
+  <link rel="stylesheet" href="assets/css/components.css" />
+  <link rel="stylesheet" href="assets/css/internal.css" />
+  <style>
+    /* ===== Kho phòng — style riêng ===== */
+    .kp-filters { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-l); box-shadow: var(--shadow-card); padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+    @media (min-width: 900px) { .kp-filters { flex-direction: row; align-items: center; } }
+
+    .kp-search { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-m); padding: 10px 14px; }
+    .kp-search .ic { color: var(--muted-fg); flex-shrink: 0; }
+    .kp-search input { flex: 1; min-width: 0; border: 0; outline: none; background: transparent; font: inherit; font-size: 14px; color: var(--fg); }
+    .kp-search input::placeholder { color: var(--muted-fg); }
+
+    .kp-selects { display: flex; flex-wrap: wrap; gap: 8px; }
+    .kp-select { display: inline-flex; align-items: center; gap: 6px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-m); padding: 9px 12px; font-size: 13px; font-weight: 600; color: var(--fg); cursor: pointer; transition: border-color .15s, background .15s; }
+    .kp-select:hover { border-color: var(--gold); }
+    .kp-select .ic { color: var(--muted-fg); }
+
+    /* Tabs trạng thái */
+    .kp-tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+    .kp-tab { display: inline-flex; align-items: center; gap: 8px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-pill); padding: 8px 14px; font-size: 13px; font-weight: 600; color: var(--muted-fg); cursor: pointer; transition: all .15s; }
+    .kp-tab:hover { color: var(--fg); border-color: var(--gold); }
+    .kp-tab.is-active { background: var(--primary); border-color: var(--primary); color: #fff; }
+    .kp-tab__cnt { font-size: 12px; font-weight: 700; background: var(--muted); color: var(--muted-fg); border-radius: 999px; padding: 1px 8px; }
+    .kp-tab.is-active .kp-tab__cnt { background: rgba(255,255,255,.22); color: #fff; }
+
+    .kp-empty { text-align: center; padding: 40px 20px; color: var(--muted-fg); font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="app-sidebar" id="ht-sidebar" data-active="khophong"></div>
+    <main class="app-main">
+      <!-- Topbar -->
+      <header class="app-topbar">
+        <div style="display:flex;align-items:center;gap:12px">
+          <button class="btn-sidebar" id="btnSidebar" aria-label="Menu"></button>
+          <div>
+            <div class="app-topbar__title">Giỏ hàng / Kho phòng</div>
+            <div class="app-topbar__sub">1.024 phòng · 247 còn trống · 62 sắp trống</div>
+          </div>
+        </div>
+        <div class="app-topbar__actions">
+          <a class="btn btn--primary btn--sm" id="btnAdd" href="chon-loai.html"></a>
+        </div>
+      </header>
+
+      <div class="app-content">
+        <!-- Bộ lọc -->
+        <div class="kp-filters">
+          <label class="kp-search">
+            <span class="ic" id="icSearch"></span>
+            <input type="text" id="kpSearch" placeholder="Tìm theo tòa nhà, mã phòng, địa chỉ..." />
+          </label>
+          <div class="kp-selects" id="kpSelects"></div>
+        </div>
+
+        <!-- Tabs trạng thái -->
+        <div class="kp-tabs" id="kpTabs"></div>
+
+        <!-- Lưới phòng -->
+        <div class="room-grid" id="kpGrid"></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="assets/js/ht-ui.js"></script>
+  <script src="assets/js/ht-internal.js"></script>
+  <script>
+    (function () {
+      var I = HTI.icon;
+
+      // ---- Topbar ----
+      document.getElementById('btnSidebar').innerHTML = I('menu', 22);
+      document.getElementById('btnAdd').innerHTML = I('plus', 16) + 'Thêm phòng';
+      document.getElementById('icSearch').innerHTML = HT.icon('search', 18);
+
+      // ---- Dropdown lọc (giả lập) ----
+      var selects = [
+        { ic: 'map', label: 'Quận / Khu vực' },
+        { ic: 'building', label: 'Loại phòng' },
+        { ic: 'wallet', label: 'Khoảng giá' },
+        { ic: 'package', label: 'Nội thất' },
+        { ic: 'shield-check', label: 'Tiện ích' }
+      ];
+      document.getElementById('kpSelects').innerHTML = selects.map(function (s) {
+        return '<button class="kp-select" type="button">' + I(s.ic, 15) +
+          '<span>' + HT.esc(s.label) + '</span>' + I('chevrons-up-down', 14) + '</button>';
+      }).join('');
+
+      // ---- Adapter ROOMS → card (giống index.html) ----
+      var rooms = window.ROOMS || [];
+      function shortType(cat) { return { 'Căn hộ dịch vụ': 'CHDV', 'Ký túc xá': 'KTX' }[cat] || cat; }
+      function bedsFromTags(tags) {
+        var t = (tags || []).join(' ');
+        var m = t.match(/(\d)\s*PN/i); if (m) return m[1] + ' PN';
+        if (/studio/i.test(t)) return 'Studio';
+        if (/duplex/i.test(t)) return 'Duplex';
+        if (/penthouse/i.test(t)) return 'Penthouse';
+        return '';
+      }
+      function catOf(r) { return window.catOf ? window.catOf(r) : (r.cat || r.ty); }
+      function toCard(r, i) {
+        return {
+          href: 'detail.html?i=' + i,
+          img: (r.imgs && r.imgs[0]) || '',
+          price: r.p,
+          type: shortType(catOf(r)),
+          title: r.t,
+          addr: r.quan ? (r.quan + ', TP.HCM') : (r.l || ''),
+          area: r.a,
+          beds: bedsFromTags(r.tags),
+          status: 'Còn trống', statusKey: 'success',
+          video: !!r.video
+        };
+      }
+
+      // ---- Tabs trạng thái ----
+      // Demo: chỉ "Tất cả" và "Còn trống" có dữ liệu thật; các tab khác hiển thị tập con hoặc thông báo.
+      var tabs = [
+        { k: 'all', label: 'Tất cả', cnt: '1.024' },
+        { k: 'trong', label: 'Còn trống', cnt: '247' },
+        { k: 'saptrong', label: 'Sắp trống', cnt: '62' },
+        { k: 'giucho', label: 'Giữ chỗ', cnt: '18' },
+        { k: 'demo', label: 'Demo', cnt: '34' },
+        { k: 'ngung', label: 'Ngưng', cnt: '12' }
+      ];
+      var activeTab = 'all';
+      var gridEl = document.getElementById('kpGrid');
+      var searchEl = document.getElementById('kpSearch');
+
+      function renderTabs() {
+        document.getElementById('kpTabs').innerHTML = tabs.map(function (t) {
+          return '<button class="kp-tab' + (t.k === activeTab ? ' is-active' : '') +
+            '" type="button" data-k="' + t.k + '">' + HT.esc(t.label) +
+            '<span class="kp-tab__cnt">' + t.cnt + '</span></button>';
+        }).join('');
+      }
+
+      // Tập phòng theo tab (demo dựa trên ROOMS thật)
+      function roomsForTab(k) {
+        if (k === 'all') return rooms.slice();
+        if (k === 'trong') return rooms.slice();                       // coi tất cả tin đăng là còn trống
+        if (k === 'saptrong') return rooms.filter(function (r, i) { return i % 4 === 0; });
+        if (k === 'giucho') return rooms.filter(function (r, i) { return i % 6 === 1; });
+        if (k === 'demo') return rooms.filter(function (r) { return !!r.video; });
+        if (k === 'ngung') return [];                                  // không hiển thị phòng ngưng ở demo
+        return rooms.slice();
+      }
+
+      function renderGrid() {
+        var q = (searchEl.value || '').trim().toLowerCase();
+        var list = roomsForTab(activeTab).map(function (r) {
+          return { r: r, i: rooms.indexOf(r) };
+        });
+        if (q) {
+          list = list.filter(function (o) {
+            var hay = ((o.r.t || '') + ' ' + (o.r.l || '') + ' ' + (o.r.quan || '') + ' ' + (o.r.rid || '')).toLowerCase();
+            return hay.indexOf(q) >= 0;
+          });
+        }
+        if (!list.length) {
+          gridEl.innerHTML = '<div class="kp-empty">Không có phòng nào khớp trong mục này.</div>';
+          return;
+        }
+        gridEl.innerHTML = list.map(function (o) { return HT.roomCard(toCard(o.r, o.i)); }).join('');
+      }
+
+      // ---- Sự kiện ----
+      document.getElementById('kpTabs').addEventListener('click', function (e) {
+        var btn = e.target.closest('.kp-tab');
+        if (!btn) return;
+        activeTab = btn.getAttribute('data-k');
+        renderTabs();
+        renderGrid();
+      });
+      searchEl.addEventListener('input', renderGrid);
+
+      renderTabs();
+      renderGrid();
+    })();
+  </script>
+</body>
+</html>
