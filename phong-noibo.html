@@ -132,6 +132,8 @@
       document.getElementById('btnShare').innerHTML = icShare + 'Chia sẻ';
       document.getElementById('btnEdit').innerHTML = I('settings', 15) + 'Sửa';
 
+      // ---- Đọc phòng THẬT từ D1 rồi render (bọc async) ----
+      window.HT_loadBuildings(function () {
       // ---- Lấy phòng theo ?i= ----
       var ROOMS = window.ROOMS || [];
       var i = parseInt(new URLSearchParams(location.search).get('i') || '0', 10);
@@ -338,6 +340,7 @@
       });
       document.getElementById('btnDeal').addEventListener('click', function () {
         HT.toast('Đã tạo deal mới cho ' + maPhong, 'success');
+      });
       });
     })();
   </script>

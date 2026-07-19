@@ -99,6 +99,8 @@
           '<span>' + HT.esc(s.label) + '</span>' + I('chevrons-up-down', 14) + '</button>';
       }).join('');
 
+      // ---- Đọc phòng THẬT từ D1 rồi render (bọc async) ----
+      window.HT_loadBuildings(function () {
       // ---- Adapter ROOMS → card (giống index.html) ----
       var rooms = window.ROOMS || [];
       function shortType(cat) { return { 'Căn hộ dịch vụ': 'CHDV', 'Ký túc xá': 'KTX' }[cat] || cat; }
@@ -197,6 +199,7 @@
 
       renderTabs();
       renderGrid();
+      });
     })();
   </script>
 </body>

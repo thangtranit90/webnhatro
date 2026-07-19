@@ -113,6 +113,8 @@
       document.getElementById('btnEdit').innerHTML = I('settings', 15) + 'Sửa thông tin';
       document.getElementById('btnAdd').innerHTML = I('plus', 16) + 'Thêm phòng';
 
+      // ---- Nạp dữ liệu THẬT từ D1 rồi mới dựng chi tiết ----
+      window.HT_loadBuildings(function () {
       // ---- Tìm tòa nhà theo ?bid= ----
       var buildings = [].concat(
         (window.HT_BUILDINGS && window.HT_BUILDINGS.ptro) || [],
@@ -168,6 +170,11 @@
             document.getElementById('tnTitle').textContent = ten;
             document.getElementById('tnSub').textContent =
               diachi + ' · ' + total + ' phòng · ' + thueCnt + ' đang cho thuê · ' + trongCnt + ' còn trống';
+            fetch('/api/toa-nha', {
+              method: 'PATCH',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({ bid: b.bid, building: b })
+            }).catch(function () { HT.toast('Lỗi lưu, thử lại', 'danger'); });
             HT.toast('Đã cập nhật tòa nhà', 'success');
             return true;
           }
@@ -295,6 +302,7 @@
 
       renderTabs();
       renderList();
+      });
     })();
   </script>
 </body>

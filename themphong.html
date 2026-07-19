@@ -112,9 +112,7 @@
                 <div class="field">
                   <label for="fBuilding">Toà nhà</label>
                   <select class="ctrl" id="fBuilding">
-                    <option>Duplex Nguyễn Oanh · Gò Vấp</option>
-                    <option>HT Lê Đức Thọ · Gò Vấp</option>
-                    <option>Studio Phạm Văn Đồng · Thủ Đức</option>
+                    <option value="">Đang tải danh sách toà nhà…</option>
                   </select>
                 </div>
                 <div class="grid2">
@@ -317,7 +315,8 @@
       var sPrice = document.getElementById('sPrice');
 
       function updateSummary() {
-        sBuilding.textContent = elBuilding.value;
+        var opt = elBuilding.options[elBuilding.selectedIndex];
+        sBuilding.textContent = opt ? opt.text : (elBuilding.value || '—');
         sCode.textContent = elCode.value || '—';
         sArea.textContent = (elArea.value || '0') + ' m²';
         sPrice.textContent = (elPrice.value || '0') + ' đ';
@@ -371,11 +370,49 @@
         alert('Đã lưu nháp phòng (demo).');
       });
 
-      // ---- Submit ----
+      // ---- Nạp danh sách toà nhà THẬT từ D1 để chọn ----
+      var BUILDINGS = [];
+      (function loadBuildings() {
+        fetch('/api/toa-nha').then(function (r) { return r.json(); }).then(function (d) {
+          BUILDINGS = [].concat((d && d.ptro) || [], (d && d.cc) || []);
+          if (!BUILDINGS.length) { elBuilding.innerHTML = '<option value="">(Chưa có toà nhà)</option>'; return; }
+          elBuilding.innerHTML = BUILDINGS.map(function (b) {
+            return '<option value="' + b.bid + '">' + (b.addr || b.bid) + (b.quan ? ' · ' + b.quan : '') + '</option>';
+          }).join('');
+          updateSummary();
+        }).catch(function () { elBuilding.innerHTML = '<option value="">(Không tải được toà nhà)</option>'; });
+      })();
+
+      // ---- Submit: ghi phòng mới vào toà nhà đã chọn (D1) ----
       document.getElementById('roomForm').addEventListener('submit', function (e) {
         e.preventDefault();
-        document.getElementById('okToast').classList.add('show');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        var bid = elBuilding.value;
+        var b = BUILDINGS.filter(function (x) { return x.bid === bid; })[0];
+        if (!b) { HT.toast('Vui lòng chọn toà nhà', 'danger'); return; }
+        function chipVal(sel) { var c = document.querySelector(sel + ' .chip.is-on'); return c ? c.getAttribute('data-val') : ''; }
+        function chipMulti(sel) {
+          return Array.prototype.map.call(document.querySelectorAll(sel + ' .chip.is-on'), function (c) { return c.getAttribute('data-val'); });
+        }
+        var room = {
+          rid: bid + '_r' + Date.now(),
+          loai: chipVal('.chip-group[data-single="loai"]') || 'Phòng trọ',
+          tags: chipMulti('.chip-group[data-multi="thietke"]'),
+          noithat: [chipVal('.chip-group[data-single="noithat"]') || 'Cơ bản'],
+          m2: String(elArea.value || ''),
+          price: String(elPrice.value || ''),
+          coc: '1 tháng', cocsố: '', hh: '50%–80%', hd: '6T–12T',
+          chiPhi: { loai: 'tro' }, soLuong: 1, soTrong: 1, status: 'open'
+        };
+        b.rooms = (b.rooms || []).concat([room]);
+        fetch('/api/toa-nha', {
+          method: 'PATCH', headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ bid: bid, building: b })
+        }).then(function (r) { return r.json(); }).then(function (res) {
+          if (res && res.error) { HT.toast(res.error, 'danger'); return; }
+          document.getElementById('okToast').classList.add('show');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          setTimeout(function () { window.location.href = 'toanha-chitiet.html?bid=' + encodeURIComponent(bid); }, 1000);
+        }).catch(function () { HT.toast('Lỗi mạng, chưa lưu được', 'danger'); });
       });
 
       updateSummary();

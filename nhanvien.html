@@ -102,23 +102,18 @@
       document.getElementById('nvSearchIc').innerHTML = I('search', 16);
       document.getElementById('btnAdd').innerHTML = I('plus', 16) + 'Thêm nhân viên';
 
-      // Dữ liệu nhân viên
-      var emps = [
-        { av: 'MT', name: 'Minh Trọ', email: 'minhtro@hthome.vn', role: 'Sale cấp 2', kv: 'Gò Vấp', deal: 12, hh: '48tr', st: 'Active' },
-        { av: 'TH', name: 'Thu Hà', email: 'thuha@hthome.vn', role: 'Sale cấp 1', kv: 'Gò Vấp', deal: 18, hh: '38tr', st: 'Active' },
-        { av: 'QB', name: 'Quốc Bảo', email: 'quocbao@hthome.vn', role: 'Sale cấp 2', kv: 'Bình Thạnh', deal: 10, hh: '27tr', st: 'Active' },
-        { av: 'LA', name: 'Lan Anh', email: 'lananh@hthome.vn', role: 'Sale cấp 2', kv: 'Phú Nhuận', deal: 7, hh: '20tr', st: 'Active' },
-        { av: 'ĐH', name: 'Đức Huy', email: 'duchuy@hthome.vn', role: 'Sale cấp 2', kv: 'Tân Bình', deal: 5, hh: '13tr', st: 'Active' },
-        { av: 'NT', name: 'Ngọc Trâm', email: 'ngoctram@hthome.vn', role: 'Sale cấp 2', kv: 'Gò Vấp', deal: 9, hh: '24tr', st: 'Active' },
-        { av: 'VK', name: 'Văn Khoa', email: 'vankhoa@hthome.vn', role: 'Sale cấp 2', kv: 'Quận 12', deal: 6, hh: '16tr', st: 'Active' },
-        { av: 'PT', name: 'Phương Thảo', email: 'phuongthao@hthome.vn', role: 'Sale cấp 2', kv: 'Bình Thạnh', deal: 8, hh: '21tr', st: 'Active' },
-        { av: 'HT', name: 'Hữu Thắng', email: 'huuthang@hthome.vn', role: 'Sale cấp 2', kv: 'Thủ Đức', deal: 4, hh: '11tr', st: 'Active' },
-        { av: 'TN', name: 'Tuyết Nhi', email: 'tuyetnhi@hthome.vn', role: 'Sale cấp 1', kv: 'Phú Nhuận', deal: 14, hh: '31tr', st: 'Active' },
-        { av: 'GP', name: 'Gia Phú', email: 'giaphu@hthome.vn', role: 'Sale cấp 1', kv: 'Tân Bình', deal: 11, hh: '26tr', st: 'Active' },
-        { av: 'KL', name: 'Khánh Linh', email: 'khanhlinh@hthome.vn', role: 'Sale cấp 1', kv: 'Quận 12', deal: 9, hh: '22tr', st: 'Active' },
-        { av: 'ĐA', name: 'Quản Đức Anh', email: 'ducanh@hthome.vn', role: 'Manager', kv: 'Toàn khu', deal: 0, hh: '—', st: 'Active' },
-        { av: 'ĐB', name: 'Trần Đình Bảo', email: 'dinhbao@hthome.vn', role: 'Admin', kv: 'Toàn hệ thống', deal: 0, hh: '—', st: 'Đã nghỉ' }
-      ];
+      // Dữ liệu nhân viên — tải THẬT từ D1 qua API (đã seed đủ 14 người, mỗi bản ghi có thêm field id)
+      var emps = [];
+
+      // Tải danh sách nhân viên từ D1 rồi render lại toàn bộ (KPI + tab lọc + danh sách)
+      function loadEmps() {
+        fetch('/api/nhan-vien').then(function (r) { return r.json(); }).then(function (rows) {
+          emps = Array.isArray(rows) ? rows : [];
+          refreshAll();
+        }).catch(function () {
+          HT.toast('Không tải được nhân viên', 'danger');
+        });
+      }
 
       var ROLES = ['Sale cấp 2', 'Sale cấp 1', 'Manager', 'Admin'];
       var state = { search: '', tab: 'all' };
@@ -255,7 +250,7 @@
               '<div class="mfield"><label class="mfield__label">Vai trò</label><select id="fRole">' + roleOptions('Sale cấp 2') + '</select></div>' +
               '<div class="mfield"><label class="mfield__label">Khu vực</label><input id="fKv" type="text" placeholder="VD: Gò Vấp" autocomplete="off"></div>' +
             '</div>',
-          onSubmit: function (el) {
+          onSubmit: function (el, close) {
             var name = el.querySelector('#fName').value.trim();
             var email = el.querySelector('#fEmail').value.trim();
             var role = el.querySelector('#fRole').value;
@@ -264,10 +259,19 @@
             if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { HT.toast('Email không hợp lệ', 'danger'); return false; }
             if (findEmp(email)) { HT.toast('Email đã tồn tại', 'danger'); return false; }
             if (!kv) { HT.toast('Vui lòng nhập khu vực', 'danger'); return false; }
-            emps.push({ av: initials(name), name: name, email: email, role: role, kv: kv, deal: 0, hh: '—', st: 'Active' });
-            refreshAll();
-            HT.toast('Đã thêm nhân viên', 'success');
-            return true;
+            fetch('/api/nhan-vien', {
+              method: 'POST',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({ av: initials(name), name: name, email: email, role: role, kv: kv })
+            }).then(function (r) { return r.json(); }).then(function (res) {
+              if (res.error) { HT.toast(res.error, 'danger'); return; }
+              close();
+              HT.toast('Đã thêm nhân viên', 'success');
+              loadEmps();
+            }).catch(function () {
+              HT.toast('Lỗi mạng, chưa lưu được', 'danger');
+            });
+            return false;
           }
         });
       });
@@ -338,16 +342,22 @@
             HT.confirm({
               title: 'Vô hiệu hoá nhân viên', message: 'Đặt "' + e.name + '" sang trạng thái Đã nghỉ?', danger: true,
               confirmLabel: 'Vô hiệu hoá',
-              onConfirm: function () { e.st = 'Đã nghỉ'; refreshAll(); HT.toast('Đã vô hiệu hoá nhân viên', 'warning'); }
+              onConfirm: function () {
+                e.st = 'Đã nghỉ';
+                refreshAll();
+                HT.toast('Đã vô hiệu hoá nhân viên', 'warning');
+                fetch('/api/nhan-vien', { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id: e.id, st: e.st }) }).catch(function () {});
+              }
             });
           } else if (act === 'on') {
             closeMd();
             e.st = 'Active'; refreshAll(); HT.toast('Đã kích hoạt lại nhân viên', 'success');
+            fetch('/api/nhan-vien', { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id: e.id, st: e.st }) }).catch(function () {});
           }
         });
       });
 
-      refreshAll();
+      loadEmps();
     })();
   </script>
 </body>

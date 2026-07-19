@@ -131,13 +131,18 @@
       document.getElementById('btnAdd').innerHTML = I('plus', 16) + 'Thêm tòa nhà';
       document.getElementById('icTopSearch').innerHTML = I('search', 16);
 
-      // ---- Dữ liệu tòa nhà thật ----
-      var buildings = [].concat(
-        (window.HT_BUILDINGS && window.HT_BUILDINGS.ptro) || [],
-        (window.HT_BUILDINGS && window.HT_BUILDINGS.cc) || []
-      );
-
-      var totalRooms = buildings.reduce(function (s, b) { return s + ((b.rooms && b.rooms.length) || 0); }, 0);
+      // ---- Dữ liệu tòa nhà THẬT từ D1 (đọc qua API rồi mới dựng bảng) ----
+      window.HT_loadBuildings(function () {
+      var buildings = [];
+      var totalRooms = 0;
+      function computeBuildings() {
+        buildings = [].concat(
+          (window.HT_BUILDINGS && window.HT_BUILDINGS.ptro) || [],
+          (window.HT_BUILDINGS && window.HT_BUILDINGS.cc) || []
+        );
+        totalRooms = buildings.reduce(function (s, b) { return s + ((b.rooms && b.rooms.length) || 0); }, 0);
+      }
+      computeBuildings();
 
       // ---- KPI ----
       var kpis = [
@@ -245,32 +250,50 @@
         HT.modal({
           title: 'Thêm tòa nhà', sub: 'Nhập thông tin tòa nhà mới vào hệ thống',
           submitLabel: 'Thêm tòa nhà', bodyHTML: body,
-          onSubmit: function (bd) {
+          onSubmit: function (bd, close) {
             function val(f) { var el = bd.querySelector('[data-f="' + f + '"]'); return el ? el.value.trim() : ''; }
             var ten = val('ten'), diachi = val('diachi'), quan = val('quan');
             if (!ten || !diachi || !quan) {
               HT.toast('Vui lòng nhập Tên, Địa chỉ và Quận', 'error');
               return false;
             }
-            var b = {
+            var loai = val('loai') || 'Phòng trọ';
+            var grp = (loai === 'Chung cư' || loai === 'Nhà nguyên căn') ? 'cc' : 'ptro';
+            var building = {
               bid: 'u_' + Date.now(),
               addr: ten,
-              addrFull: diachi + (quan ? ', ' + quan : ''),
+              addrFull: diachi + ', ' + quan,
               quan: quan,
               nv: val('chu') || '—',
               chuNhaSdt: val('sdt'),
               date: 'Hôm nay',
-              rooms: [{ loai: val('loai') || 'Phòng trọ' }]
+              imgs: ['#c8d8ff,#a0b8f0'],
+              tienich: [],
+              rooms: []
             };
-            buildings.unshift(b);
-            kpis[0].val = String(buildings.length);
-            renderKpis();
-            render();
-            HT.toast('Đã thêm tòa nhà', 'success');
-            return true;
+            fetch('/api/toa-nha', {
+              method: 'POST',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({ grp: grp, building: building })
+            }).then(function (r) { return r.json(); }).then(function (res) {
+              if (res && res.error) { HT.toast(res.error, 'danger'); return; }
+              close();
+              HT.toast('Đã thêm tòa nhà', 'success');
+              window.HT_loadBuildings(function () {
+                computeBuildings();
+                kpis[0].val = String(buildings.length);
+                kpis[1].val = (totalRooms || 486).toLocaleString('vi-VN');
+                renderKpis();
+                render();
+              });
+            }).catch(function () {
+              HT.toast('Lỗi mạng, vui lòng thử lại', 'danger');
+            });
+            return false;
           }
         });
       });
+      }); // end HT_loadBuildings
     })();
   </script>
 </body>
