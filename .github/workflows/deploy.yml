@@ -29,6 +29,7 @@ jobs:
              manifest.json sw.js _headers _redirects \
              site-upload/
           cp -r assets site-upload/
+          cp -r functions site-upload/
 
       - name: Deploy len Cloudflare Pages
         uses: cloudflare/wrangler-action@v3

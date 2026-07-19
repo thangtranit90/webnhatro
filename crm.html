@@ -89,37 +89,55 @@
       warm: { label: 'Warm 🌤️', cls: 'tag--warm' },
       cold: { label: 'Cold ❄️', cls: 'tag--cold' }
     };
-    var columns = [
-      { title: 'Khách mới', cards: [
-        { av: 'VN', name: 'Trần Văn Nam', phone: '09xx234567', type: '🎓 SV', heat: 'cold', budget: '2-3 tr', source: 'Facebook', time: '20 phút', mine: true, exp: false },
-        { av: 'TM', name: 'Lê Thị Mai', phone: '08xx891122', type: '💼 Đi làm', heat: 'warm', budget: '4-5 tr', source: 'TikTok', time: '1 giờ', mine: true, exp: false },
-        { av: 'HL', name: 'Hoàng Thị Loan', phone: '07xx445566', type: '🎓 SV', heat: 'cold', budget: '2 tr', source: 'SEO Google', time: '2 giờ', mine: false, exp: false }
-      ]},
-      { title: 'Đã tư vấn', cards: [
-        { av: 'ĐA', name: 'Nguyễn Đức Anh', phone: '09xx778899', type: '💼 Đi làm', heat: 'warm', budget: '3-4 tr', source: 'SEO Google', time: '3 giờ', mine: true, exp: false },
-        { av: 'SJ', name: 'Sarah Johnson', phone: '09xx102030', type: '🌏 Nước ngoài', heat: 'hot', budget: '$500', source: 'Referral', time: 'Hôm qua', mine: true, exp: true },
-        { av: 'PT', name: 'Phan Thanh Tú', phone: '08xx334455', type: '💼 Đi làm', heat: 'warm', budget: '4 tr', source: 'Facebook', time: 'Hôm qua', mine: false, exp: false }
-      ]},
-      { title: 'Đã gửi phòng', cards: [
-        { av: 'QA', name: 'Phạm Quỳnh Anh', phone: '09xx556677', type: '🎓 SV', heat: 'warm', budget: '3 tr', source: 'TikTok', time: '2 ngày', mine: false, exp: false },
-        { av: 'BT', name: 'Vũ Bảo Trân', phone: '07xx889900', type: '💼 Đi làm', heat: 'hot', budget: '5-6 tr', source: 'Referral', time: '2 ngày', mine: true, exp: false }
-      ]},
-      { title: 'Đã dẫn xem', cards: [
-        { av: 'MK', name: 'Đỗ Minh Khoa', phone: '09xx223344', type: '💼 Đi làm', heat: 'hot', budget: '5 tr', source: 'SEO Google', time: '3 ngày', mine: true, exp: false },
-        { av: 'LN', name: 'Lý Ngọc Ngân', phone: '08xx667788', type: '🎓 SV', heat: 'warm', budget: '3-4 tr', source: 'Facebook', time: '4 ngày', mine: false, exp: false }
-      ]},
-      { title: 'Đã chốt', cards: [
-        { av: 'TD', name: 'Trịnh Anh Dũng', phone: '09xx990011', type: '💼 Đi làm', heat: 'hot', budget: '6 tr', source: 'Referral', time: 'Tuần này', mine: true, exp: true },
-        { av: 'KO', name: 'Kim Oanh', phone: '07xx121314', type: '🌏 Nước ngoài', heat: 'hot', budget: '$600', source: 'TikTok', time: 'Tuần này', mine: false, exp: false }
-      ]}
-    ];
+    /* ---- 5 cột kanban gắn với mã cột trong D1 ---- */
+    var COT2TITLE = { moi: 'Khách mới', tuvan: 'Đã tư vấn', guiphong: 'Đã gửi phòng', danxem: 'Đã dẫn xem', chot: 'Đã chốt' };
+    var COT_ORDER = ['moi', 'tuvan', 'guiphong', 'danxem', 'chot'];
+    var TITLE2COT = {}; COT_ORDER.forEach(function (k) { TITLE2COT[COT2TITLE[k]] = k; });
+    var columns = COT_ORDER.map(function (k) { return { title: COT2TITLE[k], cot: k, cards: [] }; });
 
-    /* ---- Đăng ký từng khách vào 1 map để tra cứu khi bấm thẻ ---- */
     var cardMap = {};
-    var _cid = 0;
-    columns.forEach(function (col) {
-      col.cards.forEach(function (c) { c.id = 'c' + (++_cid); c.col = col.title; cardMap[c.id] = c; });
-    });
+
+    /* Thời gian tương đối từ created_at (UTC) */
+    function relTime(s) {
+      if (!s) return '';
+      var then = Date.parse(String(s).replace(' ', 'T') + 'Z');
+      if (isNaN(then)) return '';
+      var m = Math.floor(Math.max(0, Date.now() - then) / 60000);
+      if (m < 1) return 'Vừa xong';
+      if (m < 60) return m + ' phút';
+      var h = Math.floor(m / 60); if (h < 24) return h + ' giờ';
+      return Math.floor(h / 24) + ' ngày';
+    }
+
+    /* 1 dòng D1 → 1 thẻ khách */
+    function rowToCard(r) {
+      return {
+        id: 'c' + r.id, dbid: r.id,
+        av: initials(r.ten), name: r.ten, phone: r.sdt,
+        type: r.loai || '—', heat: r.nhiet || 'warm',
+        budget: r.ngan_sach || '—', source: r.nguon || '—',
+        time: relTime(r.created_at) || 'Mới', mine: true, exp: false,
+        col: COT2TITLE[r.cot] || 'Khách mới'
+      };
+    }
+
+    /* Tải danh sách khách từ D1 và dựng lại kanban */
+    function loadCustomers() {
+      return fetch('/api/khach').then(function (r) { return r.json(); }).then(function (rows) {
+        if (!Array.isArray(rows)) rows = [];
+        cardMap = {};
+        columns.forEach(function (col) { col.cards = []; });
+        rows.forEach(function (r) {
+          var c = rowToCard(r); cardMap[c.id] = c;
+          var col = columns.filter(function (x) { return x.cot === (r.cot || 'moi'); })[0] || columns[0];
+          col.cards.push(c);
+        });
+        var sub = document.querySelector('.app-topbar__sub');
+        if (sub) sub.textContent = rows.length + ' khách đang chăm';
+        renderFilters();
+        renderKanban();
+      }).catch(function () { HT.toast('Không tải được danh sách khách', 'danger'); });
+    }
 
     function initials(name) {
       var p = String(name || '').trim().split(/\s+/);
@@ -288,6 +306,12 @@
       to.cards.push(c);
       renderFilters();
       renderKanban();
+      if (c.dbid) {
+        fetch('/api/khach', {
+          method: 'PATCH', headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ id: c.dbid, cot: TITLE2COT[toTitle] || 'moi' })
+        }).catch(function () { HT.toast('Lỗi lưu bước, thử lại', 'danger'); });
+      }
     }
 
     /* ---- Nút "Thêm khách" → modal form ---- */
@@ -316,28 +340,29 @@
           var sdt = (m.querySelector('#f_sdt').value || '').trim();
           if (!ten) { HT.toast('Vui lòng nhập họ tên', 'danger'); return false; }
           if (!sdt) { HT.toast('Vui lòng nhập số điện thoại', 'danger'); return false; }
-          var c = {
-            id: 'c' + (++_cid),
-            av: initials(ten),
-            name: ten, phone: sdt,
-            type: m.querySelector('#f_type').value,
-            heat: m.querySelector('#f_heat').value,
-            budget: (m.querySelector('#f_budget').value || '').trim() || '—',
-            source: m.querySelector('#f_source').value,
-            time: 'Vừa xong', mine: true, exp: false,
-            col: columns[0].title
+          var payload = {
+            ten: ten, sdt: sdt,
+            loai: m.querySelector('#f_type').value,
+            nhiet: m.querySelector('#f_heat').value,
+            ngan_sach: (m.querySelector('#f_budget').value || '').trim(),
+            nguon: m.querySelector('#f_source').value,
+            cot: 'moi'
           };
-          cardMap[c.id] = c;
-          columns[0].cards.unshift(c);
-          renderFilters();
-          renderKanban();
-          HT.toast('Đã thêm khách', 'success');
-          return true;
+          fetch('/api/khach', {
+            method: 'POST', headers: { 'content-type': 'application/json' },
+            body: JSON.stringify(payload)
+          }).then(function (r) { return r.json(); }).then(function (res) {
+            if (res && res.error) { HT.toast(res.error, 'danger'); return; }
+            close();
+            HT.toast('Đã thêm khách', 'success');
+            loadCustomers();
+          }).catch(function () { HT.toast('Lỗi mạng, chưa lưu được', 'danger'); });
+          return false;
         }
       });
     });
 
-    renderKanban();
+    loadCustomers();
   </script>
 </body>
 </html>

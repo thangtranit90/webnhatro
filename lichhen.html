@@ -163,16 +163,8 @@
     ];
     var TODAY = 2; // T4 15/07 (demo)
 
-    // Dữ liệu lịch hẹn: day = chỉ số 0..6 (T2..CN), h = giờ bắt đầu
-    var APPTS = [
-      { day: 0, h: 10, name: 'Sarah Johnson', room: 'P.303 Nguyễn Huệ', st: 'ok' },
-      { day: 0, h: 13, name: 'Trần Minh',     room: 'P.508 Duplex',     st: 'wait' },
-      { day: 1, h: 9,  name: 'Hoàng Nam',      room: 'P.201 Phan Xích Long', st: 'wait' },
-      { day: 1, h: 16, name: 'Vũ Thảo',        room: 'P.107 Cộng Hoà',   st: 'cancel' },
-      { day: 2, h: 15, name: 'Lê Mai',         room: 'P.402 Thảo Điền',  st: 'ok' },
-      { day: 3, h: 11, name: 'Đức Anh',        room: 'P.610 Vinhomes',   st: 'wait' },
-      { day: 4, h: 14, name: 'Quỳnh Anh',      room: 'P.305 Nguyễn Trãi', st: 'ok' }
-    ];
+    // Dữ liệu lịch hẹn: day = chỉ số 0..6 (T2..CN), h = giờ bắt đầu — nạp thật từ D1
+    var APPTS = [];
 
     var ST_LABEL = { ok: 'Đã xác nhận', wait: 'Chờ xác nhận', cancel: 'Đã huỷ' };
     function hh(h) { return (h < 10 ? '0' + h : h) + ':00'; }
@@ -184,6 +176,30 @@
     }
 
     var E = HT.esc;
+
+    // ---------- Nối D1: trạng thái + map ngày/giờ vào lưới tuần ----------
+    var ST_FROM_DB = { xacnhan: 'ok', cho: 'wait', huy: 'cancel' };
+    var ST_TO_DB = { ok: 'xacnhan', wait: 'cho', cancel: 'huy' };
+    function dayIndexOf(dateStr) {
+      if (!dateStr) return TODAY;
+      var dnum = parseInt(String(dateStr).split('-')[2], 10);
+      for (var i = 0; i < DAYS.length; i++) { if (parseInt(DAYS[i].d, 10) === dnum) return i; }
+      return TODAY;
+    }
+    function rowToAppt(r) {
+      return {
+        dbid: r.id, day: dayIndexOf(r.ngay), h: parseInt(r.gio, 10) || 9,
+        name: r.khach, room: r.phong || '', phone: r.sdt || '',
+        st: ST_FROM_DB[r.trang_thai] || 'wait', ngay: r.ngay
+      };
+    }
+    function loadAppts() {
+      return fetch('/api/lich-hen').then(function (r) { return r.json(); }).then(function (rows) {
+        if (!Array.isArray(rows)) rows = [];
+        APPTS = rows.map(rowToAppt);
+        renderAll();
+      }).catch(function () { HT.toast('Không tải được lịch hẹn', 'danger'); });
+    }
 
     // ---------- Lưới tuần (desktop) ----------
     function renderGrid() {
@@ -235,6 +251,16 @@
 
     function renderAll() { renderGrid(); renderAgenda(); }
     renderAll();
+    loadAppts();
+
+    // Lưu trạng thái xuống D1
+    function patchStatus(a, st) {
+      if (!a || !a.dbid) return;
+      fetch('/api/lich-hen', {
+        method: 'PATCH', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ id: a.dbid, trang_thai: ST_TO_DB[st] || 'cho' })
+      }).catch(function () { HT.toast('Lỗi lưu trạng thái, thử lại', 'danger'); });
+    }
 
     // ---------- Modal chi tiết lịch hẹn ----------
     function openDetail(idx) {
@@ -255,9 +281,11 @@
       var m = HT.modal({ title: 'Chi tiết lịch hẹn', sub: a.name + ' · ' + a.room, submitLabel: null, bodyHTML: body });
       m.el.querySelector('[data-ok]').addEventListener('click', function () {
         a.st = 'ok'; renderAll(); m.close(); HT.toast('Đã xác nhận lịch hẹn', 'success');
+        patchStatus(a, 'ok');
       });
       m.el.querySelector('[data-cancel]').addEventListener('click', function () {
         a.st = 'cancel'; renderAll(); m.close(); HT.toast('Đã huỷ lịch hẹn', 'warning');
+        patchStatus(a, 'cancel');
       });
     }
     document.getElementById('calGrid').addEventListener('click', function (e) {
@@ -284,7 +312,7 @@
       HT.modal({
         title: 'Đặt lịch hẹn', sub: 'Lịch dẫn xem phòng cho khách',
         submitLabel: 'Đặt lịch', bodyHTML: body,
-        onSubmit: function (m) {
+        onSubmit: function (m, close) {
           var name = m.querySelector('#aName').value.trim();
           var phone = m.querySelector('#aPhone').value.trim();
           var room = m.querySelector('#aRoom').value.trim();
@@ -294,15 +322,18 @@
           if (!phone) { HT.toast('Nhập số điện thoại', 'danger'); return false; }
           if (!room) { HT.toast('Nhập phòng', 'danger'); return false; }
           if (!date) { HT.toast('Chọn ngày', 'danger'); return false; }
-          // Map ngày -> chỉ số cột trong tuần demo (13..19/07); ngoài phạm vi -> hôm nay
-          var dnum = date.split('-')[2];
-          var day = TODAY;
-          for (var i = 0; i < DAYS.length; i++) { if (DAYS[i].d === String(parseInt(dnum, 10))) { day = i; break; } }
-          if (apptAt(day, h)) { HT.toast('Khung giờ này đã có lịch', 'danger'); return false; }
-          APPTS.push({ day: day, h: h, name: name, room: room, phone: phone, st: 'wait' });
-          renderAll();
-          HT.toast('Đã đặt lịch hẹn', 'success');
-          return true;
+          // Chống trùng khung giờ trong lưới tuần demo
+          if (apptAt(dayIndexOf(date), h)) { HT.toast('Khung giờ này đã có lịch', 'danger'); return false; }
+          fetch('/api/lich-hen', {
+            method: 'POST', headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ khach: name, sdt: phone, phong: room, ngay: date, gio: String(h), trang_thai: 'cho' })
+          }).then(function (r) { return r.json(); }).then(function (res) {
+            if (res && res.error) { HT.toast(res.error, 'danger'); return; }
+            close();
+            HT.toast('Đã đặt lịch hẹn', 'success');
+            loadAppts();
+          }).catch(function () { HT.toast('Lỗi mạng, chưa lưu được', 'danger'); });
+          return false;
         }
       });
     });

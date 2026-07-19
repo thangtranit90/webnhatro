@@ -129,15 +129,8 @@
           '<div class="kpi__val"' + (k.key ? ' data-kpi="' + k.key + '"' : '') + '>' + k.val + '</div><div class="kpi__delta">' + k.delta + '</div></div>';
       }).join('');
 
-      // Giao dịch gần đây — dir: 'in' | 'out'
-      var txs = [
-        { dir: 'in', t: 'HH deal #1039 (Sarah Johnson · P.303)', s: 'Chuyển khoản · MB Bank · 09/07 14:22', amt: '+1.280.000' },
-        { dir: 'in', t: 'HH deal #1041 (Hoàng Minh Trí · P.505)', s: 'Chuyển khoản · Vietcombank · 08/07', amt: '+1.630.000' },
-        { dir: 'out', t: 'Lương tháng 6 · 14 nhân viên', s: 'HR · 05/07', amt: '−98.400.000' },
-        { dir: 'out', t: 'Marketing · Facebook Ads T7', s: 'OpEx · 03/07', amt: '−12.000.000' },
-        { dir: 'in', t: 'HH deal #1035', s: 'Chuyển khoản · 01/07', amt: '+320.000' },
-        { dir: 'out', t: 'Thuê văn phòng T7', s: 'OpEx · 01/07', amt: '−15.000.000' }
-      ];
+      // Giao dịch gần đây — nạp thật từ D1 (dir: 'in' | 'out')
+      var txs = [];
       function renderTx(x) {
         var isIn = x.dir === 'in';
         var ic = isIn ? 'wallet' : 'file-text';
@@ -150,7 +143,22 @@
       function renderTxList() {
         document.getElementById('txList').innerHTML = txs.slice(0, 6).map(renderTx).join('');
       }
-      renderTxList();
+      // 1 dòng D1 → 1 giao dịch hiển thị
+      function fmtDDMM(s) { if (!s) return ''; var p = String(s).split('-'); return p.length === 3 ? p[2] + '/' + p[1] : ''; }
+      function rowToTx(r) {
+        var isIn = r.loai === 'thu';
+        var dd = fmtDDMM(r.ngay);
+        var s = (r.kenh || '') + (dd ? ((r.kenh ? ' · ' : '') + dd) : '');
+        return { dir: isIn ? 'in' : 'out', t: r.noi_dung, s: s, amt: (isIn ? '+' : '−') + fmtVN(r.so_tien) };
+      }
+      function loadTx() {
+        return fetch('/api/giao-dich').then(function (r) { return r.json(); }).then(function (rows) {
+          if (!Array.isArray(rows)) rows = [];
+          txs = rows.map(rowToTx);
+          renderTxList();
+        }).catch(function () { HT.toast('Không tải được giao dịch', 'danger'); });
+      }
+      loadTx();
 
       // HH chờ release
       var rels = [
@@ -188,22 +196,24 @@
         HT.modal({
           title: 'Thêm giao dịch', sub: 'Ghi nhận thu/chi vào quỹ nội bộ',
           submitLabel: 'Thêm', bodyHTML: body,
-          onSubmit: function (m) {
-            var loai = m.querySelector('#fLoai').value;
+          onSubmit: function (m, close) {
+            var loai = m.querySelector('#fLoai').value;   // 'in' | 'out'
             var nd = m.querySelector('#fND').value.trim();
             var st = parseInt(m.querySelector('#fST').value, 10);
             var kenh = m.querySelector('#fKenh').value;
-            var ngay = m.querySelector('#fNgay').value;
+            var ngay = m.querySelector('#fNgay').value;    // yyyy-mm-dd
             if (!nd) { HT.toast('Nhập nội dung giao dịch', 'danger'); return false; }
             if (!st || st <= 0) { HT.toast('Nhập số tiền hợp lệ', 'danger'); return false; }
-            var isIn = loai === 'in';
-            var dsub = kenh + (ngay ? ' · ' + ngay.split('-').reverse().slice(0, 2).join('/') : '');
-            txs.unshift({ dir: loai, t: nd, s: dsub, amt: (isIn ? '+' : '−') + fmtVN(st) });
-            renderTxList();
-            if (isIn) { thuTotal += st; var e1 = document.querySelector('[data-kpi=thu]'); if (e1) e1.textContent = fmtTr(thuTotal); }
-            else { chiTotal += st; var e2 = document.querySelector('[data-kpi=chi]'); if (e2) e2.textContent = fmtTr(chiTotal); }
-            HT.toast('Đã thêm giao dịch', 'success');
-            return true;
+            fetch('/api/giao-dich', {
+              method: 'POST', headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({ loai: loai === 'in' ? 'thu' : 'chi', noi_dung: nd, so_tien: st, kenh: kenh, ngay: ngay })
+            }).then(function (r) { return r.json(); }).then(function (res) {
+              if (res && res.error) { HT.toast(res.error, 'danger'); return; }
+              close();
+              HT.toast('Đã thêm giao dịch', 'success');
+              loadTx();
+            }).catch(function () { HT.toast('Lỗi mạng, chưa lưu được', 'danger'); });
+            return false;
           }
         });
       });
