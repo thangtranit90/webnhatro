@@ -268,6 +268,10 @@
     if (!document.querySelector('meta[name="theme-color"]')) {
       var m = document.createElement('meta'); m.name = 'theme-color'; m.content = '#000000'; document.head.appendChild(m);
     }
+    // Favicon = logo HT HOME (tránh 404 /favicon.ico + hiện icon ở tab trình duyệt)
+    if (!document.querySelector('link[rel="icon"]')) {
+      var fav = document.createElement('link'); fav.rel = 'icon'; fav.type = 'image/png'; fav.href = 'ht-home-logo.png'; document.head.appendChild(fav);
+    }
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function () {
         navigator.serviceWorker.register('sw.js').then(function (reg) {

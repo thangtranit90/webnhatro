@@ -1,4 +1,6 @@
 # Cloudflare Pages redirects
+# favicon: trình duyệt tự xin /favicon.ico → trỏ về logo (tránh 404)
+/favicon.ico      /ht-home-logo.png   302
 # Các trang quản lý cũ đã được gộp vào dashboard.html → 301 để giữ link cũ.
 /admin.html       /dashboard.html   301
 /gio-hang.html    /dashboard.html   301
