@@ -5,6 +5,11 @@
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: geolocation=(), microphone=(), camera=()
 
+# Service worker: KHÔNG cache — trình duyệt phải luôn kiểm tra bản mới,
+# nếu không SW mới không kịp thay SW cũ (đây là nguyên nhân kẹt code cũ).
+/sw.js
+  Cache-Control: no-cache, no-store, must-revalidate
+
 # Ảnh/logo cache dài (đổi tên file khi thay ảnh để bust cache)
 /ht-home-logo.png
   Cache-Control: public, max-age=604800
