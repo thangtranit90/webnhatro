@@ -60,7 +60,13 @@
       (n.badge ? '<span class="sidebar__badge">' + n.badge + '</span>' : '') + '</a>';
   }
 
+  function staff() {
+    try { return JSON.parse(localStorage.getItem('ht_staff')) || null; } catch (e) { return null; }
+  }
+
   function sidebarHTML(active) {
+    var s = staff() || { name: 'Minh Trọ', role: 'Sale cấp 2', initials: 'MT', roleKey: 'sale2' };
+    var roleLabel = (s.roleKey === 'admin' ? '👑 ' : '⭐ ') + s.role;
     return '' +
       '<aside class="sidebar">' +
         '<div class="sidebar__brand">' +
@@ -76,12 +82,12 @@
         '<div class="sidebar__profile">' +
           '<div class="sidebar__level">' +
             '<div class="sidebar__level-top">' +
-              '<span class="avatar">MT</span>' +
-              '<span style="flex:1"><span class="sidebar__level-name" style="display:block">Minh Trọ</span><span class="sidebar__level-role">⭐ Sale cấp 2</span></span>' +
+              '<span class="avatar">' + s.initials + '</span>' +
+              '<span style="flex:1"><span class="sidebar__level-name" style="display:block">' + s.name + '</span><span class="sidebar__level-role">' + roleLabel + '</span></span>' +
             '</div>' +
             '<div class="sidebar__bar-label"><span>Tiến độ lên Sale 1</span><span>68%</span></div>' +
             '<div class="sidebar__bar"><span class="sidebar__bar-fill" style="width:68%"></span></div>' +
-            '<a class="sidebar__logout" href="dangnhap-noibo.html">' + ic('log-out', 15) + 'Đăng xuất</a>' +
+            '<a class="sidebar__logout" id="htLogout" href="dangnhap-noibo.html">' + ic('log-out', 15) + 'Đăng xuất</a>' +
           '</div>' +
         '</div>' +
       '</aside>';
@@ -90,7 +96,12 @@
   function mount() {
     var host = document.getElementById('ht-sidebar');
     if (!host) return;
+    // Bắt buộc đăng nhập mới vào được khu nội bộ
+    if (!staff()) { location.replace('dangnhap-noibo.html'); return; }
     host.innerHTML = sidebarHTML(host.getAttribute('data-active') || '');
+
+    var lo = document.getElementById('htLogout');
+    if (lo) lo.addEventListener('click', function () { try { localStorage.removeItem('ht_staff'); } catch (e) {} });
 
     // Backdrop cho mobile
     var backdrop = document.createElement('div');
