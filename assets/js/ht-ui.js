@@ -201,9 +201,54 @@
     if (f) { f.innerHTML = footerHTML(); }
   }
 
+  /* ---- MODAL dùng chung ---- */
+  function modal(opts) {
+    opts = opts || {};
+    var bd = document.createElement('div');
+    bd.className = 'modal-backdrop';
+    var foot = opts.submitLabel === null ? '' :
+      '<div class="modal__foot"><button class="btn btn--ghost" data-mclose>' + esc(opts.cancelLabel || 'Hủy') + '</button>' +
+      '<button class="btn ' + (opts.danger ? 'btn--primary' : 'btn--primary') + '" data-msubmit style="' + (opts.danger ? 'background:var(--danger)' : '') + '">' + esc(opts.submitLabel || 'Lưu') + '</button></div>';
+    bd.innerHTML = '<div class="modal' + (opts.wide ? ' modal--wide' : '') + '" role="dialog" aria-modal="true">' +
+      '<div class="modal__head"><div><div class="modal__title">' + esc(opts.title || '') + '</div>' +
+      (opts.sub ? '<div class="modal__sub">' + esc(opts.sub) + '</div>' : '') + '</div>' +
+      '<button class="modal__close" aria-label="Đóng">' + icon('x', 18) + '</button></div>' +
+      '<div class="modal__body">' + (opts.bodyHTML || '') + '</div>' + foot + '</div>';
+    document.body.appendChild(bd);
+    function close() { bd.classList.remove('is-open'); setTimeout(function () { if (bd.parentNode) bd.remove(); }, 170); document.removeEventListener('keydown', onKey); }
+    function onKey(e) { if (e.key === 'Escape') close(); }
+    requestAnimationFrame(function () { bd.classList.add('is-open'); });
+    bd.querySelector('.modal__close').addEventListener('click', close);
+    bd.addEventListener('click', function (e) { if (e.target === bd) close(); });
+    var c = bd.querySelector('[data-mclose]'); if (c) c.addEventListener('click', close);
+    var s = bd.querySelector('[data-msubmit]');
+    if (s) s.addEventListener('click', function () { var r = opts.onSubmit ? opts.onSubmit(bd, close) : true; if (r !== false) close(); });
+    document.addEventListener('keydown', onKey);
+    var first = bd.querySelector('input,select,textarea'); if (first) try { first.focus(); } catch (e) {}
+    return { el: bd, close: close };
+  }
+  function confirmModal(opts) {
+    opts = opts || {};
+    return modal({
+      title: opts.title || 'Xác nhận', sub: opts.message || '', danger: opts.danger,
+      submitLabel: opts.confirmLabel || 'Xác nhận', cancelLabel: opts.cancelLabel || 'Hủy', bodyHTML: '',
+      onSubmit: function () { if (opts.onConfirm) opts.onConfirm(); return true; }
+    });
+  }
+  function toast(msg, type) {
+    var w = document.getElementById('ht-toast-wrap');
+    if (!w) { w = document.createElement('div'); w.id = 'ht-toast-wrap'; w.className = 'toast-wrap'; document.body.appendChild(w); }
+    var t = document.createElement('div'); t.className = 'toast' + (type ? ' toast--' + type : ''); t.textContent = msg;
+    w.appendChild(t);
+    setTimeout(function () { t.style.transition = 'opacity .3s'; t.style.opacity = '0'; setTimeout(function () { if (t.parentNode) t.remove(); }, 300); }, 2600);
+  }
+
   window.HT = window.HT || {};
   window.HT.icon = icon;
   window.HT.esc = esc;
+  window.HT.modal = modal;
+  window.HT.confirm = confirmModal;
+  window.HT.toast = toast;
   window.HT.roomCard = roomCard;
   window.HT.headerHTML = headerHTML;
   window.HT.footerHTML = footerHTML;

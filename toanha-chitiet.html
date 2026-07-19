@@ -54,6 +54,12 @@
     .rm-more { flex: 0 0 auto; background: transparent; border: 0; color: var(--muted-fg); cursor: pointer; font-size: 18px; line-height: 1; padding: 4px 8px; border-radius: var(--radius-s); }
     .rm-more:hover { background: var(--bg); color: var(--fg); }
     .rm-empty { text-align: center; padding: 32px 20px; color: var(--muted-fg); font-size: 14px; }
+
+    /* ===== Menu ⋮ ===== */
+    .rm-menu { position: absolute; z-index: 50; min-width: 180px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-m); box-shadow: var(--shadow-card); padding: 6px; }
+    .rm-menu button { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; background: transparent; border: 0; border-radius: var(--radius-s); padding: 9px 10px; font: inherit; font-size: 13px; font-weight: 600; color: var(--fg); cursor: pointer; }
+    .rm-menu button:hover { background: var(--bg); }
+    .rm-menu .ic { color: var(--muted-fg); }
   </style>
 </head>
 <body>
@@ -71,7 +77,7 @@
           </div>
         </div>
         <div class="app-topbar__actions">
-          <a class="btn btn--ghost btn--sm" id="btnEdit" href="themphong.html"></a>
+          <button class="btn btn--ghost btn--sm" id="btnEdit" type="button"></button>
           <a class="btn btn--primary btn--sm" id="btnAdd" href="themphong.html"></a>
         </div>
       </header>
@@ -142,6 +148,32 @@
         ? ((b.addrFull || b.quan || '') + ' · ' + total + ' phòng · ' + thueCnt + ' đang cho thuê · ' + trongCnt + ' còn trống')
         : 'Kiểm tra lại đường dẫn';
 
+      // ---- Modal "Sửa thông tin" tòa nhà ----
+      document.getElementById('btnEdit').addEventListener('click', function () {
+        if (!b) { HT.toast('Không có tòa nhà để sửa', 'error'); return; }
+        var body =
+          '<div class="mfield"><label class="mfield__label">Tên tòa nhà *</label>' +
+            '<input type="text" data-f="ten" value="' + esc(b.addr || '') + '" /></div>' +
+          '<div class="mfield" style="margin-top:12px"><label class="mfield__label">Địa chỉ tòa nhà *</label>' +
+            '<input type="text" data-f="diachi" value="' + esc(b.addrFull || b.quan || '') + '" /></div>';
+        HT.modal({
+          title: 'Sửa thông tin tòa nhà', sub: 'Cập nhật tên và địa chỉ tòa nhà',
+          submitLabel: 'Lưu thay đổi', bodyHTML: body,
+          onSubmit: function (bd) {
+            function val(f) { var el = bd.querySelector('[data-f="' + f + '"]'); return el ? el.value.trim() : ''; }
+            var ten = val('ten'), diachi = val('diachi');
+            if (!ten || !diachi) { HT.toast('Vui lòng nhập Tên và Địa chỉ', 'error'); return false; }
+            b.addr = ten;
+            b.addrFull = diachi;
+            document.getElementById('tnTitle').textContent = ten;
+            document.getElementById('tnSub').textContent =
+              diachi + ' · ' + total + ' phòng · ' + thueCnt + ' đang cho thuê · ' + trongCnt + ' còn trống';
+            HT.toast('Đã cập nhật tòa nhà', 'success');
+            return true;
+          }
+        });
+      });
+
       // ---- KPI ----
       var occ = Math.round(total * 0.58); // demo ~58% occupancy
       var kpis = [
@@ -191,9 +223,17 @@
           listEl.innerHTML = '<div class="rm-empty">Không có phòng nào trong mục này.</div>';
           return;
         }
+        var allRooms = window.ROOMS || [];
+        function globalIndex(r) {
+          for (var gi = 0; gi < allRooms.length; gi++) {
+            if (r.rid && allRooms[gi].rid === r.rid) return gi;
+          }
+          return -1;
+        }
         listEl.innerHTML = rows.map(function (o) {
           var r = o.r;
-          var code = r.rid ? ('P.' + String(r.idx + 201)) : 'P.201';
+          var gi = globalIndex(r);
+          var code = r.rid ? ('P.' + String(o.idx + 201)) : 'P.201';
           var meta = 'Tầng ' + (o.idx + 1) + ' · ' + (r.loai || '') + (r.m2 ? (' · ' + r.m2 + 'm²') : '') +
             (r.tags && r.tags.length ? (' · ' + r.tags[0]) : '');
           var guest = o.st === 'thue' ? guestNames[o.idx % guestNames.length] : 'Chưa có khách';
@@ -204,7 +244,7 @@
             '<span class="rm-guest">' + esc(guest) + '</span>' +
             '<span class="rm-price">' + esc(r.price || '—') + '</span>' +
             '<span class="rm-status ' + o.st + '">' + esc(STATUS_LABEL[o.st]) + '</span>' +
-            '<button class="rm-more" type="button" aria-label="Tùy chọn">⋮</button>' +
+            '<button class="rm-more" type="button" aria-label="Tùy chọn" data-gi="' + gi + '" data-code="' + esc(code) + '">⋮</button>' +
           '</div>';
         }).join('');
       }
@@ -215,6 +255,42 @@
         activeTab = btn.getAttribute('data-k');
         renderTabs();
         renderList();
+      });
+
+      // ---- Menu ⋮ mỗi phòng ----
+      var openMenu = null;
+      function closeMenu() { if (openMenu) { openMenu.remove(); openMenu = null; } }
+      document.addEventListener('click', function () { closeMenu(); });
+
+      listEl.addEventListener('click', function (e) {
+        var btn = e.target.closest('.rm-more');
+        if (!btn) return;
+        e.stopPropagation();
+        closeMenu();
+        var gi = btn.getAttribute('data-gi');
+        var code = btn.getAttribute('data-code');
+        var menu = document.createElement('div');
+        menu.className = 'rm-menu';
+        menu.innerHTML =
+          '<button type="button" data-act="xem">' + HT.icon('arrow-right', 15) + 'Xem chi tiết</button>' +
+          '<button type="button" data-act="doi">' + I('shield-check', 15) + 'Đổi trạng thái</button>';
+        document.body.appendChild(menu);
+        var rect = btn.getBoundingClientRect();
+        menu.style.top = (rect.bottom + window.scrollY + 4) + 'px';
+        var left = rect.right + window.scrollX - menu.offsetWidth;
+        menu.style.left = Math.max(8, left) + 'px';
+        openMenu = menu;
+        menu.addEventListener('click', function (ev) {
+          var mb = ev.target.closest('button'); if (!mb) return;
+          ev.stopPropagation();
+          var act = mb.getAttribute('data-act');
+          closeMenu();
+          if (act === 'xem') {
+            window.location.href = 'phong-noibo.html?i=' + (gi != null && gi !== '-1' ? gi : 0);
+          } else if (act === 'doi') {
+            HT.toast('Đã cập nhật trạng thái ' + code, 'success');
+          }
+        });
       });
 
       renderTabs();

@@ -28,6 +28,11 @@
 | **7. Admin** | Báo cáo (`baocao.html`) · Nhân viên (`nhanvien.html`) · Phân quyền (`phanquyen.html`) · Cài đặt (`caidat.html`) · Quỹ (`quynoibo.html`) · Bảng tin (`bangtin.html`) · Territory Map (`khuvuc.html`) | ✅ DONE |
 | **8. Hoàn thiện + AI (cho đồ án)** | Self-host font, ảnh/video thật; AI cốt lõi: hỏi đáp thông tin phòng + tìm kiếm thông minh (Cloudflare Functions + Claude API) | ⬜ TODO |
 
+## QA/QC + Thương mại hoá (2026-07-15)
+- **Modal/Toast/Confirm dùng chung** (`ht-ui.js` + `components.css`): `HT.modal({title,sub,bodyHTML,submitLabel,onSubmit})`, `HT.toast(msg,type)`, `HT.confirm(...)`. Field: `.mfield`, `.mrow`.
+- **Nối chức năng thật khu nội bộ:** CRM (lọc chip + chi tiết khách + thêm khách), Nhân viên (search+tab lọc + thêm + vô hiệu hoá), Phân quyền/Cài đặt (lưu `localStorage['ht_perms']`/`['ht_settings']`), Kho phòng (số liệu thật + thẻ→`phong-noibo.html`), Tòa nhà (thêm/sửa modal), **`phong-noibo.html` mới** (chi tiết phòng nội bộ), Quỹ/Bảng tin/Lịch hẹn (form thêm + fix link chết), Dashboard (chuông + search), tìm kiếm ⌘K toàn cục.
+- **🐛 Bug đã sửa (quan trọng):** `sw.js` đổi sang **network-first cho HTML/JS/CSS** (cache-first cũ làm user nhận JS cũ mãi sau deploy — bump `CACHE=hthome-v2`); `ht-internal.js` dòng cuối `window.HTI={...}` từng gán đè làm mất `globalSearch` → đã thêm vào object.
+
 ## Ghi chú kỹ thuật
 - Node ID thiết kế Phase 3: Đăng ký `s91S10` · Tài khoản của tôi `SMJ6W` · Chat `C1HUsS` · Đặt lịch modal `rvl4x` · 404 `KfClr` · Về chúng tôi `mwPsw` · Điều khoản `M4FRol` · Chính sách `X5ZRmH`.
 - Cloudflare tự chuyển `/x.html` → `/x` (308) — link nội bộ dùng `.html` vẫn chạy.

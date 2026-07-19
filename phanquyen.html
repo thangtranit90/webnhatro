@@ -112,22 +112,42 @@
         ] }
       ];
 
-      function cell(on) {
-        return '<td><input class="pq-chk" type="checkbox"' + (on ? ' checked' : '') + ' /></td>';
+      var esc = (window.HT && HT.esc) ? HT.esc : function (s) { return String(s == null ? '' : s); };
+      var ROLE_KEYS = ['sale1', 'sale2', 'manager', 'admin']; // cột 0..3
+
+      // Nạp map đã lưu (nếu có)
+      function loadPerms() {
+        try { return JSON.parse(localStorage.getItem('ht_perms')) || {}; } catch (e) { return {}; }
+      }
+      var saved = loadPerms();
+
+      function cell(func, roleKey, defOn) {
+        var key = roleKey + '|' + func;
+        var on = saved.hasOwnProperty(key) ? !!saved[key] : !!defOn;
+        return '<td><input class="pq-chk" type="checkbox" data-role="' + esc(roleKey) + '" data-func="' + esc(func) + '"' +
+          (on ? ' checked' : '') + ' /></td>';
       }
 
       var html = '';
       groups.forEach(function (g) {
-        html += '<tr class="pq-group"><td colspan="5">' + g.name + '</td></tr>';
+        html += '<tr class="pq-group"><td colspan="5">' + esc(g.name) + '</td></tr>';
         g.rows.forEach(function (r) {
-          html += '<tr><td class="fn">' + r[0] + '</td>' +
-            cell(r[1]) + cell(r[2]) + cell(r[3]) + cell(r[4]) + '</tr>';
+          var func = r[0];
+          html += '<tr><td class="fn">' + esc(func) + '</td>' +
+            cell(func, ROLE_KEYS[0], r[1]) + cell(func, ROLE_KEYS[1], r[2]) +
+            cell(func, ROLE_KEYS[2], r[3]) + cell(func, ROLE_KEYS[3], r[4]) + '</tr>';
         });
       });
       document.getElementById('pqBody').innerHTML = html;
 
       document.getElementById('btnSave').addEventListener('click', function () {
-        alert('Đã lưu thay đổi phân quyền (demo).');
+        var map = {};
+        document.querySelectorAll('#pqBody .pq-chk').forEach(function (chk) {
+          map[chk.getAttribute('data-role') + '|' + chk.getAttribute('data-func')] = chk.checked;
+        });
+        try { localStorage.setItem('ht_perms', JSON.stringify(map)); } catch (e) {}
+        saved = map;
+        if (window.HT && HT.toast) HT.toast('Đã lưu phân quyền', 'success');
       });
     })();
   </script>

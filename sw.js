@@ -1,5 +1,5 @@
 /* Service worker HT HOME — cache đơn giản cho PWA (cài như app + chạy mượt) */
-var CACHE = 'hthome-v1';
+var CACHE = 'hthome-v2';
 var CORE = [
   './',
   './index.html',
@@ -31,26 +31,27 @@ self.addEventListener('fetch', function (e) {
   // Chỉ xử lý tài nguyên cùng nguồn; bỏ qua CDN/ảnh ngoài (fonts, unsplash…)
   if (url.origin !== self.location.origin) return;
 
-  // HTML: ưu tiên mạng, offline thì lấy cache
-  if (req.mode === 'navigate' || (req.headers.get('accept') || '').indexOf('text/html') !== -1) {
+  // Ảnh & font (ít đổi): cache-first cho nhanh
+  if (/\.(png|jpe?g|webp|gif|svg|ico|woff2?|ttf|otf)$/i.test(url.pathname)) {
     e.respondWith(
-      fetch(req).then(function (res) {
-        var copy = res.clone();
-        caches.open(CACHE).then(function (c) { c.put(req, copy); });
-        return res;
-      }).catch(function () { return caches.match(req).then(function (m) { return m || caches.match('./index.html'); }); })
+      caches.match(req).then(function (m) {
+        return m || fetch(req).then(function (res) {
+          var copy = res.clone(); caches.open(CACHE).then(function (c) { c.put(req, copy); });
+          return res;
+        });
+      })
     );
     return;
   }
 
-  // Tài nguyên tĩnh: ưu tiên cache, không có thì tải mạng rồi lưu
+  // HTML / JS / CSS / JSON (code của app): NETWORK-FIRST để bản deploy mới luôn được dùng;
+  // mất mạng mới lấy cache (offline vẫn chạy).
   e.respondWith(
-    caches.match(req).then(function (m) {
-      return m || fetch(req).then(function (res) {
-        var copy = res.clone();
-        caches.open(CACHE).then(function (c) { c.put(req, copy); });
-        return res;
-      });
+    fetch(req).then(function (res) {
+      var copy = res.clone(); caches.open(CACHE).then(function (c) { c.put(req, copy); });
+      return res;
+    }).catch(function () {
+      return caches.match(req).then(function (m) { return m || caches.match('./index.html'); });
     })
   );
 });

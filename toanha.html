@@ -79,7 +79,7 @@
             <span class="ic" id="icTopSearch"></span>
             <input type="text" id="tnSearch" placeholder="Tìm tòa nhà, địa chỉ..." />
           </label>
-          <a class="btn btn--primary btn--sm" id="btnAdd" href="themphong.html"></a>
+          <button class="btn btn--primary btn--sm" id="btnAdd" type="button"></button>
         </div>
       </header>
 
@@ -146,11 +146,14 @@
         { label: 'Tỉ lệ lấp đầy', ic: 'shield-check', val: '87.4%', delta: '+3.2% vs tháng trước', up: true },
         { label: 'Doanh thu tháng', ic: 'wallet', val: '1.28 tỷ', delta: '-2.1% vs tháng trước', down: true }
       ];
-      document.getElementById('kpiRow').innerHTML = kpis.map(function (k) {
-        var cls = k.up ? ' up' : (k.down ? ' down' : '');
-        return '<div class="kpi"><div class="kpi__top"><span>' + esc(k.label) + '</span><span class="kpi__ic">' + I(k.ic, 18) + '</span></div>' +
-          '<div class="kpi__val">' + esc(k.val) + '</div><div class="kpi__delta' + cls + '">' + esc(k.delta) + '</div></div>';
-      }).join('');
+      function renderKpis() {
+        document.getElementById('kpiRow').innerHTML = kpis.map(function (k) {
+          var cls = k.up ? ' up' : (k.down ? ' down' : '');
+          return '<div class="kpi"><div class="kpi__top"><span>' + esc(k.label) + '</span><span class="kpi__ic">' + I(k.ic, 18) + '</span></div>' +
+            '<div class="kpi__val">' + esc(k.val) + '</div><div class="kpi__delta' + cls + '">' + esc(k.delta) + '</div></div>';
+        }).join('');
+      }
+      renderKpis();
 
       // ---- Toolbar actions ----
       var actions = [
@@ -218,6 +221,56 @@
 
       searchEl.addEventListener('input', render);
       render();
+
+      // ---- Modal "Thêm tòa nhà" ----
+      document.getElementById('btnAdd').addEventListener('click', function () {
+        var body =
+          '<div class="mfield"><label class="mfield__label">Tên tòa nhà *</label>' +
+            '<input type="text" data-f="ten" placeholder="VD: HT Nguyễn Oanh" /></div>' +
+          '<div class="mfield" style="margin-top:12px"><label class="mfield__label">Địa chỉ tòa nhà *</label>' +
+            '<input type="text" data-f="diachi" placeholder="Số nhà, đường, phường" /></div>' +
+          '<div class="mrow" style="margin-top:12px">' +
+            '<div class="mfield"><label class="mfield__label">Quận / Khu vực *</label>' +
+              '<input type="text" data-f="quan" placeholder="VD: Gò Vấp" /></div>' +
+            '<div class="mfield"><label class="mfield__label">Loại</label>' +
+              '<select data-f="loai"><option>Phòng trọ</option><option>Căn hộ DV</option>' +
+              '<option>Ký túc xá</option><option>Chung cư</option><option>Nhà nguyên căn</option></select></div>' +
+          '</div>' +
+          '<div class="mrow" style="margin-top:12px">' +
+            '<div class="mfield"><label class="mfield__label">Chủ sở hữu</label>' +
+              '<input type="text" data-f="chu" placeholder="Tên chủ nhà" /></div>' +
+            '<div class="mfield"><label class="mfield__label">SĐT chủ</label>' +
+              '<input type="tel" data-f="sdt" placeholder="09xx xxx xxx" /></div>' +
+          '</div>';
+        HT.modal({
+          title: 'Thêm tòa nhà', sub: 'Nhập thông tin tòa nhà mới vào hệ thống',
+          submitLabel: 'Thêm tòa nhà', bodyHTML: body,
+          onSubmit: function (bd) {
+            function val(f) { var el = bd.querySelector('[data-f="' + f + '"]'); return el ? el.value.trim() : ''; }
+            var ten = val('ten'), diachi = val('diachi'), quan = val('quan');
+            if (!ten || !diachi || !quan) {
+              HT.toast('Vui lòng nhập Tên, Địa chỉ và Quận', 'error');
+              return false;
+            }
+            var b = {
+              bid: 'u_' + Date.now(),
+              addr: ten,
+              addrFull: diachi + (quan ? ', ' + quan : ''),
+              quan: quan,
+              nv: val('chu') || '—',
+              chuNhaSdt: val('sdt'),
+              date: 'Hôm nay',
+              rooms: [{ loai: val('loai') || 'Phòng trọ' }]
+            };
+            buildings.unshift(b);
+            kpis[0].val = String(buildings.length);
+            renderKpis();
+            render();
+            HT.toast('Đã thêm tòa nhà', 'success');
+            return true;
+          }
+        });
+      });
     })();
   </script>
 </body>

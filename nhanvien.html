@@ -97,48 +97,10 @@
     (function () {
       'use strict';
       var I = HTI.icon;
+      var esc = (window.HT && HT.esc) ? HT.esc : function (s) { return String(s == null ? '' : s); };
       document.getElementById('btnSidebar').innerHTML = I('menu', 22);
       document.getElementById('nvSearchIc').innerHTML = I('search', 16);
       document.getElementById('btnAdd').innerHTML = I('plus', 16) + 'Thêm nhân viên';
-
-      // KPI
-      var kpis = [
-        { label: 'Tổng nhân viên', ic: 'users', val: '14', delta: 'Toàn hệ thống' },
-        { label: 'Active tháng này', ic: 'user-cog', val: '13', delta: '1 đang tạm nghỉ' },
-        { label: 'Sale cấp 2', ic: 'shield-check', val: '8', delta: 'Nhóm chủ lực' },
-        { label: 'Deal tháng 7', ic: 'file-text', val: '42', delta: 'Toàn đội sale' }
-      ];
-      document.getElementById('kpiRow').innerHTML = kpis.map(function (k) {
-        return '<div class="kpi"><div class="kpi__top"><span>' + k.label + '</span><span class="kpi__ic">' + I(k.ic, 18) + '</span></div>' +
-          '<div class="kpi__val">' + k.val + '</div><div class="kpi__delta">' + k.delta + '</div></div>';
-      }).join('');
-
-      // Tabs lọc
-      var tabs = ['Tất cả (14)', 'Sale cấp 2 (8)', 'Sale cấp 1 (4)', 'Manager (1)', 'Admin (1)', 'Đã nghỉ'];
-      document.getElementById('tabs').innerHTML = tabs.map(function (t, i) {
-        return '<button class="tab' + (i === 0 ? ' is-active' : '') + '" type="button">' + t + '</button>';
-      }).join('');
-      var tabBtns = document.querySelectorAll('.tab');
-      tabBtns.forEach(function (b) {
-        b.addEventListener('click', function () {
-          tabBtns.forEach(function (x) { x.classList.remove('is-active'); });
-          b.classList.add('is-active');
-        });
-      });
-
-      // Vai trò → màu badge
-      function roleBadge(role) {
-        var map = { 'Sale cấp 2': 'gold', 'Sale cấp 1': 'primary', 'Manager': 'success', 'Admin': 'danger' };
-        var c = map[role] || 'muted';
-        var bg = 'var(--' + c + '-soft)', fg = 'var(--' + c + ')';
-        return '<span class="badge" style="background:' + bg + ';color:' + fg + '"><span class="badge__dot" style="background:' + fg + '"></span>' + role + '</span>';
-      }
-      function statusBadge(st) {
-        if (st === 'Active') {
-          return '<span class="badge badge--success"><span class="badge__dot"></span>Active</span>';
-        }
-        return '<span class="badge" style="background:var(--muted);color:var(--muted-fg)"><span class="badge__dot" style="background:var(--muted-fg)"></span>' + st + '</span>';
-      }
 
       // Dữ liệu nhân viên
       var emps = [
@@ -157,23 +119,235 @@
         { av: 'ĐA', name: 'Quản Đức Anh', email: 'ducanh@hthome.vn', role: 'Manager', kv: 'Toàn khu', deal: 0, hh: '—', st: 'Active' },
         { av: 'ĐB', name: 'Trần Đình Bảo', email: 'dinhbao@hthome.vn', role: 'Admin', kv: 'Toàn hệ thống', deal: 0, hh: '—', st: 'Đã nghỉ' }
       ];
-      document.getElementById('nvRows').innerHTML = emps.map(function (e) {
-        return '<tr>' +
-          '<td><div class="nv-emp"><span class="avatar">' + e.av + '</span>' +
-            '<span><span class="nv-emp__name">' + e.name + '</span>' +
-            '<span class="nv-emp__email">' + e.email + '</span></span></div></td>' +
-          '<td>' + roleBadge(e.role) + '</td>' +
-          '<td>' + e.kv + '</td>' +
-          '<td class="nv-num">' + e.deal + '</td>' +
-          '<td class="nv-num">' + e.hh + '</td>' +
-          '<td>' + statusBadge(e.st) + '</td>' +
-          '<td style="text-align:right"><button class="nv-more" type="button" aria-label="Tùy chọn">⋮</button></td>' +
-          '</tr>';
-      }).join('');
 
-      document.getElementById('btnAdd').addEventListener('click', function () {
-        alert('Mở form thêm nhân viên mới (demo).');
+      var ROLES = ['Sale cấp 2', 'Sale cấp 1', 'Manager', 'Admin'];
+      var state = { search: '', tab: 'all' };
+
+      // KPI
+      function kpiData() {
+        var total = emps.length;
+        var active = emps.filter(function (e) { return e.st === 'Active'; }).length;
+        var sale2 = emps.filter(function (e) { return e.role === 'Sale cấp 2'; }).length;
+        var totalDeal = emps.reduce(function (s, e) { return s + (Number(e.deal) || 0); }, 0);
+        return [
+          { label: 'Tổng nhân viên', ic: 'users', val: total, delta: 'Toàn hệ thống' },
+          { label: 'Active tháng này', ic: 'user-cog', val: active, delta: (total - active) + ' đang tạm nghỉ' },
+          { label: 'Sale cấp 2', ic: 'shield-check', val: sale2, delta: 'Nhóm chủ lực' },
+          { label: 'Deal tháng 7', ic: 'file-text', val: totalDeal, delta: 'Toàn đội sale' }
+        ];
+      }
+      function renderKpi() {
+        document.getElementById('kpiRow').innerHTML = kpiData().map(function (k) {
+          return '<div class="kpi"><div class="kpi__top"><span>' + k.label + '</span><span class="kpi__ic">' + I(k.ic, 18) + '</span></div>' +
+            '<div class="kpi__val">' + k.val + '</div><div class="kpi__delta">' + k.delta + '</div></div>';
+        }).join('');
+      }
+
+      // Tabs lọc — số đếm tính động
+      function tabDefs() {
+        function cnt(fn) { return emps.filter(fn).length; }
+        return [
+          { key: 'all', label: 'Tất cả (' + emps.length + ')' },
+          { key: 'Sale cấp 2', label: 'Sale cấp 2 (' + cnt(function (e) { return e.role === 'Sale cấp 2'; }) + ')' },
+          { key: 'Sale cấp 1', label: 'Sale cấp 1 (' + cnt(function (e) { return e.role === 'Sale cấp 1'; }) + ')' },
+          { key: 'Manager', label: 'Manager (' + cnt(function (e) { return e.role === 'Manager'; }) + ')' },
+          { key: 'Admin', label: 'Admin (' + cnt(function (e) { return e.role === 'Admin'; }) + ')' },
+          { key: 'Đã nghỉ', label: 'Đã nghỉ (' + cnt(function (e) { return e.st === 'Đã nghỉ'; }) + ')' }
+        ];
+      }
+      function renderTabs() {
+        var defs = tabDefs();
+        document.getElementById('tabs').innerHTML = defs.map(function (t) {
+          return '<button class="tab' + (t.key === state.tab ? ' is-active' : '') + '" type="button" data-key="' + esc(t.key) + '">' + t.label + '</button>';
+        }).join('');
+        document.querySelectorAll('.tab').forEach(function (b) {
+          b.addEventListener('click', function () {
+            state.tab = b.getAttribute('data-key');
+            renderTabs();
+            renderRows();
+          });
+        });
+      }
+
+      // Vai trò → màu badge
+      function roleBadge(role) {
+        var map = { 'Sale cấp 2': 'gold', 'Sale cấp 1': 'primary', 'Manager': 'success', 'Admin': 'danger' };
+        var c = map[role] || 'muted';
+        var bg = 'var(--' + c + '-soft)', fg = 'var(--' + c + ')';
+        return '<span class="badge" style="background:' + bg + ';color:' + fg + '"><span class="badge__dot" style="background:' + fg + '"></span>' + esc(role) + '</span>';
+      }
+      function statusBadge(st) {
+        if (st === 'Active') {
+          return '<span class="badge badge--success"><span class="badge__dot"></span>Active</span>';
+        }
+        return '<span class="badge" style="background:var(--muted);color:var(--muted-fg)"><span class="badge__dot" style="background:var(--muted-fg)"></span>' + esc(st) + '</span>';
+      }
+
+      // Lọc theo tab + ô tìm kiếm
+      function matchTab(e) {
+        if (state.tab === 'all') return true;
+        if (state.tab === 'Đã nghỉ') return e.st === 'Đã nghỉ';
+        return e.role === state.tab;
+      }
+      function matchSearch(e) {
+        var kw = state.search.trim().toLowerCase();
+        if (!kw) return true;
+        return ((e.name || '') + ' ' + (e.email || '') + ' ' + (e.kv || '')).toLowerCase().indexOf(kw) >= 0;
+      }
+
+      function renderRows() {
+        var rows = emps.filter(function (e) { return matchTab(e) && matchSearch(e); });
+        var tbody = document.getElementById('nvRows');
+        if (!rows.length) {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted-fg);padding:28px">Không tìm thấy nhân viên phù hợp.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = rows.map(function (e) {
+          return '<tr data-email="' + esc(e.email) + '">' +
+            '<td><div class="nv-emp"><span class="avatar">' + esc(e.av) + '</span>' +
+              '<span><span class="nv-emp__name">' + esc(e.name) + '</span>' +
+              '<span class="nv-emp__email">' + esc(e.email) + '</span></span></div></td>' +
+            '<td>' + roleBadge(e.role) + '</td>' +
+            '<td>' + esc(e.kv) + '</td>' +
+            '<td class="nv-num">' + esc(e.deal) + '</td>' +
+            '<td class="nv-num">' + esc(e.hh) + '</td>' +
+            '<td>' + statusBadge(e.st) + '</td>' +
+            '<td style="text-align:right"><button class="nv-more" type="button" aria-label="Tùy chọn" data-email="' + esc(e.email) + '">⋮</button></td>' +
+            '</tr>';
+        }).join('');
+      }
+
+      function refreshAll() { renderKpi(); renderTabs(); renderRows(); }
+
+      // Sinh chữ viết tắt avatar từ tên
+      function initials(name) {
+        var parts = String(name || '').trim().split(/\s+/);
+        if (!parts[0]) return '?';
+        var last = parts[parts.length - 1];
+        var first = parts.length > 1 ? parts[parts.length - 2] : '';
+        return (first.charAt(0) + last.charAt(0)).toUpperCase() || last.charAt(0).toUpperCase();
+      }
+      function findEmp(email) {
+        for (var i = 0; i < emps.length; i++) { if (emps[i].email === email) return emps[i]; }
+        return null;
+      }
+
+      // Ô tìm kiếm lọc thật
+      document.getElementById('nvSearch').addEventListener('input', function () {
+        state.search = this.value;
+        renderRows();
       });
+
+      // Nút Thêm nhân viên → modal form
+      function roleOptions(sel) {
+        return ROLES.map(function (r) {
+          return '<option value="' + esc(r) + '"' + (r === sel ? ' selected' : '') + '>' + esc(r) + '</option>';
+        }).join('');
+      }
+      document.getElementById('btnAdd').addEventListener('click', function () {
+        if (!window.HT || !HT.modal) { return; }
+        HT.modal({
+          title: 'Thêm nhân viên', sub: 'Nhập thông tin nhân viên mới', submitLabel: 'Thêm',
+          bodyHTML:
+            '<div class="mfield"><label class="mfield__label">Họ tên</label><input id="fName" type="text" placeholder="VD: Nguyễn Văn A" autocomplete="off"></div>' +
+            '<div class="mfield"><label class="mfield__label">Email</label><input id="fEmail" type="email" placeholder="ten@hthome.vn" autocomplete="off"></div>' +
+            '<div class="mrow">' +
+              '<div class="mfield"><label class="mfield__label">Vai trò</label><select id="fRole">' + roleOptions('Sale cấp 2') + '</select></div>' +
+              '<div class="mfield"><label class="mfield__label">Khu vực</label><input id="fKv" type="text" placeholder="VD: Gò Vấp" autocomplete="off"></div>' +
+            '</div>',
+          onSubmit: function (el) {
+            var name = el.querySelector('#fName').value.trim();
+            var email = el.querySelector('#fEmail').value.trim();
+            var role = el.querySelector('#fRole').value;
+            var kv = el.querySelector('#fKv').value.trim();
+            if (!name) { HT.toast('Vui lòng nhập họ tên', 'danger'); return false; }
+            if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { HT.toast('Email không hợp lệ', 'danger'); return false; }
+            if (findEmp(email)) { HT.toast('Email đã tồn tại', 'danger'); return false; }
+            if (!kv) { HT.toast('Vui lòng nhập khu vực', 'danger'); return false; }
+            emps.push({ av: initials(name), name: name, email: email, role: role, kv: kv, deal: 0, hh: '—', st: 'Active' });
+            refreshAll();
+            HT.toast('Đã thêm nhân viên', 'success');
+            return true;
+          }
+        });
+      });
+
+      // ⋮ mỗi dòng → Xem / Sửa / Vô hiệu hoá
+      document.getElementById('nvRows').addEventListener('click', function (ev) {
+        var btn = ev.target.closest ? ev.target.closest('.nv-more') : null;
+        if (!btn) return;
+        var e = findEmp(btn.getAttribute('data-email'));
+        if (!e || !window.HT || !HT.modal) return;
+        HT.modal({
+          title: e.name, sub: e.role + ' · ' + e.kv, submitLabel: null,
+          bodyHTML:
+            '<div style="display:flex;flex-direction:column;gap:8px">' +
+              '<button class="btn btn--ghost" data-act="view" type="button" style="justify-content:flex-start">Xem hồ sơ</button>' +
+              '<button class="btn btn--ghost" data-act="edit" type="button" style="justify-content:flex-start">Sửa thông tin</button>' +
+              (e.st === 'Active'
+                ? '<button class="btn btn--ghost" data-act="off" type="button" style="justify-content:flex-start;color:var(--danger)">Vô hiệu hoá</button>'
+                : '<button class="btn btn--ghost" data-act="on" type="button" style="justify-content:flex-start;color:var(--success)">Kích hoạt lại</button>') +
+            '</div>',
+          onSubmit: null
+        });
+        // Gắn hành động sau khi modal render (dùng backdrop mới nhất)
+        var backdrops = document.querySelectorAll('.modal-backdrop');
+        var md = backdrops[backdrops.length - 1];
+        if (!md) return;
+        var closeBtn = md.querySelector('.modal__close');
+        function closeMd() { if (closeBtn) closeBtn.click(); }
+        md.addEventListener('click', function (ex) {
+          var a = ex.target.closest ? ex.target.closest('[data-act]') : null;
+          if (!a) return;
+          var act = a.getAttribute('data-act');
+          if (act === 'view') {
+            closeMd();
+            HT.modal({
+              title: 'Hồ sơ nhân viên', sub: e.name, submitLabel: null,
+              bodyHTML:
+                '<div class="mfield"><label class="mfield__label">Email</label><div>' + esc(e.email) + '</div></div>' +
+                '<div class="mrow"><div class="mfield"><label class="mfield__label">Vai trò</label><div>' + esc(e.role) + '</div></div>' +
+                '<div class="mfield"><label class="mfield__label">Khu vực</label><div>' + esc(e.kv) + '</div></div></div>' +
+                '<div class="mrow"><div class="mfield"><label class="mfield__label">Deal Th7</label><div>' + esc(e.deal) + '</div></div>' +
+                '<div class="mfield"><label class="mfield__label">Hoa hồng Th7</label><div>' + esc(e.hh) + '</div></div></div>' +
+                '<div class="mfield"><label class="mfield__label">Trạng thái</label><div>' + esc(e.st) + '</div></div>'
+            });
+          } else if (act === 'edit') {
+            closeMd();
+            HT.modal({
+              title: 'Sửa thông tin', sub: e.name, submitLabel: 'Lưu',
+              bodyHTML:
+                '<div class="mfield"><label class="mfield__label">Họ tên</label><input id="eName" type="text" value="' + esc(e.name) + '"></div>' +
+                '<div class="mrow">' +
+                  '<div class="mfield"><label class="mfield__label">Vai trò</label><select id="eRole">' + roleOptions(e.role) + '</select></div>' +
+                  '<div class="mfield"><label class="mfield__label">Khu vực</label><input id="eKv" type="text" value="' + esc(e.kv) + '"></div>' +
+                '</div>',
+              onSubmit: function (elx) {
+                var nm = elx.querySelector('#eName').value.trim();
+                var kv = elx.querySelector('#eKv').value.trim();
+                if (!nm) { HT.toast('Vui lòng nhập họ tên', 'danger'); return false; }
+                if (!kv) { HT.toast('Vui lòng nhập khu vực', 'danger'); return false; }
+                e.name = nm; e.av = initials(nm); e.role = elx.querySelector('#eRole').value; e.kv = kv;
+                refreshAll();
+                HT.toast('Đã cập nhật nhân viên', 'success');
+                return true;
+              }
+            });
+          } else if (act === 'off') {
+            closeMd();
+            HT.confirm({
+              title: 'Vô hiệu hoá nhân viên', message: 'Đặt "' + e.name + '" sang trạng thái Đã nghỉ?', danger: true,
+              confirmLabel: 'Vô hiệu hoá',
+              onConfirm: function () { e.st = 'Đã nghỉ'; refreshAll(); HT.toast('Đã vô hiệu hoá nhân viên', 'warning'); }
+            });
+          } else if (act === 'on') {
+            closeMd();
+            e.st = 'Active'; refreshAll(); HT.toast('Đã kích hoạt lại nhân viên', 'success');
+          }
+        });
+      });
+
+      refreshAll();
     })();
   </script>
 </body>

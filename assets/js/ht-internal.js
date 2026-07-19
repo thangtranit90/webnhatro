@@ -56,10 +56,44 @@
   ];
 
   function item(n, active) {
+    var badge = n.badge;
+    if (n.k === 'khophong' && window.ROOMS) badge = String(window.ROOMS.length); // đồng bộ số phòng thật
     return '<a class="sidebar__item' + (n.k === active ? ' is-active' : '') + '" href="' + n.href + '">' +
       ic(n.icon, 18) + '<span class="sidebar__item-label">' + n.label + '</span>' +
-      (n.badge ? '<span class="sidebar__badge">' + n.badge + '</span>' : '') + '</a>';
+      (badge ? '<span class="sidebar__badge">' + badge + '</span>' : '') + '</a>';
   }
+
+  /* Tìm kiếm toàn cục (⌘K / bấm ô tìm kiếm) — tìm phòng + tòa nhà thật */
+  function globalSearch() {
+    if (!window.HT || !HT.modal) return;
+    var m = HT.modal({
+      title: 'Tìm kiếm nhanh', sub: 'Tìm phòng và tòa nhà theo tên hoặc địa chỉ', submitLabel: null,
+      bodyHTML: '<div class="mfield"><input id="gsq" type="text" placeholder="Nhập từ khóa…" autocomplete="off"></div>' +
+        '<div id="gsres" style="display:flex;flex-direction:column;gap:2px;max-height:340px;overflow:auto"></div>'
+    });
+    var q = m.el.querySelector('#gsq'), res = m.el.querySelector('#gsres');
+    function render(kw) {
+      kw = (kw || '').trim().toLowerCase();
+      if (!kw) { res.innerHTML = '<div class="empty-state" style="padding:16px"><div class="empty-state__s">Gõ để tìm phòng & tòa nhà…</div></div>'; return; }
+      var out = [];
+      (window.ROOMS || []).forEach(function (r, i) {
+        if (out.length >= 8) return;
+        var hay = ((r.t || '') + ' ' + (r.l || '') + ' ' + (r.quan || '')).toLowerCase();
+        if (hay.indexOf(kw) >= 0) out.push('<a class="search-result" href="detail.html?i=' + i + '"><span class="search-result__ic">' + ic('package', 16) + '</span><span><span class="search-result__t" style="display:block">' + HT.esc(r.t || '') + '</span><span class="search-result__s">' + HT.esc(r.p || '') + ' · ' + HT.esc(r.quan || '') + '</span></span></a>');
+      });
+      var bd = [].concat((window.HT_BUILDINGS && HT_BUILDINGS.ptro) || [], (window.HT_BUILDINGS && HT_BUILDINGS.cc) || []);
+      bd.forEach(function (b) {
+        if (out.length >= 12) return;
+        var hay = ((b.addr || '') + ' ' + (b.addrFull || '')).toLowerCase();
+        if (hay.indexOf(kw) >= 0) out.push('<a class="search-result" href="toanha-chitiet.html?bid=' + encodeURIComponent(b.bid) + '"><span class="search-result__ic">' + ic('building', 16) + '</span><span><span class="search-result__t" style="display:block">' + HT.esc(b.addr || '') + '</span><span class="search-result__s">Tòa nhà · ' + HT.esc(b.quan || '') + '</span></span></a>');
+      });
+      res.innerHTML = out.length ? out.join('') : '<div class="empty-state" style="padding:16px"><div class="empty-state__s">Không tìm thấy kết quả.</div></div>';
+    }
+    render('');
+    q.addEventListener('input', function () { render(q.value); });
+  }
+  window.HTI = window.HTI || {};
+  window.HTI.globalSearch = globalSearch;
 
   function staff() {
     try { return JSON.parse(localStorage.getItem('ht_staff')) || null; } catch (e) { return null; }
@@ -74,7 +108,7 @@
           '<span class="sidebar__brand-logo">HT</span>' +
           '<span class="sidebar__brand-name">HT HOME</span>' + ic('chevrons-up-down', 16) +
         '</div>' +
-        '<div class="sidebar__search">' + ic('search', 15) + '<span>Tìm kiếm nhanh</span><span class="kbd">⌘K</span></div>' +
+        '<div class="sidebar__search" id="ht-gsearch" style="cursor:pointer">' + ic('search', 15) + '<span>Tìm kiếm nhanh</span><span class="kbd">⌘K</span></div>' +
         '<nav class="sidebar__nav">' + NAV_MAIN.map(function (n) { return item(n, active); }).join('') + '</nav>' +
         '<div class="sidebar__divider"></div>' +
         '<div class="sidebar__cap">QUẢN TRỊ</div>' +
@@ -104,6 +138,13 @@
     var lo = document.getElementById('htLogout');
     if (lo) lo.addEventListener('click', function () { try { localStorage.removeItem('ht_staff'); } catch (e) {} });
 
+    // Tìm kiếm nhanh: bấm ô hoặc ⌘K / Ctrl+K
+    var gs = document.getElementById('ht-gsearch');
+    if (gs) gs.addEventListener('click', globalSearch);
+    document.addEventListener('keydown', function (e) {
+      if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K')) { e.preventDefault(); globalSearch(); }
+    });
+
     // Backdrop cho mobile
     var backdrop = document.createElement('div');
     backdrop.className = 'sidebar-backdrop';
@@ -120,7 +161,7 @@
     });
   }
 
-  window.HTI = { icon: ic, sidebarHTML: sidebarHTML, mount: mount };
+  window.HTI = { icon: ic, sidebarHTML: sidebarHTML, mount: mount, globalSearch: globalSearch };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mount);
   else mount();
 })();

@@ -108,27 +108,27 @@
                 <div class="form-grid">
                   <div class="field field--full">
                     <label>Tên công ty</label>
-                    <input type="text" value="Công ty Cổ phần Bất động sản HTHOME" />
+                    <input type="text" data-set="name" value="Công ty Cổ phần Bất động sản HTHOME" />
                   </div>
                   <div class="field">
                     <label>Mã số thuế</label>
-                    <input type="text" value="0319411244" />
+                    <input type="text" data-set="tax" value="0319411244" />
                   </div>
                   <div class="field">
                     <label>Hotline</label>
-                    <input type="text" value="0949 397 595" />
+                    <input type="text" data-set="hotline" value="0949 397 595" />
                   </div>
                   <div class="field field--full">
                     <label>Địa chỉ trụ sở</label>
-                    <input type="text" value="262A Nam Kỳ Khởi Nghĩa, P. Xuân Hòa, TP.HCM" />
+                    <input type="text" data-set="addr" value="262A Nam Kỳ Khởi Nghĩa, P. Xuân Hòa, TP.HCM" />
                   </div>
                   <div class="field">
                     <label>Email chính</label>
-                    <input type="text" value="hello@hthome.vn" />
+                    <input type="text" data-set="email" value="hello@hthome.vn" />
                   </div>
                   <div class="field">
                     <label>Website</label>
-                    <input type="text" value="hthome.vn" />
+                    <input type="text" data-set="website" value="hthome.vn" />
                   </div>
                 </div>
               </div>
@@ -187,24 +187,55 @@
       it.classList.add('is-active');
     });
 
+    var esc = (window.HT && HT.esc) ? HT.esc : function (s) { return String(s == null ? '' : s); };
+
+    /* ---- Nạp cài đặt đã lưu ---- */
+    function loadSettings() {
+      try { return JSON.parse(localStorage.getItem('ht_settings')) || {}; } catch (e) { return {}; }
+    }
+    var settings = loadSettings();
+
     /* ---- Ma trận HH ---- */
     var tiers = [
       { name: '6 tháng',  sale: '50', cty: '50' },
       { name: '9 tháng',  sale: '60', cty: '40' },
       { name: '12 tháng', sale: '70', cty: '30' }
     ];
-    document.getElementById('tierList').innerHTML = tiers.map(function (t) {
+    document.getElementById('tierList').innerHTML = tiers.map(function (t, i) {
+      var sv = (settings.tiers && settings.tiers[i]) || {};
+      var sale = sv.sale != null ? sv.sale : t.sale;
+      var cty = sv.cty != null ? sv.cty : t.cty;
       return '<div class="tier-row">' +
-        '<span class="tier-name">' + t.name + '</span>' +
-        '<span class="tier-field"><div class="pct"><input type="text" value="' + t.sale + '" /><span>%</span></div></span>' +
-        '<span class="tier-field"><div class="pct"><input type="text" value="' + t.cty + '" /><span>%</span></div></span>' +
+        '<span class="tier-name">' + esc(t.name) + '</span>' +
+        '<span class="tier-field"><div class="pct"><input type="text" data-tier="' + i + '" data-part="sale" value="' + esc(sale) + '" /><span>%</span></div></span>' +
+        '<span class="tier-field"><div class="pct"><input type="text" data-tier="' + i + '" data-part="cty" value="' + esc(cty) + '" /><span>%</span></div></span>' +
       '</div>';
     }).join('');
 
+    /* ---- Nạp thông tin công ty đã lưu vào input ---- */
+    if (settings.company) {
+      document.querySelectorAll('input[data-set]').forEach(function (inp) {
+        var k = inp.getAttribute('data-set');
+        if (settings.company[k] != null) inp.value = settings.company[k];
+      });
+    }
+
+    /* ---- Lưu cài đặt ---- */
     document.getElementById('btnSave').addEventListener('click', function () {
-      this.textContent = 'Đã lưu ✓';
-      var b = this;
-      setTimeout(function () { b.textContent = 'Lưu cài đặt'; }, 1600);
+      var company = {};
+      document.querySelectorAll('input[data-set]').forEach(function (inp) {
+        company[inp.getAttribute('data-set')] = inp.value.trim();
+      });
+      var tierVals = [];
+      document.querySelectorAll('#tierList input[data-tier]').forEach(function (inp) {
+        var i = Number(inp.getAttribute('data-tier'));
+        tierVals[i] = tierVals[i] || {};
+        tierVals[i][inp.getAttribute('data-part')] = inp.value.trim();
+      });
+      var data = { company: company, tiers: tierVals };
+      try { localStorage.setItem('ht_settings', JSON.stringify(data)); } catch (e) {}
+      settings = data;
+      if (window.HT && HT.toast) HT.toast('Đã lưu cài đặt', 'success');
     });
   </script>
 </body>

@@ -74,6 +74,15 @@
     document.getElementById('btnSidebar').innerHTML = I('menu', 22);
     document.getElementById('btnPost').innerHTML = I('plus', 16) + 'Đăng thông báo';
 
+    /* ---- Bảng loại: gắn tag <-> chip <-> select ---- */
+    var TYPES = {
+      announce: { chip: '📢 Thông báo', cls: 'tag--announce' },
+      congrat:  { chip: '🎉 Chúc mừng', cls: 'tag--congrat' },
+      meeting:  { chip: '📅 Meeting', cls: 'tag--meeting' },
+      system:   { chip: '🔧 Cập nhật hệ thống', cls: 'tag--system' },
+      report:   { chip: '📊 Báo cáo tháng', cls: 'tag--report' }
+    };
+
     /* ---- Chip lọc ---- */
     var filters = [
       { t: 'Tất cả', active: true }, { t: '📢 Thông báo' }, { t: '🎉 Chúc mừng' },
@@ -88,6 +97,10 @@
       if (!c) return;
       elF.querySelectorAll('.chip').forEach(function (x) { x.classList.remove('is-active'); });
       c.classList.add('is-active');
+      var sel = c.textContent.trim();
+      document.querySelectorAll('#feed .post').forEach(function (p) {
+        p.style.display = (sel === 'Tất cả' || p.getAttribute('data-type') === sel) ? '' : 'none';
+      });
     });
 
     /* ---- Feed ---- */
@@ -122,23 +135,75 @@
       }
     ];
 
-    document.getElementById('feed').innerHTML = posts.map(function (p) {
-      return '<article class="post' + (p.pinned ? ' is-pinned' : '') + '">' +
+    var feedEl = document.getElementById('feed');
+    // Suy ra nhãn chip từ tagCls (để lọc)
+    function chipByCls(cls) {
+      for (var k in TYPES) { if (TYPES[k].cls === cls) return TYPES[k].chip; }
+      return 'Tất cả';
+    }
+    var E = HT.esc;
+    function renderPost(p) {
+      return '<article class="post' + (p.pinned ? ' is-pinned' : '') + '" data-type="' + E(chipByCls(p.tagCls)) + '">' +
         '<div class="post__head">' +
-          '<span class="avatar">' + p.av + '</span>' +
-          '<span><span class="post__author" style="display:block">' + p.author + '</span>' +
-          '<span class="post__meta">' + p.role + ' · ' + p.time + '</span></span>' +
+          '<span class="avatar">' + E(p.av) + '</span>' +
+          '<span><span class="post__author" style="display:block">' + E(p.author) + '</span>' +
+          '<span class="post__meta">' + E(p.role) + ' · ' + E(p.time) + '</span></span>' +
           (p.pinned ? '<span class="post__pin">📌 Ghim</span>' : '') +
         '</div>' +
-        '<span class="post__tag ' + p.tagCls + '">' + p.tagTxt + '</span>' +
-        '<div class="post__title">' + p.title + '</div>' +
-        '<div class="post__body">' + p.body + '</div>' +
+        '<span class="post__tag ' + p.tagCls + '">' + E(p.tagTxt) + '</span>' +
+        '<div class="post__title">' + E(p.title) + '</div>' +
+        '<div class="post__body">' + E(p.body) + '</div>' +
         '<div class="post__foot">' +
-          '<span>♥ ' + p.like + ' like</span>' +
-          '<span>💬 ' + p.cmt + ' bình luận</span>' +
+          '<span class="post__like" style="cursor:pointer">♥ <b>' + p.like + '</b> like</span>' +
+          '<span class="post__cmt" style="cursor:pointer">💬 <b>' + p.cmt + '</b> bình luận</span>' +
         '</div>' +
       '</article>';
-    }).join('');
+    }
+    function renderFeed() { feedEl.innerHTML = posts.map(renderPost).join(''); }
+    renderFeed();
+
+    // Like / bình luận: tăng số đếm demo khi bấm
+    feedEl.addEventListener('click', function (e) {
+      var s = e.target.closest('.post__like, .post__cmt');
+      if (!s) return;
+      var b = s.querySelector('b');
+      if (b) b.textContent = (parseInt(b.textContent, 10) || 0) + 1;
+    });
+
+    // Đăng thông báo
+    document.getElementById('btnPost').addEventListener('click', function () {
+      var opts = Object.keys(TYPES).map(function (k) {
+        return '<option value="' + k + '">' + TYPES[k].chip + '</option>';
+      }).join('');
+      var body =
+        '<div class="mfield"><label class="mfield__label">Loại</label>' +
+          '<select id="pLoai">' + opts + '</select></div>' +
+        '<div class="mfield"><label class="mfield__label">Tiêu đề</label>' +
+          '<input id="pTitle" type="text" placeholder="Tiêu đề thông báo"/></div>' +
+        '<div class="mfield"><label class="mfield__label">Nội dung</label>' +
+          '<textarea id="pBody" rows="4" placeholder="Nội dung chi tiết..."></textarea></div>' +
+        '<div class="mfield"><label class="mfield__label"><input id="pPin" type="checkbox" style="width:auto;margin-right:8px"/>Ghim bài này</label></div>';
+      HT.modal({
+        title: 'Đăng thông báo', sub: 'Bài viết sẽ hiện lên đầu bảng tin',
+        submitLabel: 'Đăng', bodyHTML: body,
+        onSubmit: function (m) {
+          var k = m.querySelector('#pLoai').value;
+          var title = m.querySelector('#pTitle').value.trim();
+          var content = m.querySelector('#pBody').value.trim();
+          var pin = m.querySelector('#pPin').checked;
+          if (!title) { HT.toast('Nhập tiêu đề', 'danger'); return false; }
+          if (!content) { HT.toast('Nhập nội dung', 'danger'); return false; }
+          posts.unshift({
+            av: 'B', author: 'Bạn', role: 'Sale', time: 'vừa xong', pinned: pin,
+            tagCls: TYPES[k].cls, tagTxt: TYPES[k].chip,
+            title: title, body: content, like: 0, cmt: 0
+          });
+          renderFeed();
+          HT.toast('Đã đăng', 'success');
+          return true;
+        }
+      });
+    });
   </script>
 </body>
 </html>

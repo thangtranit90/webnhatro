@@ -183,49 +183,129 @@
       return null;
     }
 
+    var E = HT.esc;
+
     // ---------- Lưới tuần (desktop) ----------
-    var html = '<div class="cal-grid__head cal-grid__head--corner"></div>';
-    DAYS.forEach(function (d, i) {
-      html += '<div class="cal-grid__head' + (i === TODAY ? ' is-today' : '') + '">' +
-        d.lb + '<b>' + d.d + '</b></div>';
-    });
-    HOURS.forEach(function (h) {
-      html += '<div class="cal-grid__time">' + hh(h) + '</div>';
+    function renderGrid() {
+      var html = '<div class="cal-grid__head cal-grid__head--corner"></div>';
       DAYS.forEach(function (d, i) {
-        var a = apptAt(i, h);
-        var cellCls = 'cal-grid__cell' + (i === TODAY ? ' cal-col-today' : '');
-        html += '<div class="' + cellCls + '">';
-        if (a) {
-          html += '<span class="appt appt--' + a.st + '">' +
-            '<span class="appt__time">' + hh(a.h) + '</span> ' +
-            '<span class="appt__name">' + a.name + '</span>' +
-            '<span class="appt__room">' + a.room + '</span></span>';
-        }
-        html += '</div>';
+        html += '<div class="cal-grid__head' + (i === TODAY ? ' is-today' : '') + '">' +
+          d.lb + '<b>' + d.d + '</b></div>';
       });
-    });
-    document.getElementById('calGrid').innerHTML = html;
+      HOURS.forEach(function (h) {
+        html += '<div class="cal-grid__time">' + hh(h) + '</div>';
+        DAYS.forEach(function (d, i) {
+          var a = apptAt(i, h);
+          var cellCls = 'cal-grid__cell' + (i === TODAY ? ' cal-col-today' : '');
+          html += '<div class="' + cellCls + '">';
+          if (a) {
+            html += '<span class="appt appt--' + a.st + '" data-idx="' + APPTS.indexOf(a) + '" style="cursor:pointer">' +
+              '<span class="appt__time">' + hh(a.h) + '</span> ' +
+              '<span class="appt__name">' + E(a.name) + '</span>' +
+              '<span class="appt__room">' + E(a.room) + '</span></span>';
+          }
+          html += '</div>';
+        });
+      });
+      document.getElementById('calGrid').innerHTML = html;
+    }
 
     // ---------- Agenda (mobile) ----------
-    var ag = '';
-    DAYS.forEach(function (d, i) {
-      var list = APPTS.filter(function (a) { return a.day === i; })
-        .sort(function (a, b) { return a.h - b.h; });
-      if (!list.length) return;
-      ag += '<div>';
-      ag += '<div class="agenda__day-h"><b>' + d.lb + ' ' + d.d + '/07</b>' +
-        '<span>' + list.length + ' lịch hẹn</span>' +
-        (i === TODAY ? '<span class="is-today-tag">Hôm nay</span>' : '') + '</div>';
-      list.forEach(function (a) {
-        ag += '<div class="agenda__row' + (a.st === 'cancel' ? ' agenda__row--cancel' : '') + '">' +
-          '<span class="agenda__time">' + hh(a.h) + '</span>' +
-          '<span class="agenda__info"><span class="agenda__name">' + a.name + '</span>' +
-          '<span class="agenda__room">' + a.room + '</span></span>' +
-          '<span class="badge-st badge-st--' + a.st + '">' + ST_LABEL[a.st] + '</span></div>';
+    function renderAgenda() {
+      var ag = '';
+      DAYS.forEach(function (d, i) {
+        var list = APPTS.filter(function (a) { return a.day === i; })
+          .sort(function (a, b) { return a.h - b.h; });
+        if (!list.length) return;
+        ag += '<div>';
+        ag += '<div class="agenda__day-h"><b>' + d.lb + ' ' + d.d + '/07</b>' +
+          '<span>' + list.length + ' lịch hẹn</span>' +
+          (i === TODAY ? '<span class="is-today-tag">Hôm nay</span>' : '') + '</div>';
+        list.forEach(function (a) {
+          ag += '<div class="agenda__row' + (a.st === 'cancel' ? ' agenda__row--cancel' : '') + '" data-idx="' + APPTS.indexOf(a) + '" style="cursor:pointer">' +
+            '<span class="agenda__time">' + hh(a.h) + '</span>' +
+            '<span class="agenda__info"><span class="agenda__name">' + E(a.name) + '</span>' +
+            '<span class="agenda__room">' + E(a.room) + '</span></span>' +
+            '<span class="badge-st badge-st--' + a.st + '">' + ST_LABEL[a.st] + '</span></div>';
+        });
+        ag += '</div>';
       });
-      ag += '</div>';
+      document.getElementById('agenda').innerHTML = ag;
+    }
+
+    function renderAll() { renderGrid(); renderAgenda(); }
+    renderAll();
+
+    // ---------- Modal chi tiết lịch hẹn ----------
+    function openDetail(idx) {
+      var a = APPTS[idx];
+      if (!a) return;
+      var body =
+        '<div class="mfield"><label class="mfield__label">Khách</label><div>' + E(a.name) + '</div></div>' +
+        '<div class="mrow">' +
+          '<div class="mfield"><label class="mfield__label">Phòng</label><div>' + E(a.room) + '</div></div>' +
+          '<div class="mfield"><label class="mfield__label">Giờ</label><div>' + hh(a.h) + '</div></div>' +
+        '</div>' +
+        '<div class="mfield"><label class="mfield__label">Trạng thái</label>' +
+          '<div><span class="badge-st badge-st--' + a.st + '">' + ST_LABEL[a.st] + '</span></div></div>' +
+        '<div class="mrow" style="margin-top:8px">' +
+          '<button class="btn btn--primary" data-ok>Xác nhận</button>' +
+          '<button class="btn btn--ghost" data-cancel style="color:var(--danger)">Huỷ lịch</button>' +
+        '</div>';
+      var m = HT.modal({ title: 'Chi tiết lịch hẹn', sub: a.name + ' · ' + a.room, submitLabel: null, bodyHTML: body });
+      m.el.querySelector('[data-ok]').addEventListener('click', function () {
+        a.st = 'ok'; renderAll(); m.close(); HT.toast('Đã xác nhận lịch hẹn', 'success');
+      });
+      m.el.querySelector('[data-cancel]').addEventListener('click', function () {
+        a.st = 'cancel'; renderAll(); m.close(); HT.toast('Đã huỷ lịch hẹn', 'warning');
+      });
+    }
+    document.getElementById('calGrid').addEventListener('click', function (e) {
+      var s = e.target.closest('.appt'); if (s) openDetail(parseInt(s.getAttribute('data-idx'), 10));
     });
-    document.getElementById('agenda').innerHTML = ag;
+    document.getElementById('agenda').addEventListener('click', function (e) {
+      var s = e.target.closest('.agenda__row'); if (s) openDetail(parseInt(s.getAttribute('data-idx'), 10));
+    });
+
+    // ---------- Đặt lịch hẹn ----------
+    document.getElementById('btnAdd').addEventListener('click', function (e) {
+      e.preventDefault();
+      var hourOpts = HOURS.map(function (h) { return '<option value="' + h + '">' + hh(h) + '</option>'; }).join('');
+      var body =
+        '<div class="mrow">' +
+          '<div class="mfield"><label class="mfield__label">Khách</label><input id="aName" type="text" placeholder="Tên khách"/></div>' +
+          '<div class="mfield"><label class="mfield__label">SĐT</label><input id="aPhone" type="tel" placeholder="09xx xxx xxx"/></div>' +
+        '</div>' +
+        '<div class="mfield"><label class="mfield__label">Phòng</label><input id="aRoom" type="text" placeholder="VD: P.303 Nguyễn Huệ"/></div>' +
+        '<div class="mrow">' +
+          '<div class="mfield"><label class="mfield__label">Ngày</label><input id="aDate" type="date"/></div>' +
+          '<div class="mfield"><label class="mfield__label">Khung giờ</label><select id="aHour">' + hourOpts + '</select></div>' +
+        '</div>';
+      HT.modal({
+        title: 'Đặt lịch hẹn', sub: 'Lịch dẫn xem phòng cho khách',
+        submitLabel: 'Đặt lịch', bodyHTML: body,
+        onSubmit: function (m) {
+          var name = m.querySelector('#aName').value.trim();
+          var phone = m.querySelector('#aPhone').value.trim();
+          var room = m.querySelector('#aRoom').value.trim();
+          var date = m.querySelector('#aDate').value;
+          var h = parseInt(m.querySelector('#aHour').value, 10);
+          if (!name) { HT.toast('Nhập tên khách', 'danger'); return false; }
+          if (!phone) { HT.toast('Nhập số điện thoại', 'danger'); return false; }
+          if (!room) { HT.toast('Nhập phòng', 'danger'); return false; }
+          if (!date) { HT.toast('Chọn ngày', 'danger'); return false; }
+          // Map ngày -> chỉ số cột trong tuần demo (13..19/07); ngoài phạm vi -> hôm nay
+          var dnum = date.split('-')[2];
+          var day = TODAY;
+          for (var i = 0; i < DAYS.length; i++) { if (DAYS[i].d === String(parseInt(dnum, 10))) { day = i; break; } }
+          if (apptAt(day, h)) { HT.toast('Khung giờ này đã có lịch', 'danger'); return false; }
+          APPTS.push({ day: day, h: h, name: name, room: room, phone: phone, st: 'wait' });
+          renderAll();
+          HT.toast('Đã đặt lịch hẹn', 'success');
+          return true;
+        }
+      });
+    });
   </script>
 </body>
 </html>

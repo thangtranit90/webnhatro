@@ -22,7 +22,7 @@ jobs:
              dangky.html taikhoan.html chat.html datlich.html \
              dangnhap-noibo.html quenmatkhau.html nhap-otp.html datmatkhau.html \
              dashboard.html khophong.html crm.html deal.html doanhthu.html \
-             toanha.html toanha-chitiet.html lichhen.html themphong.html \
+             toanha.html toanha-chitiet.html lichhen.html themphong.html phong-noibo.html \
              baocao.html quynoibo.html nhanvien.html phanquyen.html caidat.html bangtin.html khuvuc.html \
              chon-loai.html them-tin.html \
              data.js footer.js login.js ht-home-logo.png \

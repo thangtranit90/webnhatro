@@ -77,28 +77,13 @@
   <script src="assets/js/ht-internal.js"></script>
   <script>
     var I = HTI.icon;
+    var esc = HT.esc;
     document.getElementById('btnSidebar').innerHTML = I('menu', 22);
     document.getElementById('btnAdd').innerHTML = I('plus', 16) + 'Thêm khách';
 
-    /* ---- Chip lọc ---- */
-    var filters = [
-      { t: 'Tất cả', n: 24, active: true }, { t: 'Của tôi', n: 8 },
-      { t: 'Sắp hết khóa', n: 2 }, { t: 'Hot 🔥', n: 5 },
-      { t: 'Warm 🌤️', n: 11 }, { t: 'Cold ❄️', n: 8 }
-    ];
-    var elFilters = document.getElementById('filters');
-    elFilters.innerHTML = filters.map(function (f) {
-      return '<button class="chip' + (f.active ? ' is-active' : '') + '">' + f.t + ' (' + f.n + ')</button>';
-    }).join('');
-    elFilters.addEventListener('click', function (e) {
-      var chip = e.target.closest('.chip');
-      if (!chip) return;
-      elFilters.querySelectorAll('.chip').forEach(function (c) { c.classList.remove('is-active'); });
-      chip.classList.add('is-active');
-    });
-
     /* ---- Dữ liệu mẫu ---- */
     // heat: 'hot' | 'warm' | 'cold'  → tự map ra nhãn + màu
+    // mine: khách của tôi · exp: sắp hết khóa (demo) · history: lịch sử tương tác
     var HEAT = {
       hot:  { label: 'Hot 🔥',   cls: 'tag--hot' },
       warm: { label: 'Warm 🌤️', cls: 'tag--warm' },
@@ -106,58 +91,253 @@
     };
     var columns = [
       { title: 'Khách mới', cards: [
-        { av: 'VN', name: 'Trần Văn Nam', phone: '09xx234567', type: '🎓 SV', heat: 'cold', budget: '2-3 tr', source: 'Facebook', time: '20 phút' },
-        { av: 'TM', name: 'Lê Thị Mai', phone: '08xx891122', type: '💼 Đi làm', heat: 'warm', budget: '4-5 tr', source: 'TikTok', time: '1 giờ' },
-        { av: 'HL', name: 'Hoàng Thị Loan', phone: '07xx445566', type: '🎓 SV', heat: 'cold', budget: '2 tr', source: 'SEO Google', time: '2 giờ' }
+        { av: 'VN', name: 'Trần Văn Nam', phone: '09xx234567', type: '🎓 SV', heat: 'cold', budget: '2-3 tr', source: 'Facebook', time: '20 phút', mine: true, exp: false },
+        { av: 'TM', name: 'Lê Thị Mai', phone: '08xx891122', type: '💼 Đi làm', heat: 'warm', budget: '4-5 tr', source: 'TikTok', time: '1 giờ', mine: true, exp: false },
+        { av: 'HL', name: 'Hoàng Thị Loan', phone: '07xx445566', type: '🎓 SV', heat: 'cold', budget: '2 tr', source: 'SEO Google', time: '2 giờ', mine: false, exp: false }
       ]},
       { title: 'Đã tư vấn', cards: [
-        { av: 'ĐA', name: 'Nguyễn Đức Anh', phone: '09xx778899', type: '💼 Đi làm', heat: 'warm', budget: '3-4 tr', source: 'SEO Google', time: '3 giờ' },
-        { av: 'SJ', name: 'Sarah Johnson', phone: '09xx102030', type: '🌏 Nước ngoài', heat: 'hot', budget: '$500', source: 'Referral', time: 'Hôm qua' },
-        { av: 'PT', name: 'Phan Thanh Tú', phone: '08xx334455', type: '💼 Đi làm', heat: 'warm', budget: '4 tr', source: 'Facebook', time: 'Hôm qua' }
+        { av: 'ĐA', name: 'Nguyễn Đức Anh', phone: '09xx778899', type: '💼 Đi làm', heat: 'warm', budget: '3-4 tr', source: 'SEO Google', time: '3 giờ', mine: true, exp: false },
+        { av: 'SJ', name: 'Sarah Johnson', phone: '09xx102030', type: '🌏 Nước ngoài', heat: 'hot', budget: '$500', source: 'Referral', time: 'Hôm qua', mine: true, exp: true },
+        { av: 'PT', name: 'Phan Thanh Tú', phone: '08xx334455', type: '💼 Đi làm', heat: 'warm', budget: '4 tr', source: 'Facebook', time: 'Hôm qua', mine: false, exp: false }
       ]},
       { title: 'Đã gửi phòng', cards: [
-        { av: 'QA', name: 'Phạm Quỳnh Anh', phone: '09xx556677', type: '🎓 SV', heat: 'warm', budget: '3 tr', source: 'TikTok', time: '2 ngày' },
-        { av: 'BT', name: 'Vũ Bảo Trân', phone: '07xx889900', type: '💼 Đi làm', heat: 'hot', budget: '5-6 tr', source: 'Referral', time: '2 ngày' }
+        { av: 'QA', name: 'Phạm Quỳnh Anh', phone: '09xx556677', type: '🎓 SV', heat: 'warm', budget: '3 tr', source: 'TikTok', time: '2 ngày', mine: false, exp: false },
+        { av: 'BT', name: 'Vũ Bảo Trân', phone: '07xx889900', type: '💼 Đi làm', heat: 'hot', budget: '5-6 tr', source: 'Referral', time: '2 ngày', mine: true, exp: false }
       ]},
       { title: 'Đã dẫn xem', cards: [
-        { av: 'MK', name: 'Đỗ Minh Khoa', phone: '09xx223344', type: '💼 Đi làm', heat: 'hot', budget: '5 tr', source: 'SEO Google', time: '3 ngày' },
-        { av: 'LN', name: 'Lý Ngọc Ngân', phone: '08xx667788', type: '🎓 SV', heat: 'warm', budget: '3-4 tr', source: 'Facebook', time: '4 ngày' }
+        { av: 'MK', name: 'Đỗ Minh Khoa', phone: '09xx223344', type: '💼 Đi làm', heat: 'hot', budget: '5 tr', source: 'SEO Google', time: '3 ngày', mine: true, exp: false },
+        { av: 'LN', name: 'Lý Ngọc Ngân', phone: '08xx667788', type: '🎓 SV', heat: 'warm', budget: '3-4 tr', source: 'Facebook', time: '4 ngày', mine: false, exp: false }
       ]},
       { title: 'Đã chốt', cards: [
-        { av: 'TD', name: 'Trịnh Anh Dũng', phone: '09xx990011', type: '💼 Đi làm', heat: 'hot', budget: '6 tr', source: 'Referral', time: 'Tuần này' },
-        { av: 'KO', name: 'Kim Oanh', phone: '07xx121314', type: '🌏 Nước ngoài', heat: 'hot', budget: '$600', source: 'TikTok', time: 'Tuần này' }
+        { av: 'TD', name: 'Trịnh Anh Dũng', phone: '09xx990011', type: '💼 Đi làm', heat: 'hot', budget: '6 tr', source: 'Referral', time: 'Tuần này', mine: true, exp: true },
+        { av: 'KO', name: 'Kim Oanh', phone: '07xx121314', type: '🌏 Nước ngoài', heat: 'hot', budget: '$600', source: 'TikTok', time: 'Tuần này', mine: false, exp: false }
       ]}
     ];
 
+    /* ---- Đăng ký từng khách vào 1 map để tra cứu khi bấm thẻ ---- */
+    var cardMap = {};
+    var _cid = 0;
+    columns.forEach(function (col) {
+      col.cards.forEach(function (c) { c.id = 'c' + (++_cid); c.col = col.title; cardMap[c.id] = c; });
+    });
+
+    function initials(name) {
+      var p = String(name || '').trim().split(/\s+/);
+      if (!p.length) return '?';
+      return (p.length === 1 ? p[0].slice(0, 2) : p[p.length - 2].charAt(0) + p[p.length - 1].charAt(0)).toUpperCase();
+    }
+
     function cardHTML(c) {
       var h = HEAT[c.heat] || HEAT.cold;
-      return '<div class="kc">' +
+      return '<div class="kc" data-id="' + c.id + '" data-heat="' + c.heat + '"' +
+        ' data-mine="' + (c.mine ? '1' : '0') + '" data-exp="' + (c.exp ? '1' : '0') + '">' +
         '<div class="kc__top">' +
-          '<span class="avatar">' + c.av + '</span>' +
+          '<span class="avatar">' + esc(c.av) + '</span>' +
           '<span style="flex:1;min-width:0">' +
-            '<span class="kc__name" style="display:block">' + c.name + '</span>' +
-            '<span class="kc__phone">' + c.phone + '</span>' +
+            '<span class="kc__name" style="display:block">' + esc(c.name) + '</span>' +
+            '<span class="kc__phone">' + esc(c.phone) + '</span>' +
           '</span>' +
         '</div>' +
         '<div class="kc__tags">' +
-          '<span class="tag">' + c.type + '</span>' +
+          '<span class="tag">' + esc(c.type) + '</span>' +
           '<span class="tag ' + h.cls + '">' + h.label + '</span>' +
         '</div>' +
         '<div class="kc__meta">' +
-          '<span><strong>' + c.budget + '</strong></span><span class="dot"></span>' +
-          '<span>' + c.source + '</span><span class="dot"></span>' +
-          '<span>' + c.time + '</span>' +
+          '<span><strong>' + esc(c.budget) + '</strong></span><span class="dot"></span>' +
+          '<span>' + esc(c.source) + '</span><span class="dot"></span>' +
+          '<span>' + esc(c.time) + '</span>' +
         '</div>' +
       '</div>';
     }
 
-    document.getElementById('kanban').innerHTML = columns.map(function (col) {
-      return '<div class="kcol">' +
-        '<div class="kcol__head"><span class="kcol__title">' + col.title + '</span>' +
-        '<span class="kcol__count">' + col.cards.length + '</span></div>' +
-        col.cards.map(cardHTML).join('') +
-      '</div>';
-    }).join('');
+    var elKanban = document.getElementById('kanban');
+    function renderKanban() {
+      elKanban.innerHTML = columns.map(function (col) {
+        return '<div class="kcol">' +
+          '<div class="kcol__head"><span class="kcol__title">' + esc(col.title) + '</span>' +
+          '<span class="kcol__count">' + col.cards.length + '</span></div>' +
+          col.cards.map(cardHTML).join('') +
+        '</div>';
+      }).join('');
+      applyFilter(); // giữ nguyên bộ lọc đang chọn sau khi render lại
+    }
+
+    /* ---- Chip lọc (chạy THẬT) ---- */
+    var filters = [
+      { t: 'Tất cả',      key: 'all',  active: true },
+      { t: 'Của tôi',     key: 'mine' },
+      { t: 'Sắp hết khóa', key: 'exp' },
+      { t: 'Hot 🔥',      key: 'hot' },
+      { t: 'Warm 🌤️',    key: 'warm' },
+      { t: 'Cold ❄️',    key: 'cold' }
+    ];
+    function filterCount(key) {
+      var n = 0;
+      columns.forEach(function (col) {
+        col.cards.forEach(function (c) {
+          if (key === 'all') n++;
+          else if (key === 'mine') { if (c.mine) n++; }
+          else if (key === 'exp') { if (c.exp) n++; }
+          else if (c.heat === key) n++;
+        });
+      });
+      return n;
+    }
+    var elFilters = document.getElementById('filters');
+    function renderFilters() {
+      elFilters.innerHTML = filters.map(function (f) {
+        return '<button class="chip' + (f.active ? ' is-active' : '') + '" data-key="' + f.key + '">' +
+          f.t + ' (' + filterCount(f.key) + ')</button>';
+      }).join('');
+    }
+    function currentKey() {
+      var active = elFilters.querySelector('.chip.is-active');
+      return active ? active.getAttribute('data-key') : 'all';
+    }
+    function applyFilter() {
+      var key = currentKey();
+      elKanban.querySelectorAll('.kc').forEach(function (el) {
+        var show = key === 'all' ||
+          (key === 'mine' && el.getAttribute('data-mine') === '1') ||
+          (key === 'exp' && el.getAttribute('data-exp') === '1') ||
+          (el.getAttribute('data-heat') === key);
+        el.style.display = show ? '' : 'none';
+      });
+    }
+    elFilters.addEventListener('click', function (e) {
+      var chip = e.target.closest('.chip');
+      if (!chip) return;
+      elFilters.querySelectorAll('.chip').forEach(function (c) { c.classList.remove('is-active'); });
+      chip.classList.add('is-active');
+      applyFilter();
+    });
+    renderFilters();
+
+    /* ---- Bấm thẻ khách → modal Chi tiết ---- */
+    var STAGES = columns.map(function (col) { return col.title; });
+    function detailBody(c) {
+      var h = HEAT[c.heat] || HEAT.cold;
+      var tel = 'tel:' + String(c.phone || '').replace(/[^0-9+]/g, '');
+      var history = [
+        { t: c.time, m: 'Khách để lại thông tin qua ' + c.source },
+        { t: 'Gần đây', m: 'NV đã gọi tư vấn, khách quan tâm phòng ' + c.budget },
+        { t: 'Ghi chú', m: 'Ưu tiên nhắn Zalo trong giờ hành chính' }
+      ];
+      var hist = history.map(function (x) {
+        return '<div style="display:flex;gap:10px;padding:8px 0;border-top:1px solid var(--border)">' +
+          '<span style="flex-shrink:0;width:64px;font-size:12px;color:var(--muted-fg)">' + esc(x.t) + '</span>' +
+          '<span style="font-size:13px;color:var(--fg)">' + esc(x.m) + '</span></div>';
+      }).join('');
+      return '' +
+        '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">' +
+          '<span class="avatar" style="width:44px;height:44px;font-size:15px">' + esc(c.av) + '</span>' +
+          '<div><div style="font-size:16px;font-weight:700;color:var(--fg)">' + esc(c.name) + '</div>' +
+          '<div style="font-size:13px;color:var(--muted-fg)">' + esc(c.phone) + '</div></div>' +
+        '</div>' +
+        '<div class="kc__tags" style="margin:0 0 12px">' +
+          '<span class="tag">' + esc(c.type) + '</span>' +
+          '<span class="tag ' + h.cls + '">' + h.label + '</span>' +
+          '<span class="tag">' + esc(c.col) + '</span>' +
+        '</div>' +
+        '<div class="kc__meta" style="margin:0 0 14px">' +
+          '<span>Ngân sách <strong>' + esc(c.budget) + '</strong></span><span class="dot"></span>' +
+          '<span>Nguồn: ' + esc(c.source) + '</span><span class="dot"></span>' +
+          '<span>' + esc(c.time) + '</span>' +
+        '</div>' +
+        '<div style="display:flex;gap:8px;margin-bottom:16px">' +
+          '<a class="btn btn--primary btn--sm" href="' + esc(tel) + '" style="flex:1;justify-content:center">Gọi</a>' +
+          '<button class="btn btn--ghost btn--sm" id="d_zalo" style="flex:1;justify-content:center">Nhắn Zalo</button>' +
+          '<button class="btn btn--ghost btn--sm" id="d_lich" style="flex:1;justify-content:center">Đặt lịch xem</button>' +
+        '</div>' +
+        '<div style="font-size:13px;font-weight:700;color:var(--fg);margin-bottom:2px">Lịch sử tương tác</div>' +
+        hist;
+    }
+    elKanban.addEventListener('click', function (e) {
+      var el = e.target.closest('.kc');
+      if (!el) return;
+      var c = cardMap[el.getAttribute('data-id')];
+      if (!c) return;
+      HT.modal({
+        title: 'Chi tiết khách', sub: c.name,
+        bodyHTML: detailBody(c),
+        submitLabel: 'Chuyển bước',
+        onSubmit: function (m, close) {
+          var idx = STAGES.indexOf(c.col);
+          if (idx < 0 || idx >= STAGES.length - 1) {
+            HT.toast('Khách đã ở bước cuối', 'warning');
+            return true;
+          }
+          moveCard(c, STAGES[idx + 1]);
+          HT.toast('Đã chuyển "' + c.name + '" → ' + STAGES[idx + 1], 'success');
+          return true;
+        }
+      });
+      var m = document.querySelector('.modal-backdrop.is-open') || document.querySelector('.modal-backdrop');
+      if (m) {
+        var z = m.querySelector('#d_zalo'); if (z) z.addEventListener('click', function () { HT.toast('Đang mở Zalo tới ' + c.name + '…', 'success'); });
+        var l = m.querySelector('#d_lich'); if (l) l.addEventListener('click', function () { HT.toast('Đã tạo lịch xem phòng cho ' + c.name, 'success'); });
+      }
+    });
+
+    function moveCard(c, toTitle) {
+      var from = columns.filter(function (col) { return col.title === c.col; })[0];
+      var to = columns.filter(function (col) { return col.title === toTitle; })[0];
+      if (!from || !to) return;
+      from.cards = from.cards.filter(function (x) { return x.id !== c.id; });
+      c.col = toTitle;
+      to.cards.push(c);
+      renderFilters();
+      renderKanban();
+    }
+
+    /* ---- Nút "Thêm khách" → modal form ---- */
+    document.getElementById('btnAdd').addEventListener('click', function () {
+      var typeOpts = ['🎓 SV', '💼 Đi làm', '🌏 Nước ngoài'].map(function (o) { return '<option>' + o + '</option>'; }).join('');
+      var heatOpts = '<option value="hot">Hot 🔥</option><option value="warm" selected>Warm 🌤️</option><option value="cold">Cold ❄️</option>';
+      var srcOpts = ['Facebook', 'TikTok', 'SEO Google', 'Referral'].map(function (o) { return '<option>' + o + '</option>'; }).join('');
+      HT.modal({
+        title: 'Thêm khách', sub: 'Khách sẽ vào cột "Khách mới"',
+        submitLabel: 'Lưu khách',
+        bodyHTML:
+          '<div class="mrow">' +
+            '<div class="mfield"><label class="mfield__label">Họ tên *</label><input id="f_ten" placeholder="Nguyễn Văn A"></div>' +
+            '<div class="mfield"><label class="mfield__label">Số điện thoại *</label><input id="f_sdt" placeholder="09xx xxx xxx"></div>' +
+          '</div>' +
+          '<div class="mrow">' +
+            '<div class="mfield"><label class="mfield__label">Loại khách</label><select id="f_type">' + typeOpts + '</select></div>' +
+            '<div class="mfield"><label class="mfield__label">Nhiệt</label><select id="f_heat">' + heatOpts + '</select></div>' +
+          '</div>' +
+          '<div class="mrow">' +
+            '<div class="mfield"><label class="mfield__label">Ngân sách</label><input id="f_budget" placeholder="3-4 tr"></div>' +
+            '<div class="mfield"><label class="mfield__label">Nguồn</label><select id="f_source">' + srcOpts + '</select></div>' +
+          '</div>',
+        onSubmit: function (m, close) {
+          var ten = (m.querySelector('#f_ten').value || '').trim();
+          var sdt = (m.querySelector('#f_sdt').value || '').trim();
+          if (!ten) { HT.toast('Vui lòng nhập họ tên', 'danger'); return false; }
+          if (!sdt) { HT.toast('Vui lòng nhập số điện thoại', 'danger'); return false; }
+          var c = {
+            id: 'c' + (++_cid),
+            av: initials(ten),
+            name: ten, phone: sdt,
+            type: m.querySelector('#f_type').value,
+            heat: m.querySelector('#f_heat').value,
+            budget: (m.querySelector('#f_budget').value || '').trim() || '—',
+            source: m.querySelector('#f_source').value,
+            time: 'Vừa xong', mine: true, exp: false,
+            col: columns[0].title
+          };
+          cardMap[c.id] = c;
+          columns[0].cards.unshift(c);
+          renderFilters();
+          renderKanban();
+          HT.toast('Đã thêm khách', 'success');
+          return true;
+        }
+      });
+    });
+
+    renderKanban();
   </script>
 </body>
 </html>

@@ -192,6 +192,18 @@
       return '<div class="act-row"><span class="avatar">' + a.av + '</span>' +
         '<span style="flex:1"><span class="act-row__t" style="display:block">' + a.t + '</span><span class="act-row__time">' + a.time + '</span></span></div>';
     }).join('');
+
+    // Ô tìm kiếm topbar → mở tìm kiếm toàn cục
+    var ts = document.getElementById('topSearch');
+    if (ts) { ts.style.cursor = 'pointer'; ts.addEventListener('click', function () { if (window.HTI && HTI.globalSearch) HTI.globalSearch(); }); }
+    // Chuông thông báo → modal "Cần xử lý"
+    var bb = document.getElementById('btnBell');
+    if (bb) bb.addEventListener('click', function () {
+      var html = alerts.map(function (a) {
+        return '<div class="row-item"><span class="row-item__ic">' + I('bell', 16) + '</span><span style="flex:1"><span class="row-item__t" style="display:block">' + HT.esc(a.t) + '</span><span class="row-item__s">' + HT.esc(a.s) + '</span></span></div>';
+      }).join('');
+      HT.modal({ title: 'Thông báo · Cần xử lý', sub: alerts.length + ' việc cần xử lý hôm nay', submitLabel: null, bodyHTML: html });
+    });
   </script>
 </body>
 </html>

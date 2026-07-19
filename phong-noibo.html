@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chi tiết phòng — HT HOME Nội bộ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/tokens.css" />
+  <link rel="stylesheet" href="assets/css/base.css" />
+  <link rel="stylesheet" href="assets/css/components.css" />
+  <link rel="stylesheet" href="assets/css/internal.css" />
+  <style>
+    /* ===== Back button ===== */
+    .pn-back { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--muted-fg); background: transparent; border: 0; cursor: pointer; padding: 0; }
+    .pn-back:hover { color: var(--fg); }
+
+    /* ===== Bố cục 2 cột ===== */
+    .pn-grid { display: grid; grid-template-columns: 1fr; gap: 20px; align-items: start; }
+    @media (min-width: 1024px) { .pn-grid { grid-template-columns: minmax(0,1fr) 320px; gap: 24px; } }
+
+    .panel { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-l); padding: 20px; box-shadow: var(--shadow-card); }
+    .panel + .panel { margin-top: 20px; }
+    .panel__title { font-size: 16px; font-weight: 700; color: var(--fg); margin-bottom: 14px; }
+
+    /* Gallery */
+    .gal-main { position: relative; border-radius: var(--radius-l); overflow: hidden; aspect-ratio: 16 / 10; background: var(--muted); }
+    .gal-count { position: absolute; bottom: 12px; right: 12px; display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: var(--radius-s); background: rgba(20,26,36,.78); color: #fff; font-size: 12px; font-weight: 600; }
+    .gal-thumbs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 8px; }
+    .gal-thumb { position: relative; aspect-ratio: 4 / 3; border-radius: var(--radius-s); overflow: hidden; cursor: pointer; background: var(--muted); }
+    .gal-thumb.is-active { outline: 2px solid var(--gold); outline-offset: 1px; }
+    .gal-thumb span { position: absolute; inset: 0; }
+    .video-btn { display: inline-flex; align-items: center; gap: 7px; margin-top: 12px; font-size: 13px; font-weight: 600; color: var(--fg); background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-pill); padding: 8px 14px; cursor: pointer; }
+    .video-btn .ic { color: var(--danger); }
+    .video-btn:hover { border-color: var(--gold); }
+
+    /* Header giá */
+    .ph-price { font-size: 26px; font-weight: 800; color: var(--fg); line-height: 1.15; }
+    .ph-price span { font-size: 14px; font-weight: 500; color: var(--muted-fg); }
+    .ph-line { font-size: 14px; color: var(--muted-fg); margin-top: 8px; }
+    .ph-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; border-radius: 999px; padding: 4px 11px; background: var(--success-soft); color: var(--success); margin-top: 12px; }
+    .ph-badge .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); }
+
+    /* AddrBox */
+    .addrbox { border: 1px solid var(--border); border-radius: var(--radius-m); padding: 14px 16px; background: var(--bg); }
+    .addrbox__addr { display: flex; align-items: flex-start; gap: 8px; font-size: 14px; font-weight: 600; color: var(--fg); }
+    .addrbox__addr .ic { color: var(--gold); margin-top: 1px; flex-shrink: 0; }
+    .addrbox__warn { display: flex; align-items: flex-start; gap: 7px; margin-top: 10px; font-size: 12.5px; color: var(--danger); }
+
+    /* Specs */
+    .specs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    @media (min-width: 560px) { .specs { grid-template-columns: repeat(3, 1fr); } }
+    @media (min-width: 1024px) { .specs { grid-template-columns: repeat(5, 1fr); } }
+    .spec { background: var(--bg); border-radius: var(--radius-m); padding: 14px 12px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; }
+    .spec__ic { width: 34px; height: 34px; border-radius: var(--radius-s); background: var(--gold-soft); color: var(--gold); display: inline-flex; align-items: center; justify-content: center; }
+    .spec__lbl { font-size: 12px; color: var(--muted-fg); }
+    .spec__val { font-size: 14px; font-weight: 700; color: var(--fg); }
+
+    /* Amenities */
+    .amenities { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    @media (min-width: 640px) { .amenities { grid-template-columns: repeat(3, 1fr); } }
+    .amenity { display: flex; align-items: center; gap: 9px; font-size: 14px; color: var(--fg); }
+    .amenity .chk { flex-shrink: 0; width: 20px; height: 20px; border-radius: 50%; background: var(--success-soft); color: var(--success); display: inline-flex; align-items: center; justify-content: center; }
+    .amenity .chk svg { width: 13px; height: 13px; }
+
+    /* Intro */
+    .intro p { font-size: 14.5px; color: var(--fg); line-height: 1.65; }
+    .intro p + p { margin-top: 10px; }
+
+    /* Cost */
+    .cost { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    @media (min-width: 640px) { .cost { grid-template-columns: repeat(4, 1fr); } }
+    .cost__item { border: 1px solid var(--border); border-radius: var(--radius-m); padding: 14px; }
+    .cost__lbl { font-size: 12px; color: var(--muted-fg); }
+    .cost__val { font-size: 15px; font-weight: 700; color: var(--fg); margin-top: 4px; }
+
+    /* Panel quản lý nội bộ */
+    @media (min-width: 1024px) { .pn-side { position: sticky; top: calc(var(--header-h, 64px) + 16px); } }
+    .mng-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+    .mng-row:last-of-type { border-bottom: 0; }
+    .mng-row .lbl { color: var(--muted-fg); }
+    .mng-row .val { font-weight: 700; color: var(--fg); }
+    .mng-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="app-sidebar" id="ht-sidebar" data-active="khophong"></div>
+    <main class="app-main">
+      <!-- Topbar -->
+      <header class="app-topbar">
+        <div style="display:flex;align-items:center;gap:12px">
+          <button class="btn-sidebar" id="btnSidebar" aria-label="Menu"></button>
+          <div>
+            <a class="pn-back" href="khophong.html" id="btnBack"></a>
+            <div class="app-topbar__title" id="pnTitle"></div>
+            <div class="app-topbar__sub" id="pnSub"></div>
+          </div>
+        </div>
+        <div class="app-topbar__actions">
+          <button class="btn btn--ghost btn--sm" id="btnShare" type="button"></button>
+          <button class="btn btn--primary btn--sm" id="btnEdit" type="button"></button>
+        </div>
+      </header>
+
+      <div class="app-content">
+        <div class="pn-grid" id="pnGrid"></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="assets/js/ht-ui.js"></script>
+  <script src="assets/js/ht-internal.js"></script>
+  <script>
+    (function () {
+      'use strict';
+      var I = HTI.icon;
+      var esc = HT.esc;
+
+      function svg(body, size) {
+        size = size || 16;
+        return '<svg class="ic" width="' + size + '" height="' + size + '" viewBox="0 0 24 24" fill="none" ' +
+          'stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + body + '</svg>';
+      }
+      var icCheck = svg('<path d="M20 6 9 17l-5-5"/>', 13);
+      var icShare = svg('<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/>', 15);
+
+      // ---- Topbar tĩnh ----
+      document.getElementById('btnSidebar').innerHTML = I('menu', 22);
+      document.getElementById('btnShare').innerHTML = icShare + 'Chia sẻ';
+      document.getElementById('btnEdit').innerHTML = I('settings', 15) + 'Sửa';
+
+      // ---- Lấy phòng theo ?i= ----
+      var ROOMS = window.ROOMS || [];
+      var i = parseInt(new URLSearchParams(location.search).get('i') || '0', 10);
+      if (isNaN(i) || i < 0 || i >= ROOMS.length) i = 0;
+      var r = ROOMS[i] || ROOMS[0];
+
+      var backEl = document.getElementById('btnBack');
+      var arrowLeft = svg('<path d="M19 12H5"/><path d="m12 19-7-7 7-7"/>', 14);
+
+      if (!r) {
+        backEl.innerHTML = arrowLeft + 'Kho phòng';
+        document.getElementById('pnTitle').textContent = 'Không tìm thấy phòng';
+        document.getElementById('pnSub').textContent = 'Kiểm tra lại đường dẫn';
+        document.getElementById('pnGrid').innerHTML =
+          '<div class="panel">Phòng không tồn tại. <a href="khophong.html" style="color:var(--primary);font-weight:600">Về kho phòng</a>.</div>';
+        return;
+      }
+
+      var catOf = window.catOf ? window.catOf(r) : (r.cat || r.ty || 'Phòng trọ');
+      var tags = (r.tags && r.tags.length) ? r.tags : (window.DEFAULT_TAGS || []);
+      var tagStr = tags.join(' ');
+      function hasTag(re) { return re.test(tagStr); }
+
+      // Mã phòng + tên tòa (suy từ r.t = "Loại — Địa chỉ tòa")
+      var toaNha = (r.t || '').split('—').slice(1).join('—').trim() || (r.quan || 'HT HOME');
+      var maPhong = r.rid || ('P.' + (i + 201));
+
+      document.title = maPhong + ' · ' + toaNha + ' — HT HOME Nội bộ';
+
+      // ---- Topbar động ----
+      backEl.innerHTML = arrowLeft + maPhong + ' · ' + toaNha;
+      document.getElementById('pnTitle').textContent = catOf + ' — ' + toaNha;
+      document.getElementById('pnSub').textContent = 'Mã: ' + maPhong + ' · Cập nhật hôm nay';
+
+      // ---- Gallery ----
+      var imgs = (r.imgs && r.imgs.length) ? r.imgs : ['#c8d8ff,#a0b8f0'];
+      function gradOf(v) {
+        if (!v) return 'background:var(--muted)';
+        if (/^https?:/i.test(v)) return "background-image:url('" + v + "');background-size:cover;background-position:center";
+        var cols = String(v).split(',').map(function (s) { return s.trim(); });
+        return 'background:' + (cols.length > 1 ? 'linear-gradient(135deg,' + cols.join(',') + ')' : cols[0]);
+      }
+      var thumbs = [];
+      for (var t = 0; t < 4; t++) thumbs.push(imgs[t % imgs.length]);
+      var galleryHTML =
+        '<div class="gal-main" id="galMain" style="' + gradOf(imgs[0]) + '">' +
+          '<span class="gal-count">' + HT.icon('area', 13) + Math.max(imgs.length, 4) + ' ảnh</span></div>' +
+        '<div class="gal-thumbs" id="galThumbs">' +
+          thumbs.map(function (v, idx) {
+            return '<div class="gal-thumb' + (idx === 0 ? ' is-active' : '') + '" data-g="' + esc(v) + '">' +
+              '<span style="' + gradOf(v) + '"></span></div>';
+          }).join('') +
+        '</div>' +
+        (r.video ? '<button class="video-btn" id="videoBtn" type="button">' + HT.icon('play', 14) + 'Video review (TikTok)</button>' : '');
+
+      // ---- Specs (suy từ tags) ----
+      var beds = hasTag(/(\d)\s*PN/i) ? (tagStr.match(/(\d)\s*PN/i)[1] + ' PN')
+        : hasTag(/studio/i) ? 'Studio'
+        : hasTag(/duplex/i) ? 'Duplex'
+        : hasTag(/penthouse/i) ? 'Penthouse'
+        : '1 PN';
+      var noithat = hasTag(/(Full|Đầy đủ|Cao cấp)/i) ? 'Full'
+        : hasTag(/(Cơ bản|Máy lạnh|Giường|Bàn ghế|Tủ)/i) ? 'Cơ bản'
+        : 'Cơ bản';
+      var design = hasTag(/duplex/i) ? 'Duplex'
+        : hasTag(/penthouse/i) ? 'Penthouse'
+        : hasTag(/studio/i) ? 'Studio'
+        : hasTag(/gác/i) ? 'Gác lửng'
+        : 'Tiêu chuẩn';
+      var specsArr = [
+        ['area', 'Diện tích', r.a || '20m²'],
+        ['bed', 'Phòng ngủ', beds],
+        ['building', 'Nội thất', noithat],
+        ['bath', 'WC', 'Riêng'],
+        ['layout-grid', 'Thiết kế', design]
+      ];
+      var specsHTML = specsArr.map(function (s) {
+        return '<div class="spec"><span class="spec__ic">' + HT.icon(s[0], 18) + '</span>' +
+          '<span class="spec__lbl">' + s[1] + '</span><span class="spec__val">' + esc(s[2]) + '</span></div>';
+      }).join('');
+
+      // ---- Amenities ----
+      var amen = tags.slice();
+      if (!amen.length) amen = ['Wifi', 'Chỗ để xe', 'Camera 24/7', 'Máy giặt chung', 'Giờ giấc tự do', 'An ninh 24/7'];
+      amen = amen.filter(function (v, k, a) { return a.indexOf(v) === k; });
+      var amenHTML = amen.map(function (a) {
+        return '<div class="amenity"><span class="chk">' + icCheck + '</span><span>' + esc(a) + '</span></div>';
+      }).join('');
+
+      // ---- Header phòng ----
+      var soTrong = (i % 3) + 1; // demo: số phòng trống còn lại
+      var headerHTML =
+        '<div class="ph-price">' + esc(r.p || 'Liên hệ') + '<span>/tháng</span></div>' +
+        '<div class="ph-line">' + esc(design) + ' · ' + (noithat === 'Full' ? 'Full nội thất' : 'Nội thất cơ bản') +
+          ' · Còn ' + soTrong + ' phòng trống</div>' +
+        '<span class="ph-badge"><span class="dot"></span>Còn trống</span>';
+
+      // ---- AddrBox ----
+      var diaChiDay = r.l || (r.quan ? r.quan + ', TP.HCM' : 'TP.HCM');
+      var tenDuong = diaChiDay.split(',').slice(1).join(',').trim() || diaChiDay;
+      var addrHTML =
+        '<div class="addrbox__addr">' + HT.icon('map-pin', 16) + '<span>' + esc(diaChiDay) + '</span></div>' +
+        '<div class="addrbox__warn">⚠ <span>Địa chỉ đầy đủ — chỉ nội bộ thấy, khách chỉ thấy tên đường (' + esc(tenDuong) + ').</span></div>';
+
+      // ---- Intro ----
+      var introHTML =
+        '<p>Phòng <b>' + esc(catOf) + '</b> tại <b>' + esc(r.quan || toaNha) + '</b>, diện tích ' + esc(r.a || '20m²') +
+        ', thiết kế thoáng đãng, phù hợp cho người đi làm và sinh viên. Khu vực an ninh, có camera và bảo vệ, thuận tiện di chuyển.</p>' +
+        '<p>Nội thất ' + noithat.toLowerCase() + ', sẵn sàng dọn vào ở ngay. Gần chợ, siêu thị, trường học và bệnh viện. ' +
+        'Giá thuê ' + esc(r.p || 'liên hệ') + '/tháng, cọc 1 tháng, hợp đồng tối thiểu 3 tháng.</p>';
+
+      // ---- Cột phải: panel quản lý nội bộ ----
+      var saleNames = ['Thu Hà', 'Minh Trọ', 'Quốc Bảo', 'Lan Anh', 'Đức Huy'];
+      var sidePanel =
+        '<div class="panel pn-side">' +
+          '<h2 class="panel__title">Quản lý nội bộ</h2>' +
+          '<div class="mng-row"><span class="lbl">Trạng thái</span><span class="val" style="color:var(--success)">Còn trống</span></div>' +
+          '<div class="mng-row"><span class="lbl">Mã phòng</span><span class="val">' + esc(maPhong) + '</span></div>' +
+          '<div class="mng-row"><span class="lbl">Sale phụ trách</span><span class="val">' + esc(saleNames[i % saleNames.length]) + '</span></div>' +
+          '<div class="mng-row"><span class="lbl">SĐT chủ nhà</span><span class="val">' + esc(r.phone || '—') + '</span></div>' +
+          '<div class="mng-actions">' +
+            '<button class="btn btn--primary btn--block" id="btnStatus" type="button">' + I('shield-check', 16) + 'Đổi trạng thái</button>' +
+            '<button class="btn btn--ghost btn--block" id="btnDeal" type="button">' + I('file-text', 16) + 'Tạo deal</button>' +
+          '</div>' +
+        '</div>';
+
+      // ---- Ghép layout ----
+      document.getElementById('pnGrid').innerHTML =
+        '<div>' +
+          '<div class="panel">' + galleryHTML + '</div>' +
+          '<div class="panel">' + headerHTML + '</div>' +
+          '<div class="panel">' + addrHTML + '</div>' +
+          '<div class="panel"><h2 class="panel__title">Thông tin phòng</h2><div class="specs">' + specsHTML + '</div></div>' +
+          '<div class="panel"><h2 class="panel__title">Tiện ích &amp; đặc điểm</h2><div class="amenities">' + amenHTML + '</div></div>' +
+          '<div class="panel"><h2 class="panel__title">Giới thiệu phòng</h2><div class="intro">' + introHTML + '</div></div>' +
+          '<div class="panel"><h2 class="panel__title">Chi phí hàng tháng</h2><div class="cost">' +
+            '<div class="cost__item"><div class="cost__lbl">Tiền điện</div><div class="cost__val">4.000đ/kWh</div></div>' +
+            '<div class="cost__item"><div class="cost__lbl">Tiền nước</div><div class="cost__val">150k/người</div></div>' +
+            '<div class="cost__item"><div class="cost__lbl">Gửi xe</div><div class="cost__val">100k/xe</div></div>' +
+            '<div class="cost__item"><div class="cost__lbl">Dịch vụ</div><div class="cost__val">200k/phòng</div></div>' +
+          '</div></div>' +
+        '</div>' +
+        '<aside>' + sidePanel + '</aside>';
+
+      // ---- Sự kiện gallery ----
+      var galMain = document.getElementById('galMain');
+      document.getElementById('galThumbs').addEventListener('click', function (e) {
+        var th = e.target.closest('.gal-thumb'); if (!th) return;
+        var keep = galMain.querySelector('.gal-count');
+        galMain.setAttribute('style', gradOf(th.getAttribute('data-g')));
+        if (keep) galMain.appendChild(keep);
+        this.querySelectorAll('.gal-thumb').forEach(function (x) { x.classList.remove('is-active'); });
+        th.classList.add('is-active');
+      });
+
+      // ---- Video ----
+      var videoBtn = document.getElementById('videoBtn');
+      if (videoBtn) {
+        videoBtn.addEventListener('click', function () {
+          if (r.video && /^https?:/i.test(r.video)) window.open(r.video, '_blank', 'noopener');
+          else HT.toast('Chưa gắn link video review', 'error');
+        });
+      }
+
+      // ---- Chia sẻ ----
+      document.getElementById('btnShare').addEventListener('click', function () {
+        var url = location.href;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(url).then(
+            function () { HT.toast('Đã copy link phòng', 'success'); },
+            function () { HT.toast(url, 'success'); }
+          );
+        } else { HT.toast(url, 'success'); }
+      });
+
+      // ---- Sửa (demo) ----
+      document.getElementById('btnEdit').addEventListener('click', function () {
+        HT.modal({
+          title: 'Sửa thông tin phòng', sub: maPhong + ' · ' + toaNha,
+          submitLabel: 'Lưu thay đổi',
+          bodyHTML:
+            '<div class="mrow">' +
+              '<div class="mfield"><label class="mfield__label">Giá thuê</label>' +
+                '<input type="text" data-f="gia" value="' + esc(r.p || '') + '" /></div>' +
+              '<div class="mfield"><label class="mfield__label">Diện tích</label>' +
+                '<input type="text" data-f="dt" value="' + esc(r.a || '') + '" /></div>' +
+            '</div>' +
+            '<div class="mfield" style="margin-top:12px"><label class="mfield__label">Trạng thái</label>' +
+              '<select data-f="tt"><option>Còn trống</option><option>Sắp trống</option><option>Đã cho thuê</option><option>Giữ chỗ</option></select></div>',
+          onSubmit: function () { HT.toast('Đã lưu thay đổi phòng', 'success'); return true; }
+        });
+      });
+
+      // ---- Panel nội bộ ----
+      document.getElementById('btnStatus').addEventListener('click', function () {
+        HT.modal({
+          title: 'Đổi trạng thái phòng', sub: maPhong,
+          submitLabel: 'Cập nhật',
+          bodyHTML:
+            '<div class="mfield"><label class="mfield__label">Trạng thái mới</label>' +
+              '<select data-f="tt"><option>Còn trống</option><option>Sắp trống</option><option>Đã cho thuê</option><option>Giữ chỗ</option><option>Ngưng</option></select></div>',
+          onSubmit: function () { HT.toast('Đã đổi trạng thái phòng', 'success'); return true; }
+        });
+      });
+      document.getElementById('btnDeal').addEventListener('click', function () {
+        HT.toast('Đã tạo deal mới cho ' + maPhong, 'success');
+      });
+    })();
+  </script>
+</body>
+</html>

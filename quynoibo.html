@@ -115,15 +115,18 @@
       document.getElementById('linkAll').insertAdjacentHTML('beforeend', arrow);
 
       // KPI số dư
+      var thuTotal = 487000000, chiTotal = 163000000;
+      function fmtTr(n) { return Math.round(n / 1e6) + ' tr'; }
+      function fmtVN(n) { return Number(n).toLocaleString('vi-VN'); }
       var kpis = [
         { label: 'Số dư quỹ', ic: 'banknote', val: '324 tr', delta: '<span class="up">+22%</span> so T6' },
-        { label: 'Đã thu tháng 7', ic: 'wallet', val: '487 tr', delta: '42 giao dịch' },
-        { label: 'Đã chi tháng 7', ic: 'file-text', val: '163 tr', delta: 'Lương + Marketing + OpEx' },
+        { label: 'Đã thu tháng 7', ic: 'wallet', key: 'thu', val: '487 tr', delta: '42 giao dịch' },
+        { label: 'Đã chi tháng 7', ic: 'file-text', key: 'chi', val: '163 tr', delta: 'Lương + Marketing + OpEx' },
         { label: 'HH chưa release', ic: 'users', val: '45 tr', delta: '12 deal chờ checkin +7' }
       ];
       document.getElementById('kpiRow').innerHTML = kpis.map(function (k) {
         return '<div class="kpi"><div class="kpi__top"><span>' + k.label + '</span><span class="kpi__ic">' + I(k.ic, 18) + '</span></div>' +
-          '<div class="kpi__val">' + k.val + '</div><div class="kpi__delta">' + k.delta + '</div></div>';
+          '<div class="kpi__val"' + (k.key ? ' data-kpi="' + k.key + '"' : '') + '>' + k.val + '</div><div class="kpi__delta">' + k.delta + '</div></div>';
       }).join('');
 
       // Giao dịch gần đây — dir: 'in' | 'out'
@@ -135,15 +138,19 @@
         { dir: 'in', t: 'HH deal #1035', s: 'Chuyển khoản · 01/07', amt: '+320.000' },
         { dir: 'out', t: 'Thuê văn phòng T7', s: 'OpEx · 01/07', amt: '−15.000.000' }
       ];
-      document.getElementById('txList').innerHTML = txs.map(function (x) {
+      function renderTx(x) {
         var isIn = x.dir === 'in';
         var ic = isIn ? 'wallet' : 'file-text';
         return '<div class="tx">' +
           '<span class="tx__ic ' + (isIn ? 'tx__ic--in' : 'tx__ic--out') + '">' + I(ic, 18) + '</span>' +
-          '<span class="tx__body"><span class="tx__t">' + x.t + '</span><span class="tx__s">' + x.s + '</span></span>' +
-          '<span class="tx__amt ' + (isIn ? 'tx__amt--in' : 'tx__amt--out') + '">' + x.amt + '</span>' +
+          '<span class="tx__body"><span class="tx__t">' + HT.esc(x.t) + '</span><span class="tx__s">' + HT.esc(x.s) + '</span></span>' +
+          '<span class="tx__amt ' + (isIn ? 'tx__amt--in' : 'tx__amt--out') + '">' + HT.esc(x.amt) + '</span>' +
           '</div>';
-      }).join('');
+      }
+      function renderTxList() {
+        document.getElementById('txList').innerHTML = txs.slice(0, 6).map(renderTx).join('');
+      }
+      renderTxList();
 
       // HH chờ release
       var rels = [
@@ -161,12 +168,53 @@
       }).join('');
 
       document.getElementById('btnExcel').addEventListener('click', function () {
-        alert('Đang xuất file Excel quỹ nội bộ (demo).');
+        HT.toast('Đang xuất… (demo)', 'success');
       });
+
       document.getElementById('btnAdd').addEventListener('click', function () {
-        alert('Thêm giao dịch mới (demo).');
+        var body =
+          '<div class="mfield"><label class="mfield__label">Loại</label>' +
+            '<select id="fLoai"><option value="in">Thu</option><option value="out">Chi</option></select></div>' +
+          '<div class="mfield"><label class="mfield__label">Nội dung</label>' +
+            '<input id="fND" type="text" placeholder="VD: HH deal #1055 (Nguyễn An · P.210)"/></div>' +
+          '<div class="mrow">' +
+            '<div class="mfield"><label class="mfield__label">Số tiền (đ)</label>' +
+              '<input id="fST" type="number" min="0" placeholder="1000000"/></div>' +
+            '<div class="mfield"><label class="mfield__label">Kênh</label>' +
+              '<select id="fKenh"><option>Chuyển khoản</option><option>Tiền mặt</option></select></div>' +
+          '</div>' +
+          '<div class="mfield"><label class="mfield__label">Ngày</label>' +
+            '<input id="fNgay" type="date"/></div>';
+        HT.modal({
+          title: 'Thêm giao dịch', sub: 'Ghi nhận thu/chi vào quỹ nội bộ',
+          submitLabel: 'Thêm', bodyHTML: body,
+          onSubmit: function (m) {
+            var loai = m.querySelector('#fLoai').value;
+            var nd = m.querySelector('#fND').value.trim();
+            var st = parseInt(m.querySelector('#fST').value, 10);
+            var kenh = m.querySelector('#fKenh').value;
+            var ngay = m.querySelector('#fNgay').value;
+            if (!nd) { HT.toast('Nhập nội dung giao dịch', 'danger'); return false; }
+            if (!st || st <= 0) { HT.toast('Nhập số tiền hợp lệ', 'danger'); return false; }
+            var isIn = loai === 'in';
+            var dsub = kenh + (ngay ? ' · ' + ngay.split('-').reverse().slice(0, 2).join('/') : '');
+            txs.unshift({ dir: loai, t: nd, s: dsub, amt: (isIn ? '+' : '−') + fmtVN(st) });
+            renderTxList();
+            if (isIn) { thuTotal += st; var e1 = document.querySelector('[data-kpi=thu]'); if (e1) e1.textContent = fmtTr(thuTotal); }
+            else { chiTotal += st; var e2 = document.querySelector('[data-kpi=chi]'); if (e2) e2.textContent = fmtTr(chiTotal); }
+            HT.toast('Đã thêm giao dịch', 'success');
+            return true;
+          }
+        });
       });
-      document.getElementById('linkAll').addEventListener('click', function (e) { e.preventDefault(); });
+
+      document.getElementById('linkAll').addEventListener('click', function (e) {
+        e.preventDefault();
+        HT.modal({
+          title: 'Tất cả giao dịch', sub: txs.length + ' giao dịch', wide: true, submitLabel: null,
+          bodyHTML: '<div style="max-height:60vh;overflow:auto">' + txs.map(renderTx).join('') + '</div>'
+        });
+      });
     })();
   </script>
 </body>

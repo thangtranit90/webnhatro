@@ -47,7 +47,7 @@
           <button class="btn-sidebar" id="btnSidebar" aria-label="Menu"></button>
           <div>
             <div class="app-topbar__title">Giỏ hàng / Kho phòng</div>
-            <div class="app-topbar__sub">1.024 phòng · 247 còn trống · 62 sắp trống</div>
+            <div class="app-topbar__sub" id="kpTopSub"></div>
           </div>
         </div>
         <div class="app-topbar__actions">
@@ -113,7 +113,7 @@
       function catOf(r) { return window.catOf ? window.catOf(r) : (r.cat || r.ty); }
       function toCard(r, i) {
         return {
-          href: 'detail.html?i=' + i,
+          href: 'phong-noibo.html?i=' + i,
           img: (r.imgs && r.imgs[0]) || '',
           price: r.p,
           type: shortType(catOf(r)),
@@ -127,27 +127,7 @@
       }
 
       // ---- Tabs trạng thái ----
-      // Demo: chỉ "Tất cả" và "Còn trống" có dữ liệu thật; các tab khác hiển thị tập con hoặc thông báo.
-      var tabs = [
-        { k: 'all', label: 'Tất cả', cnt: '1.024' },
-        { k: 'trong', label: 'Còn trống', cnt: '247' },
-        { k: 'saptrong', label: 'Sắp trống', cnt: '62' },
-        { k: 'giucho', label: 'Giữ chỗ', cnt: '18' },
-        { k: 'demo', label: 'Demo', cnt: '34' },
-        { k: 'ngung', label: 'Ngưng', cnt: '12' }
-      ];
-      var activeTab = 'all';
-      var gridEl = document.getElementById('kpGrid');
-      var searchEl = document.getElementById('kpSearch');
-
-      function renderTabs() {
-        document.getElementById('kpTabs').innerHTML = tabs.map(function (t) {
-          return '<button class="kp-tab' + (t.k === activeTab ? ' is-active' : '') +
-            '" type="button" data-k="' + t.k + '">' + HT.esc(t.label) +
-            '<span class="kp-tab__cnt">' + t.cnt + '</span></button>';
-        }).join('');
-      }
-
+      // Số đếm khớp dữ liệu thật: "Tất cả" = tổng ROOMS; các tab khác = tập con demo (luôn ≤ tổng).
       // Tập phòng theo tab (demo dựa trên ROOMS thật)
       function roomsForTab(k) {
         if (k === 'all') return rooms.slice();
@@ -157,6 +137,34 @@
         if (k === 'demo') return rooms.filter(function (r) { return !!r.video; });
         if (k === 'ngung') return [];                                  // không hiển thị phòng ngưng ở demo
         return rooms.slice();
+      }
+
+      var tabs = [
+        { k: 'all', label: 'Tất cả' },
+        { k: 'trong', label: 'Còn trống' },
+        { k: 'saptrong', label: 'Sắp trống' },
+        { k: 'giucho', label: 'Giữ chỗ' },
+        { k: 'demo', label: 'Demo' },
+        { k: 'ngung', label: 'Ngưng' }
+      ].map(function (t) { t.cnt = roomsForTab(t.k).length; return t; });
+      var activeTab = 'all';
+      var gridEl = document.getElementById('kpGrid');
+      var searchEl = document.getElementById('kpSearch');
+
+      // ---- Dòng phụ topbar: số liệu thật ----
+      (function () {
+        var trong = roomsForTab('trong').length;
+        var sap = roomsForTab('saptrong').length;
+        document.getElementById('kpTopSub').textContent =
+          rooms.length + ' phòng · ' + trong + ' còn trống · ' + sap + ' sắp trống';
+      })();
+
+      function renderTabs() {
+        document.getElementById('kpTabs').innerHTML = tabs.map(function (t) {
+          return '<button class="kp-tab' + (t.k === activeTab ? ' is-active' : '') +
+            '" type="button" data-k="' + t.k + '">' + HT.esc(t.label) +
+            '<span class="kp-tab__cnt">' + t.cnt + '</span></button>';
+        }).join('');
       }
 
       function renderGrid() {
