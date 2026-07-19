@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Đăng ký thành viên — HT HOME</title>
+  <meta name="description" content="Đăng ký thành viên HT HOME — nhận ngay ưu đãi 500.000đ cho lần thuê phòng đầu tiên và 200.000đ mỗi lần giới thiệu bạn bè chốt deal." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/tokens.css" />
+  <link rel="stylesheet" href="assets/css/base.css" />
+  <link rel="stylesheet" href="assets/css/components.css" />
+  <style>
+    /* ===== Trang Đăng ký — style riêng ===== */
+    .signup { padding-block: 28px 48px; }
+    @media (min-width: 1024px) { .signup { padding-block: 44px 64px; } }
+
+    .signup__grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+    @media (min-width: 1024px) { .signup__grid { grid-template-columns: 1fr 1fr; gap: 28px; align-items: stretch; } }
+
+    /* --- Panel form (trái) --- */
+    .form-panel {
+      background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-l);
+      padding: 26px 22px; order: 1;
+    }
+    @media (min-width: 640px) { .form-panel { padding: 34px 32px; } }
+    .form-panel__h { font-size: 22px; font-weight: 800; letter-spacing: -.01em; color: var(--fg); }
+    @media (min-width: 768px) { .form-panel__h { font-size: 26px; } }
+    .form-panel__sub { font-size: 14px; line-height: 1.6; color: var(--muted-fg); margin-top: 8px; }
+    .form-panel__sub b { color: var(--fg); font-weight: 700; }
+
+    .field { margin-top: 20px; }
+    .field__label { display: block; font-size: 13px; font-weight: 700; color: var(--fg); margin-bottom: 8px; }
+    .field__input {
+      width: 100%; border: 1px solid var(--input); border-radius: var(--radius-s);
+      padding: 12px 14px; font-size: 15px; color: var(--fg); background: var(--card);
+    }
+    .field__input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--gold-soft); }
+
+    /* OTP boxes */
+    .otp-row { display: flex; gap: 10px; }
+    .otp-box {
+      width: 100%; max-width: 60px; aspect-ratio: 1 / 1; text-align: center;
+      border: 1px solid var(--input); border-radius: var(--radius-s);
+      font-size: 22px; font-weight: 700; color: var(--fg); background: var(--card);
+    }
+    .otp-box:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--gold-soft); }
+
+    .form-panel__submit { margin-top: 24px; }
+    .form-panel__error { color: var(--danger); font-size: 13px; font-weight: 600; margin-top: 12px; min-height: 18px; }
+    .form-panel__foot { font-size: 14px; color: var(--muted-fg); margin-top: 18px; text-align: center; }
+    .form-panel__foot a { color: var(--primary); font-weight: 700; }
+    .form-panel__foot a:hover { text-decoration: underline; }
+
+    /* --- Panel lợi ích (phải) --- */
+    .benefits {
+      order: 2; background: var(--primary); color: #fff; border-radius: var(--radius-l);
+      padding: 30px 24px; display: flex; flex-direction: column;
+    }
+    @media (min-width: 640px) { .benefits { padding: 40px 34px; } }
+    .benefits__kicker {
+      display: inline-flex; align-self: flex-start; align-items: center; gap: 7px;
+      background: rgba(244,183,64,.16); color: var(--gold); padding: 6px 13px;
+      border-radius: var(--radius-pill); font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+    }
+    .benefits__h { color: #fff; font-size: 24px; font-weight: 800; line-height: 1.2; letter-spacing: -.01em; margin-top: 18px; }
+    @media (min-width: 768px) { .benefits__h { font-size: 28px; } }
+    .benefits__list { display: flex; flex-direction: column; gap: 20px; margin-top: 28px; }
+    .benefit { display: flex; align-items: flex-start; gap: 14px; }
+    .benefit__icon {
+      width: 44px; height: 44px; border-radius: var(--radius-m); flex-shrink: 0;
+      background: rgba(244,183,64,.16); color: var(--gold);
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    .benefit__t { font-size: 15px; font-weight: 700; color: #fff; }
+    .benefit__d { font-size: 13px; line-height: 1.5; color: rgba(255,255,255,.72); margin-top: 3px; }
+  </style>
+</head>
+<body>
+  <div id="ht-header" data-active=""></div>
+
+  <main>
+    <section class="signup">
+      <div class="container signup__grid">
+
+        <!-- PANEL TRÁI: FORM -->
+        <div class="form-panel">
+          <h1 class="form-panel__h">Đăng ký thành viên</h1>
+          <p class="form-panel__sub">Nhận ngay ưu đãi <b>500.000₫</b> khi thuê phòng đầu tiên + <b>200.000₫</b> mỗi bạn giới thiệu chốt deal.</p>
+
+          <form id="signupForm" novalidate>
+            <div class="field">
+              <label class="field__label" for="fName">Họ và tên</label>
+              <input class="field__input" type="text" id="fName" name="name" placeholder="Nguyễn Văn A" autocomplete="name" />
+            </div>
+
+            <div class="field">
+              <label class="field__label" for="fPhone">Số điện thoại</label>
+              <input class="field__input" type="tel" id="fPhone" name="phone" placeholder="09xx xxx xxx" autocomplete="tel" inputmode="tel" />
+            </div>
+
+            <div class="field">
+              <label class="field__label" for="otp0">Mã OTP (gửi qua SMS)</label>
+              <div class="otp-row" id="otpRow">
+                <input class="otp-box" id="otp0" type="text" inputmode="numeric" maxlength="1" aria-label="Số OTP 1" />
+                <input class="otp-box" type="text" inputmode="numeric" maxlength="1" aria-label="Số OTP 2" />
+                <input class="otp-box" type="text" inputmode="numeric" maxlength="1" aria-label="Số OTP 3" />
+                <input class="otp-box" type="text" inputmode="numeric" maxlength="1" aria-label="Số OTP 4" />
+              </div>
+            </div>
+
+            <div class="form-panel__error" id="formError" role="alert"></div>
+
+            <button class="btn btn--primary btn--block form-panel__submit" type="submit">Xác nhận &amp; Đăng ký</button>
+          </form>
+
+          <p class="form-panel__foot">Đã có tài khoản? <a href="dashboard.html">Đăng nhập</a></p>
+        </div>
+
+        <!-- PANEL PHẢI: LỢI ÍCH -->
+        <aside class="benefits">
+          <span class="benefits__kicker" id="bKicker">Thành viên trọ xịn</span>
+          <h2 class="benefits__h">Đăng ký một lần, tiết kiệm mỗi lần thuê.</h2>
+          <div class="benefits__list" id="benefitsList"></div>
+        </aside>
+
+      </div>
+    </section>
+  </main>
+
+  <div id="ht-footer"></div>
+
+  <script src="assets/js/ht-ui.js"></script>
+  <script>
+  (function () {
+    'use strict';
+
+    var esc = (window.HT && HT.esc) || function (s) { return String(s == null ? '' : s); };
+
+    /* ---- Icon nội bộ (ht-ui.js chưa có: message) ---- */
+    function pico(name, size) {
+      size = size || 18;
+      var P = {
+        message: '<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>'
+      };
+      return '<svg class="ic" width="' + size + '" height="' + size + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (P[name] || '') + '</svg>';
+    }
+    function ico(name, size) {
+      return (window.HT && HT.icon && HT.icon(name)) ? HT.icon(name, size) : pico(name, size);
+    }
+
+    /* ---- Kicker + danh sách lợi ích ---- */
+    document.getElementById('bKicker').innerHTML = ico('gift', 13) + ' Thành viên trọ xịn';
+
+    var BENEFITS = [
+      { icon: 'gift',  t: 'Giảm ngay 500.000₫', d: 'Áp dụng cho lần thuê phòng đầu tiên (HĐ ≥ 6 tháng)' },
+      { icon: 'star',  t: 'Thưởng 200.000₫ / giới thiệu', d: 'Mỗi bạn được bạn giới thiệu chốt deal thành công' },
+      { icon: 'msg',   t: 'Chat với sale, không cần Zalo', d: 'Xem số điện thoại + số tháng cọc ngay khi đăng ký' },
+      { icon: 'heart', t: 'Lưu phòng yêu thích', d: 'Đặt lịch xem phòng · Nhắc khi có phòng mới ở khu vực bạn quan tâm' }
+    ];
+    document.getElementById('benefitsList').innerHTML = BENEFITS.map(function (b) {
+      var iconHtml = b.icon === 'msg' ? pico('message', 20) : ico(b.icon, 20);
+      return '<div class="benefit">' +
+        '<span class="benefit__icon">' + iconHtml + '</span>' +
+        '<div><div class="benefit__t">' + esc(b.t) + '</div>' +
+        '<div class="benefit__d">' + esc(b.d) + '</div></div>' +
+      '</div>';
+    }).join('');
+
+    /* ---- OTP: tự nhảy ô + chỉ nhận số ---- */
+    var otpBoxes = Array.prototype.slice.call(document.querySelectorAll('.otp-box'));
+    otpBoxes.forEach(function (box, i) {
+      box.addEventListener('input', function () {
+        box.value = box.value.replace(/\D/g, '').slice(0, 1);
+        if (box.value && i < otpBoxes.length - 1) otpBoxes[i + 1].focus();
+      });
+      box.addEventListener('keydown', function (e) {
+        if (e.key === 'Backspace' && !box.value && i > 0) otpBoxes[i - 1].focus();
+      });
+    });
+
+    /* ---- Submit: validate cơ bản → lưu localStorage → sang taikhoan.html ---- */
+    var form = document.getElementById('signupForm');
+    var errEl = document.getElementById('formError');
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var name = document.getElementById('fName').value.trim();
+      var phone = document.getElementById('fPhone').value.trim();
+
+      if (!name) { errEl.textContent = 'Vui lòng nhập họ và tên.'; document.getElementById('fName').focus(); return; }
+      if (!phone) { errEl.textContent = 'Vui lòng nhập số điện thoại.'; document.getElementById('fPhone').focus(); return; }
+      errEl.textContent = '';
+
+      try {
+        localStorage.setItem('ht_user', JSON.stringify({ name: name, phone: phone }));
+      } catch (_) { /* localStorage có thể bị chặn — vẫn cho chuyển trang demo */ }
+
+      window.location.href = 'taikhoan.html';
+    });
+  })();
+  </script>
+</body>
+</html>

@@ -17,7 +17,10 @@ jobs:
       - name: Gom rieng cac file website (khong dua tai lieu noi bo len web)
         run: |
           mkdir -p site-upload
-          cp index.html detail.html timphong.html dashboard.html chon-loai.html them-tin.html \
+          cp index.html detail.html timphong.html \
+             vechungtoi.html dieukhoan.html baomat.html 404.html \
+             dangky.html taikhoan.html chat.html datlich.html \
+             dashboard.html chon-loai.html them-tin.html \
              data.js footer.js login.js ht-home-logo.png \
              manifest.json sw.js _headers _redirects \
              site-upload/

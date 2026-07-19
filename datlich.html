@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Đặt lịch xem phòng — HT HOME</title>
+  <meta name="description" content="Đặt lịch xem phòng HT HOME — chọn ngày giờ, Sale sẽ xác nhận và dẫn bạn đi xem phòng thực tế." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/tokens.css" />
+  <link rel="stylesheet" href="assets/css/base.css" />
+  <link rel="stylesheet" href="assets/css/components.css" />
+  <style>
+    /* ===== Trang Đặt lịch xem phòng — style riêng ===== */
+    .book { padding-block: 32px 56px; }
+    .book__inner { max-width: 560px; margin-inline: auto; }
+
+    .book-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius-l); padding: 24px; box-shadow: var(--shadow-card);
+    }
+    @media (min-width: 768px) { .book-card { padding: 32px; } }
+
+    .book-card__title { font-size: 22px; font-weight: 800; color: var(--fg); letter-spacing: -.01em; }
+    .book-card__sub { font-size: 14px; color: var(--muted-fg); margin-top: 6px; }
+
+    .book-form { margin-top: 24px; display: flex; flex-direction: column; gap: 18px; }
+    .field { display: flex; flex-direction: column; gap: 7px; }
+    .field__label { font-size: 13px; font-weight: 700; color: var(--fg); }
+    .field__label .req { color: var(--danger); }
+    .field__hint { font-size: 12px; color: var(--muted-fg); }
+
+    .inp {
+      width: 100%; border: 1px solid var(--input); border-radius: var(--radius-s);
+      padding: 12px 14px; font-size: 14px; color: var(--fg); background: var(--card);
+    }
+    .inp:focus { outline: none; border-color: var(--primary); }
+    .inp--readonly { background: var(--muted); color: var(--muted-fg); font-weight: 600; }
+    textarea.inp { resize: vertical; min-height: 84px; }
+
+    /* Chip khung giờ */
+    .time-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .time-chip {
+      padding: 9px 16px; border-radius: var(--radius-pill);
+      border: 1px solid var(--border); background: var(--card);
+      font-size: 14px; font-weight: 600; color: var(--muted-fg); transition: all .15s;
+    }
+    .time-chip:hover { border-color: var(--muted-fg); color: var(--fg); }
+    .time-chip.is-on { background: var(--primary); border-color: var(--primary); color: #fff; }
+
+    .field__error { font-size: 12px; font-weight: 600; color: var(--danger); display: none; }
+    .field.has-error .field__error { display: block; }
+    .field.has-error .inp { border-color: var(--danger); }
+
+    .book-submit { margin-top: 4px; }
+
+    /* Thông báo thành công */
+    .book-success { display: none; text-align: center; padding: 12px 0; }
+    .book-success.is-show { display: block; }
+    .success-icon {
+      width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px;
+      background: var(--success-soft); color: var(--success);
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    .book-success__t { font-size: 20px; font-weight: 800; color: var(--fg); }
+    .book-success__d { font-size: 14px; color: var(--muted-fg); margin-top: 8px; line-height: 1.55; }
+    .book-success__acts { margin-top: 22px; display: flex; flex-direction: column; gap: 10px; }
+    @media (min-width: 480px) { .book-success__acts { flex-direction: row; justify-content: center; } }
+  </style>
+</head>
+<body>
+  <div id="ht-header" data-active=""></div>
+
+  <main>
+    <section class="book">
+      <div class="container">
+        <div class="book__inner">
+          <div class="book-card">
+
+            <!-- FORM -->
+            <div id="bookView">
+              <h1 class="book-card__title">Đặt lịch xem phòng</h1>
+              <p class="book-card__sub">Chọn thời gian, Sale sẽ xác nhận và dẫn bạn đi xem.</p>
+
+              <form class="book-form" id="bookForm" novalidate>
+                <div class="field" id="fRoom" style="display:none;">
+                  <label class="field__label" for="bRoom">Phòng muốn xem</label>
+                  <input class="inp inp--readonly" id="bRoom" type="text" readonly />
+                </div>
+
+                <div class="field" id="fName">
+                  <label class="field__label" for="bName">Họ và tên <span class="req">*</span></label>
+                  <input class="inp" id="bName" type="text" placeholder="Nguyễn Văn A" />
+                  <div class="field__error">Vui lòng nhập họ và tên.</div>
+                </div>
+
+                <div class="field" id="fPhone">
+                  <label class="field__label" for="bPhone">Số điện thoại <span class="req">*</span></label>
+                  <input class="inp" id="bPhone" type="tel" inputmode="tel" placeholder="09xx xxx xxx" />
+                  <div class="field__error">Vui lòng nhập số điện thoại hợp lệ (ít nhất 9 số).</div>
+                </div>
+
+                <div class="field" id="fDate">
+                  <label class="field__label" for="bDate">Chọn ngày <span class="req">*</span></label>
+                  <input class="inp" id="bDate" type="date" />
+                  <div class="field__error">Vui lòng chọn ngày.</div>
+                </div>
+
+                <div class="field" id="fTime">
+                  <label class="field__label">Khung giờ <span class="req">*</span></label>
+                  <div class="time-chips" id="timeChips"></div>
+                  <div class="field__error">Vui lòng chọn khung giờ.</div>
+                </div>
+
+                <div class="field">
+                  <label class="field__label" for="bNote">Ghi chú <span class="field__hint">(tuỳ chọn)</span></label>
+                  <textarea class="inp" id="bNote" placeholder="Ví dụ: đi cùng 1 người, cần chỗ để xe máy…"></textarea>
+                </div>
+
+                <button type="submit" class="btn btn--primary btn--block book-submit">Xác nhận đặt lịch</button>
+              </form>
+            </div>
+
+            <!-- THÀNH CÔNG -->
+            <div class="book-success" id="bookSuccess">
+              <span class="success-icon" id="successIcon"></span>
+              <div class="book-success__t">Đã gửi yêu cầu!</div>
+              <p class="book-success__d">Sale sẽ gọi xác nhận trong 15 phút. Vui lòng để ý điện thoại nhé.</p>
+              <div class="book-success__acts">
+                <a class="btn btn--primary" href="index.html">Về trang chủ</a>
+                <a class="btn btn--ghost" href="timphong.html">Xem thêm phòng</a>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="ht-footer"></div>
+
+  <script src="assets/js/ht-ui.js"></script>
+  <script>
+  (function () {
+    'use strict';
+
+    var esc = (window.HT && HT.esc) || function (s) { return String(s == null ? '' : s); };
+    var htico = (window.HT && HT.icon) || function () { return ''; };
+
+    function qparam(k) {
+      var m = new RegExp('[?&]' + k + '=([^&]*)').exec(location.search);
+      return m ? decodeURIComponent(m[1].replace(/\+/g, ' ')) : '';
+    }
+
+    /* ---- Phòng từ query ?phong= ---- */
+    var phong = qparam('phong');
+    if (phong) {
+      document.getElementById('fRoom').style.display = 'flex';
+      document.getElementById('bRoom').value = phong;
+    }
+
+    /* ---- Chip khung giờ (chọn 1) ---- */
+    var TIMES = ['09:00', '10:30', '14:00', '15:30', '17:00'];
+    var timeChips = document.getElementById('timeChips');
+    var pickedTime = '';
+    timeChips.innerHTML = TIMES.map(function (t) {
+      return '<button type="button" class="time-chip" data-t="' + esc(t) + '">' + esc(t) + '</button>';
+    }).join('');
+    timeChips.addEventListener('click', function (e) {
+      var b = e.target.closest('.time-chip');
+      if (!b) return;
+      Array.prototype.forEach.call(timeChips.querySelectorAll('.time-chip'), function (c) { c.classList.remove('is-on'); });
+      b.classList.add('is-on');
+      pickedTime = b.getAttribute('data-t');
+      document.getElementById('fTime').classList.remove('has-error');
+    });
+
+    /* ---- Đặt min cho input date = hôm nay ---- */
+    var dateInp = document.getElementById('bDate');
+    (function () {
+      var d = new Date();
+      var iso = d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
+      dateInp.min = iso;
+    })();
+
+    /* ---- Xoá lỗi khi người dùng sửa ---- */
+    ['bName', 'bPhone', 'bDate'].forEach(function (id) {
+      var el = document.getElementById(id);
+      el.addEventListener('input', function () { el.closest('.field').classList.remove('has-error'); });
+    });
+
+    /* ---- Validate + submit ---- */
+    var form = document.getElementById('bookForm');
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var ok = true;
+
+      var name = document.getElementById('bName').value.trim();
+      if (!name) { document.getElementById('fName').classList.add('has-error'); ok = false; }
+
+      var phone = document.getElementById('bPhone').value.trim();
+      var digits = phone.replace(/\D/g, '');
+      if (digits.length < 9) { document.getElementById('fPhone').classList.add('has-error'); ok = false; }
+
+      if (!dateInp.value) { document.getElementById('fDate').classList.add('has-error'); ok = false; }
+
+      if (!pickedTime) { document.getElementById('fTime').classList.add('has-error'); ok = false; }
+
+      if (!ok) {
+        var firstErr = document.querySelector('.field.has-error');
+        if (firstErr) firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+
+      /* Thành công */
+      document.getElementById('successIcon').innerHTML = htico('shield-check', 30);
+      document.getElementById('bookView').style.display = 'none';
+      document.getElementById('bookSuccess').classList.add('is-show');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  })();
+  </script>
+</body>
+</html>

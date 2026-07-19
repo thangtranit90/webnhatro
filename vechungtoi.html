@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Về chúng tôi — HT HOME</title>
+  <meta name="description" content="HT HOME là nền tảng tìm thuê phòng minh bạch tại TP.HCM — do Công ty Cổ phần Bất động sản HTHOME xây dựng, với đội ngũ Sale được đào tạo bài bản." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/tokens.css" />
+  <link rel="stylesheet" href="assets/css/base.css" />
+  <link rel="stylesheet" href="assets/css/components.css" />
+  <style>
+    /* ===== Trang Về chúng tôi — style riêng ===== */
+
+    /* Hero */
+    .about-hero { background: var(--primary); }
+    .about-hero__inner { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 16px; padding-block: 52px; }
+    @media (min-width: 1024px) { .about-hero__inner { padding-block: 88px; gap: 20px; } }
+    .about-hero__eyebrow { display: inline-flex; align-items: center; gap: 7px; background: rgba(244,183,64,.14); color: var(--gold); padding: 7px 14px; border-radius: var(--radius-pill); font-size: 13px; font-weight: 600; }
+    .about-hero__title { color: #fff; font-size: 28px; font-weight: 800; line-height: 1.15; letter-spacing: -.01em; max-width: 720px; }
+    @media (min-width: 768px)  { .about-hero__title { font-size: 40px; } }
+    @media (min-width: 1024px) { .about-hero__title { font-size: 44px; } }
+    .about-hero__sub { color: rgba(255,255,255,.85); font-size: 15px; line-height: 1.6; max-width: 660px; }
+    @media (min-width: 768px) { .about-hero__sub { font-size: 16px; } }
+
+    /* Stats */
+    .about-stats { background: var(--card); border-bottom: 1px solid var(--border); }
+    .about-stats__row { display: grid; grid-template-columns: repeat(2, 1fr); }
+    @media (min-width: 900px) { .about-stats__row { grid-template-columns: repeat(5, 1fr); } }
+    .astat { text-align: center; padding: 22px 10px; border-top: 1px solid var(--border); border-left: 1px solid var(--border); }
+    .about-stats__row .astat:nth-child(-n+2) { border-top: 0; }
+    .about-stats__row .astat:nth-child(odd) { border-left: 0; }
+    @media (min-width: 900px) {
+      .about-stats__row .astat { border-top: 0; }
+      .about-stats__row .astat:nth-child(odd) { border-left: 1px solid var(--border); }
+      .about-stats__row .astat:first-child { border-left: 0; }
+    }
+    .astat__n { font-size: 24px; font-weight: 800; color: var(--fg); }
+    @media (min-width: 768px) { .astat__n { font-size: 28px; } }
+    .astat__l { font-size: 13px; color: var(--muted-fg); margin-top: 3px; }
+    .astat__l b { color: var(--fg); font-weight: 600; display: block; }
+
+    /* Câu chuyện */
+    .story { max-width: 760px; margin-inline: auto; }
+    .story__eyebrow { font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--gold); }
+    .story__h { font-size: 24px; font-weight: 800; color: var(--fg); line-height: 1.2; margin-top: 10px; margin-bottom: 20px; }
+    @media (min-width: 768px) { .story__h { font-size: 30px; } }
+    .story p { font-size: 15px; line-height: 1.75; color: var(--fg); margin-bottom: 16px; }
+    .story p.story__sign { font-style: italic; font-weight: 600; color: var(--muted-fg); }
+    .story__quote {
+      margin: 26px 0 6px; padding: 22px 24px;
+      background: var(--gold-soft); border-left: 4px solid var(--gold);
+      border-radius: var(--radius-m);
+      font-size: 16px; font-weight: 600; font-style: italic; line-height: 1.6; color: var(--gold-fg);
+    }
+    @media (min-width: 768px) { .story__quote { font-size: 18px; } }
+
+    /* Giá trị cốt lõi */
+    .values-grid { display: grid; grid-template-columns: 1fr; gap: 18px; }
+    @media (min-width: 768px) { .values-grid { grid-template-columns: repeat(3, 1fr); } }
+    .value-card {
+      background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-l);
+      padding: 26px 24px; display: flex; flex-direction: column; gap: 12px;
+    }
+    .value-card__icon {
+      width: 48px; height: 48px; border-radius: var(--radius-m);
+      background: var(--gold-soft); color: var(--gold);
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    .value-card__t { font-size: 17px; font-weight: 700; color: var(--fg); }
+    .value-card__d { font-size: 14px; line-height: 1.6; color: var(--muted-fg); }
+
+    /* CTA */
+    .about-cta { background: var(--primary); border-radius: var(--radius-xl); padding: 36px 24px; text-align: center; }
+    @media (min-width: 768px) { .about-cta { padding: 52px 44px; } }
+    .about-cta__h { color: #fff; font-size: 24px; font-weight: 800; line-height: 1.2; }
+    @media (min-width: 768px) { .about-cta__h { font-size: 30px; } }
+    .about-cta__s { color: rgba(255,255,255,.8); font-size: 15px; line-height: 1.55; margin-top: 10px; max-width: 520px; margin-inline: auto; }
+    .about-cta__btns { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 24px; }
+    .btn--ghost-light { background: transparent; color: #fff; border-color: rgba(255,255,255,.6); }
+    .btn--ghost-light:hover { background: rgba(255,255,255,.1); border-color: #fff; }
+  </style>
+</head>
+<body>
+  <div id="ht-header" data-active=""></div>
+
+  <main>
+    <!-- HERO -->
+    <section class="about-hero">
+      <div class="container about-hero__inner">
+        <span class="about-hero__eyebrow" id="aboutEyebrow">HT HOME · Từ 2024</span>
+        <h1 class="about-hero__title">Tìm phòng minh bạch, vận hành chuyên nghiệp.</h1>
+        <p class="about-hero__sub">HT HOME là nền tảng do Công ty Cổ phần Bất động sản HTHOME xây dựng — kết nối khách thuê phòng và chủ nhà thông qua đội ngũ Sale được đào tạo bài bản. Sứ mệnh: xoá đi những mập mờ, mối lo lừa đảo và giao dịch không rõ ràng.</p>
+      </div>
+    </section>
+
+    <!-- STATS -->
+    <section class="about-stats">
+      <div class="container about-stats__row">
+        <div class="astat"><div class="astat__n">500+</div><div class="astat__l"><b>Tòa nhà</b>đang quản lý</div></div>
+        <div class="astat"><div class="astat__n">1.024</div><div class="astat__l"><b>Phòng</b>cho thuê</div></div>
+        <div class="astat"><div class="astat__n">14</div><div class="astat__l"><b>Nhân viên</b>toàn thời gian</div></div>
+        <div class="astat"><div class="astat__n">3.240+</div><div class="astat__l"><b>Khách hàng</b>đã tin tưởng</div></div>
+        <div class="astat"><div class="astat__n">4.9/5</div><div class="astat__l"><b>Đánh giá</b>trên các nền tảng</div></div>
+      </div>
+    </section>
+
+    <!-- CÂU CHUYỆN -->
+    <section class="section">
+      <div class="container">
+        <div class="story">
+          <span class="story__eyebrow">Câu chuyện</span>
+          <h2 class="story__h">Bắt đầu từ 1 nỗi bực mình.</h2>
+          <p>Năm 2023, founder của HT HOME bị lừa cọc mất 5 triệu khi đi tìm phòng ở Gò Vấp. Phòng thực tế hoàn toàn khác ảnh, chủ nhà biến mất, môi giới không chịu trách nhiệm.</p>
+          <p>Câu hỏi đơn giản: "Tại sao chúng ta phải chấp nhận việc này khi tìm chỗ ở?" đã trở thành sứ mệnh của HT HOME. Từ đó, chúng tôi xây dựng một nền tảng nơi Sale phải cam kết bằng danh dự, chủ nhà được xác minh, và khách hàng được bảo vệ.</p>
+          <blockquote class="story__quote">"Chúng tôi tin: khi giao dịch minh bạch, khi thông tin không giấu diếm, khi mỗi bên đều được bảo vệ — thị trường sẽ khoẻ mạnh."</blockquote>
+          <p class="story__sign">— Ông Quách Thanh Hải, Người sáng lập HTHOME</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- GIÁ TRỊ CỐT LÕI -->
+    <section class="section section--card">
+      <div class="container">
+        <div style="text-align:center; max-width:640px; margin:0 auto 28px">
+          <span class="story__eyebrow">Giá trị cốt lõi</span>
+          <h2 class="story__h" style="margin-bottom:0">3 lời cam kết của chúng tôi</h2>
+        </div>
+        <div class="values-grid">
+          <div class="value-card">
+            <span class="value-card__icon" data-ic="shield-check"></span>
+            <div class="value-card__t">Minh bạch tuyệt đối</div>
+            <div class="value-card__d">Giá thuê, tiền cọc, phí phụ thu được công khai. Không phí ẩn, không đổi giá phút chót.</div>
+          </div>
+          <div class="value-card">
+            <span class="value-card__icon" data-ic="heart"></span>
+            <div class="value-card__t">Bảo vệ 2 bên</div>
+            <div class="value-card__d">Khách hàng có 24h để đổi ý sau khi cọc. Chủ nhà được đảm bảo khách thuê qua xác minh CCCD.</div>
+          </div>
+          <div class="value-card">
+            <span class="value-card__icon" data-ic="star"></span>
+            <div class="value-card__t">Sale được đào tạo</div>
+            <div class="value-card__d">14 nhân viên toàn thời gian, được training về pháp lý, đạo đức nghề nghiệp và kỹ năng tư vấn.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="container" style="padding-block:16px 48px">
+      <div class="about-cta">
+        <h2 class="about-cta__h">Muốn thuê phòng an tâm?</h2>
+        <p class="about-cta__s">Sale phụ trách khu vực của bạn đang sẵn sàng hỗ trợ 24/7</p>
+        <div class="about-cta__btns">
+          <a class="btn btn--gold" href="timphong.html">Xem phòng ngay</a>
+          <a class="btn btn--ghost-light" href="chat.html">Chat với Sale</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="ht-footer"></div>
+
+  <script src="assets/js/ht-ui.js"></script>
+  <script>
+    document.getElementById('aboutEyebrow').innerHTML = HT.icon('shield-check', 14) + ' HT HOME · Từ 2024';
+    Array.prototype.forEach.call(document.querySelectorAll('[data-ic]'), function (el) {
+      el.innerHTML = HT.icon(el.getAttribute('data-ic'), 24);
+    });
+  </script>
+</body>
+</html>

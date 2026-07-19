@@ -85,16 +85,16 @@
           '</div>' +
           '<div class="header-actions">' +
             '<div class="lang-toggle"><button class="is-active">VN</button><button>EN</button></div>' +
-            '<a class="link-login" href="#dangnhap">Đăng nhập</a>' +
-            '<a class="btn btn--primary btn--sm" href="#dangky">Đăng ký</a>' +
+            '<a class="link-login" href="dangky.html">Đăng nhập</a>' +
+            '<a class="btn btn--primary btn--sm" href="dangky.html">Đăng ký</a>' +
             '<a class="btn btn--ghost btn--staff" href="dashboard.html">' + icon('lock', 13) + 'Nội bộ</a>' +
             '<button class="btn-hamburger" aria-label="Mở menu" aria-expanded="false">' + icon('menu', 22) + '</button>' +
           '</div>' +
         '</div>' +
         '<nav class="mobile-nav">' + mlinks +
           '<div class="mobile-nav__actions">' +
-            '<a class="btn btn--ghost btn--sm" href="#dangnhap">Đăng nhập</a>' +
-            '<a class="btn btn--primary btn--sm" href="#dangky">Đăng ký</a>' +
+            '<a class="btn btn--ghost btn--sm" href="dangky.html">Đăng nhập</a>' +
+            '<a class="btn btn--primary btn--sm" href="dangky.html">Đăng ký</a>' +
           '</div>' +
         '</nav>' +
       '</header>';
@@ -104,7 +104,8 @@
   function footerHTML() {
     var kham = ['Tìm phòng', 'Phòng nổi bật', 'Phòng mới đăng', 'Ưu đãi thành viên', 'Câu hỏi thường gặp'];
     var khu = ['Gò Vấp', 'Bình Thạnh', 'Thủ Đức', 'Tân Phú', 'Quận 8', 'Quận 11'];
-    var link = function (t) { return '<a href="#">' + t + '</a>'; };
+    var khamHref = { 'Tìm phòng': 'timphong.html', 'Phòng nổi bật': 'index.html', 'Phòng mới đăng': 'index.html', 'Ưu đãi thành viên': 'dangky.html', 'Câu hỏi thường gặp': '#' };
+    var link = function (t) { return '<a href="' + (khamHref[t] || '#') + '">' + t + '</a>'; };
     var row = function (ic, t) { return '<div class="footer-col__row">' + icon(ic, 14) + '<span>' + t + '</span></div>'; };
     return '' +
       '<footer class="site-footer">' +
@@ -128,7 +129,7 @@
           '<div class="footer-bottom">' +
             '<div>© 2026 HT HOME Real Estate JSC · Toàn bộ nội dung được bảo hộ.</div>' +
             '<div class="footer-legal">' +
-              '<a href="#">Điều khoản</a><a href="#">Chính sách bảo mật</a><a href="#">Quy chế hoạt động</a>' +
+              '<a href="vechungtoi.html">Về chúng tôi</a><a href="dieukhoan.html">Điều khoản</a><a href="baomat.html">Chính sách bảo mật</a><a href="dieukhoan.html">Quy chế hoạt động</a>' +
             '</div>' +
           '</div>' +
         '</div>' +

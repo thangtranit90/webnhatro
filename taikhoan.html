@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tài khoản của tôi — HT HOME</title>
+  <meta name="description" content="Quản lý thông tin, phòng đã lưu, lịch xem phòng và giao dịch của bạn tại HT HOME." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/tokens.css" />
+  <link rel="stylesheet" href="assets/css/base.css" />
+  <link rel="stylesheet" href="assets/css/components.css" />
+  <style>
+    /* ===== Trang Tài khoản — style riêng ===== */
+
+    /* Header trang */
+    .acc-header { background: var(--card); border-bottom: 1px solid var(--border); }
+    .acc-header__inner { padding-block: 18px 22px; }
+    .breadcrumb { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 13px; color: var(--muted-fg); margin-bottom: 12px; }
+    .breadcrumb a:hover { color: var(--fg); }
+    .breadcrumb .sep { color: var(--input); }
+    .breadcrumb .cur { color: var(--fg); font-weight: 600; }
+    .acc-header__h { font-size: 22px; font-weight: 800; letter-spacing: -.01em; color: var(--fg); }
+    @media (min-width: 768px) { .acc-header__h { font-size: 26px; } }
+    .acc-header__sub { font-size: 14px; color: var(--muted-fg); margin-top: 4px; }
+
+    /* Bố cục 2 cột */
+    .acc-body { padding-block: 24px 48px; }
+    .acc-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+    @media (min-width: 1024px) { .acc-grid { grid-template-columns: 280px 1fr; gap: 28px; align-items: start; } }
+
+    /* Sidebar */
+    .acc-side {
+      background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-l);
+      padding: 18px; overflow: hidden;
+    }
+    @media (min-width: 1024px) { .acc-side { position: sticky; top: calc(var(--header-h) + 16px); } }
+    .acc-side__user { display: flex; align-items: center; gap: 12px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+    .acc-side__avatar {
+      width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0;
+      background: var(--primary); color: #fff; font-weight: 700; font-size: 18px;
+      display: inline-flex; align-items: center; justify-content: center; text-transform: uppercase;
+    }
+    .acc-side__name { font-size: 15px; font-weight: 700; color: var(--fg); }
+    .acc-side__phone { font-size: 13px; color: var(--muted-fg); margin-top: 2px; }
+
+    .acc-nav { display: flex; flex-direction: column; gap: 2px; padding-block: 14px; }
+    .acc-nav a {
+      display: flex; align-items: center; gap: 11px; padding: 11px 12px; border-radius: var(--radius-s);
+      font-size: 14px; font-weight: 600; color: var(--muted-fg); transition: background .15s, color .15s;
+    }
+    .acc-nav a .ic { flex-shrink: 0; color: var(--muted-fg); transition: color .15s; }
+    .acc-nav a:hover { background: var(--muted); color: var(--fg); }
+    .acc-nav a:hover .ic { color: var(--fg); }
+    .acc-nav a.is-active { background: var(--primary); color: #fff; }
+    .acc-nav a.is-active .ic { color: var(--gold); }
+
+    .acc-side__logout { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
+    .acc-side__logout .btn { width: 100%; }
+
+    /* Nội dung phải */
+    .acc-main {
+      background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-l);
+      padding: 22px 20px;
+    }
+    @media (min-width: 640px) { .acc-main { padding: 28px 26px; } }
+    .acc-main__head { display: flex; flex-direction: column; gap: 12px; margin-bottom: 22px; }
+    @media (min-width: 640px) { .acc-main__head { flex-direction: row; align-items: flex-end; justify-content: space-between; } }
+    .acc-main__title { font-size: 19px; font-weight: 800; color: var(--fg); }
+    .acc-main__sub { font-size: 13px; color: var(--muted-fg); margin-top: 4px; }
+    .sort-select {
+      appearance: none; -webkit-appearance: none;
+      background: var(--card) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236B7688' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>") no-repeat right 10px center;
+      border: 1px solid var(--border); border-radius: var(--radius-s);
+      padding: 9px 34px 9px 12px; font-size: 13px; font-weight: 600; color: var(--fg); cursor: pointer; flex-shrink: 0;
+    }
+    .sort-select:hover { border-color: var(--muted-fg); }
+
+    /* Lưới thẻ phòng đã lưu */
+    .saved-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+    @media (min-width: 560px) { .saved-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 1280px) { .saved-grid { grid-template-columns: repeat(3, 1fr); } }
+
+    .saved-hint { margin-top: 18px; padding: 18px; background: var(--muted); border-radius: var(--radius-m); text-align: center; }
+    .saved-hint__t { font-size: 14px; color: var(--muted-fg); margin-bottom: 12px; }
+
+    /* Khung tĩnh cho các mục đang cập nhật */
+    .acc-placeholder { text-align: center; padding: 48px 20px; color: var(--muted-fg); }
+    .acc-placeholder__t { font-size: 15px; font-weight: 700; color: var(--fg); margin-bottom: 4px; }
+    .is-hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div id="ht-header" data-active=""></div>
+
+  <main>
+    <!-- HEADER TRANG -->
+    <section class="acc-header">
+      <div class="container acc-header__inner">
+        <nav class="breadcrumb">
+          <a href="index.html">Trang chủ</a>
+          <span class="sep">/</span>
+          <span class="cur">Tài khoản của tôi</span>
+        </nav>
+        <h1 class="acc-header__h" id="greeting">Xin chào, bạn 👋</h1>
+        <p class="acc-header__sub">Quản lý thông tin, phòng đã lưu, lịch xem phòng và giao dịch của bạn</p>
+      </div>
+    </section>
+
+    <!-- BODY -->
+    <section class="acc-body">
+      <div class="container acc-grid">
+
+        <!-- SIDEBAR -->
+        <aside class="acc-side">
+          <div class="acc-side__user">
+            <span class="acc-side__avatar" id="sideAvatar">B</span>
+            <div>
+              <div class="acc-side__name" id="sideName">Khách</div>
+              <div class="acc-side__phone" id="sidePhone">Chưa cập nhật</div>
+            </div>
+          </div>
+
+          <nav class="acc-nav" id="accNav"></nav>
+
+          <div class="acc-side__logout">
+            <button class="btn btn--ghost" id="logoutBtn" type="button">Đăng xuất</button>
+          </div>
+        </aside>
+
+        <!-- NỘI DUNG PHẢI -->
+        <div class="acc-main">
+          <!-- Phòng đã lưu -->
+          <div class="acc-pane" data-pane="saved">
+            <div class="acc-main__head">
+              <div>
+                <h2 class="acc-main__title">Phòng đã lưu</h2>
+                <p class="acc-main__sub" id="savedSub">Đang tải…</p>
+              </div>
+              <select class="sort-select" id="savedSort" aria-label="Sắp xếp phòng đã lưu">
+                <option value="new">Mới lưu nhất</option>
+                <option value="asc">Giá thấp → cao</option>
+                <option value="desc">Giá cao → thấp</option>
+              </select>
+            </div>
+            <div class="saved-grid" id="savedGrid"></div>
+            <div class="saved-hint is-hidden" id="savedHint">
+              <div class="saved-hint__t">Chưa lưu phòng nào? Trở về Tìm phòng để khám phá thêm.</div>
+              <a class="btn btn--primary" href="timphong.html">Tìm phòng</a>
+            </div>
+          </div>
+
+          <!-- Các mục khác: khung tĩnh -->
+          <div class="acc-pane is-hidden" data-pane="profile">
+            <div class="acc-placeholder"><div class="acc-placeholder__t">Thông tin cá nhân</div>Tính năng đang cập nhật.</div>
+          </div>
+          <div class="acc-pane is-hidden" data-pane="schedule">
+            <div class="acc-placeholder"><div class="acc-placeholder__t">Lịch xem phòng</div>Tính năng đang cập nhật.</div>
+          </div>
+          <div class="acc-pane is-hidden" data-pane="tx">
+            <div class="acc-placeholder"><div class="acc-placeholder__t">Giao dịch của tôi</div>Tính năng đang cập nhật.</div>
+          </div>
+          <div class="acc-pane is-hidden" data-pane="notif">
+            <div class="acc-placeholder"><div class="acc-placeholder__t">Thông báo</div>Tính năng đang cập nhật.</div>
+          </div>
+          <div class="acc-pane is-hidden" data-pane="password">
+            <div class="acc-placeholder"><div class="acc-placeholder__t">Đổi mật khẩu</div>Tính năng đang cập nhật.</div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <div id="ht-footer"></div>
+
+  <script src="data.js"></script>
+  <script src="assets/js/ht-ui.js"></script>
+  <script>
+  (function () {
+    'use strict';
+
+    var esc = (window.HT && HT.esc) || function (s) { return String(s == null ? '' : s); };
+    var ico = (window.HT && HT.icon) ? HT.icon : function () { return ''; };
+
+    /* ---- Icon nội bộ (ht-ui.js chưa có) ---- */
+    function pico(name, size) {
+      size = size || 18;
+      var P = {
+        user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+        calendar: '<rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M8 2v4"/><path d="M16 2v4"/>',
+        receipt: '<path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1V2l-2 1-2-1-2 1-2-1-2 1-2-1Z"/><path d="M8 7h8"/><path d="M8 11h8"/><path d="M8 15h5"/>',
+        bell: '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
+        key: '<path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4"/><path d="m21 2-9.6 9.6"/><circle cx="7.5" cy="15.5" r="5.5"/>'
+      };
+      return '<svg class="ic" width="' + size + '" height="' + size + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (P[name] || '') + '</svg>';
+    }
+
+    /* ---- Đọc user ---- */
+    var user = { name: '', phone: '' };
+    try {
+      var raw = localStorage.getItem('ht_user');
+      if (raw) { var u = JSON.parse(raw); user.name = (u && u.name) || ''; user.phone = (u && u.phone) || ''; }
+    } catch (_) {}
+
+    var displayName = user.name || 'bạn';
+    document.getElementById('greeting').innerHTML = 'Xin chào, ' + esc(displayName) + ' 👋';
+    document.getElementById('sideName').textContent = user.name || 'Khách';
+    document.getElementById('sidePhone').textContent = user.phone || 'Chưa cập nhật';
+    var initial = (user.name || 'B').trim().charAt(0) || 'B';
+    document.getElementById('sideAvatar').textContent = initial;
+
+    /* ---- Nav sidebar ---- */
+    var NAV = [
+      { pane: 'profile',  label: 'Thông tin cá nhân', icon: 'user' },
+      { pane: 'saved',    label: 'Phòng đã lưu',      icon: 'heart', active: true },
+      { pane: 'schedule', label: 'Lịch xem phòng',    icon: 'calendar' },
+      { pane: 'tx',       label: 'Giao dịch của tôi', icon: 'receipt' },
+      { pane: 'notif',    label: 'Thông báo',         icon: 'bell' },
+      { pane: 'password', label: 'Đổi mật khẩu',      icon: 'key' }
+    ];
+    function navIcon(name) { return name === 'heart' ? ico('heart', 18) : pico(name, 18); }
+    document.getElementById('accNav').innerHTML = NAV.map(function (n) {
+      return '<a href="#" data-pane="' + n.pane + '"' + (n.active ? ' class="is-active"' : '') + '>' +
+        navIcon(n.icon) + '<span>' + esc(n.label) + '</span></a>';
+    }).join('');
+
+    /* ---- Chuyển pane ---- */
+    var panes = Array.prototype.slice.call(document.querySelectorAll('.acc-pane'));
+    var navLinks = Array.prototype.slice.call(document.querySelectorAll('#accNav a'));
+    document.getElementById('accNav').addEventListener('click', function (e) {
+      var a = e.target.closest('a[data-pane]'); if (!a) return;
+      e.preventDefault();
+      var pane = a.getAttribute('data-pane');
+      navLinks.forEach(function (l) { l.classList.toggle('is-active', l === a); });
+      panes.forEach(function (p) { p.classList.toggle('is-hidden', p.getAttribute('data-pane') !== pane); });
+    });
+
+    /* ---- Đăng xuất ---- */
+    document.getElementById('logoutBtn').addEventListener('click', function () {
+      try { localStorage.removeItem('ht_user'); } catch (_) {}
+      window.location.href = 'index.html';
+    });
+
+    /* ---- Adapter (dùng lại từ index.html) ---- */
+    function shortType(cat) { return { 'Căn hộ dịch vụ': 'CHDV', 'Ký túc xá': 'KTX' }[cat] || cat; }
+    function bedsFromTags(tags) {
+      var t = (tags || []).join(' ');
+      var m = t.match(/(\d)\s*PN/i); if (m) return m[1] + ' PN';
+      if (/studio/i.test(t)) return 'Studio';
+      if (/duplex/i.test(t)) return 'Duplex';
+      if (/penthouse/i.test(t)) return 'Penthouse';
+      return '';
+    }
+    function catOfR(r) { return window.catOf ? window.catOf(r) : (r.cat || r.ty); }
+    function toCard(r, i) {
+      return {
+        href: 'detail.html?i=' + i,
+        img: (r.imgs && r.imgs[0]) || '',
+        price: r.p,
+        type: shortType(catOfR(r)),
+        title: r.t,
+        addr: r.quan ? (r.quan + ', TP.HCM') : (r.l || ''),
+        area: r.a,
+        beds: bedsFromTags(r.tags),
+        status: 'Còn trống', statusKey: 'success',
+        video: !!r.video,
+        fav: true
+      };
+    }
+    function priceNum(p) {
+      var m = String(p || '').match(/([\d.,]+)/);
+      if (!m) return 0;
+      return parseFloat(m[1].replace(/\./g, '').replace(',', '.')) || 0;
+    }
+
+    /* ---- Phòng đã lưu ---- */
+    var ROOMS = window.ROOMS || [];
+    var savedGrid = document.getElementById('savedGrid');
+    var savedSub = document.getElementById('savedSub');
+    var savedHint = document.getElementById('savedHint');
+
+    // Lấy index đã lưu từ localStorage; nếu rỗng → 4 phòng mẫu đầu
+    var favIdx = [];
+    try {
+      var rawFav = localStorage.getItem('ht_favorites');
+      if (rawFav) { var arr = JSON.parse(rawFav); if (Array.isArray(arr)) favIdx = arr; }
+    } catch (_) {}
+
+    var isEmptyFav = favIdx.length === 0;
+    // Chuẩn hoá danh sách {r, i} và loại index không hợp lệ
+    var savedEntries;
+    if (isEmptyFav) {
+      savedEntries = ROOMS.slice(0, 4).map(function (r, i) { return { r: r, i: i }; });
+    } else {
+      savedEntries = favIdx
+        .map(function (i) { return { r: ROOMS[i], i: i }; })
+        .filter(function (e) { return !!e.r; });
+    }
+
+    function renderSaved() {
+      var sort = document.getElementById('savedSort').value;
+      var list = savedEntries.slice();
+      if (sort === 'asc') list.sort(function (x, y) { return priceNum(x.r.p) - priceNum(y.r.p); });
+      else if (sort === 'desc') list.sort(function (x, y) { return priceNum(y.r.p) - priceNum(x.r.p); });
+      // 'new': giữ nguyên thứ tự
+
+      if (!ROOMS.length) {
+        savedGrid.innerHTML = '';
+        savedSub.textContent = 'Chưa có dữ liệu phòng.';
+        savedHint.classList.remove('is-hidden');
+        return;
+      }
+
+      savedGrid.innerHTML = list.map(function (e) { return HT.roomCard(toCard(e.r, e.i)); }).join('');
+      savedSub.textContent = list.length + ' phòng bạn đang quan tâm · Nhấn ❤ để bỏ lưu';
+      savedHint.classList.toggle('is-hidden', !isEmptyFav);
+    }
+
+    document.getElementById('savedSort').addEventListener('change', renderSaved);
+    renderSaved();
+  })();
+  </script>
+</body>
+</html>

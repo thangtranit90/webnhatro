@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chat với Sale — HT HOME</title>
+  <meta name="description" content="Nhắn tin trực tiếp với Sale HT HOME để hỏi phòng, giá và đặt lịch xem phòng nhanh chóng." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/tokens.css" />
+  <link rel="stylesheet" href="assets/css/base.css" />
+  <link rel="stylesheet" href="assets/css/components.css" />
+  <style>
+    /* ===== Trang Chat với Sale — style riêng ===== */
+
+    /* Chiều cao khu chat = full viewport trừ header (mobile 60, desktop 76) */
+    .chat-wrap { padding-block: 0; }
+    .chat-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0;
+      height: calc(100vh - 60px);
+    }
+    @media (min-width: 1024px) {
+      .chat-grid {
+        grid-template-columns: 300px 1fr;
+        gap: 20px;
+        height: calc(100vh - var(--header-h));
+        padding-block: 18px;
+      }
+    }
+
+    /* --- Panel trái --- */
+    .lp {
+      display: none;
+      flex-direction: column;
+      gap: 16px;
+      overflow-y: auto;
+    }
+    @media (min-width: 1024px) { .lp { display: flex; } }
+
+    .lp-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius-l); padding: 18px;
+    }
+    .lp-sale { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 4px; }
+    .lp-sale .avatar { width: 64px; height: 64px; font-size: 22px; margin-bottom: 6px; }
+    .lp-sale__name { font-size: 17px; font-weight: 800; color: var(--fg); }
+    .lp-sale__role { font-size: 13px; color: var(--muted-fg); }
+    .lp-sale__status {
+      display: inline-flex; align-items: center; gap: 6px; margin-top: 8px;
+      font-size: 12px; font-weight: 600; color: var(--success);
+    }
+    .dot-online { width: 8px; height: 8px; border-radius: 50%; background: var(--success); flex-shrink: 0; }
+
+    .lp-label {
+      font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+      color: var(--muted-fg); margin-bottom: 10px;
+    }
+
+    /* Thẻ phòng đang xem */
+    .lp-room { display: flex; align-items: center; gap: 12px; text-align: left; }
+    .lp-room__img {
+      width: 56px; height: 56px; border-radius: var(--radius-s); flex-shrink: 0;
+      background: linear-gradient(135deg, #F4B740, #D9880B);
+    }
+    .lp-room__t { font-size: 13px; font-weight: 700; color: var(--fg); line-height: 1.3; }
+    .lp-room__p { font-size: 13px; font-weight: 700; color: var(--success); margin-top: 3px; }
+
+    /* Thao tác nhanh */
+    .lp-actions { display: flex; flex-direction: column; gap: 8px; }
+    .lp-act {
+      display: flex; align-items: center; gap: 10px;
+      padding: 11px 14px; border-radius: var(--radius-s);
+      border: 1px solid var(--border); background: var(--card);
+      font-size: 13px; font-weight: 600; color: var(--fg); text-align: left; width: 100%;
+    }
+    .lp-act:hover { border-color: var(--muted-fg); }
+    .lp-act .ic { color: var(--gold); }
+    .lp-act--primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .lp-act--primary:hover { background: var(--primary-hover); }
+    .lp-act--primary .ic { color: var(--gold); }
+
+    /* --- Khu chat phải --- */
+    .chat {
+      display: flex; flex-direction: column;
+      background: var(--card);
+      border: 1px solid var(--border);
+      min-height: 0;
+    }
+    @media (min-width: 1024px) { .chat { border-radius: var(--radius-l); overflow: hidden; } }
+
+    /* Thanh trên */
+    .chat-top {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+    }
+    .chat-top__info { flex: 1; min-width: 0; }
+    .chat-top__name { font-size: 15px; font-weight: 700; color: var(--fg); }
+    .chat-top__status { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted-fg); margin-top: 2px; }
+    .chat-top__acts { display: flex; align-items: center; gap: 4px; }
+    .chat-top__btn {
+      width: 38px; height: 38px; border-radius: var(--radius-s); color: var(--muted-fg);
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    .chat-top__btn:hover { background: var(--muted); color: var(--fg); }
+
+    /* Vùng tin nhắn */
+    .chat-body { flex: 1; overflow-y: auto; padding: 18px 16px; background: var(--bg); min-height: 0; }
+    .day-sep { text-align: center; margin: 6px 0 16px; }
+    .day-sep span {
+      font-size: 12px; font-weight: 600; color: var(--muted-fg);
+      background: var(--muted); border-radius: var(--radius-pill); padding: 4px 12px;
+    }
+
+    .msg { display: flex; gap: 8px; margin-bottom: 12px; max-width: 82%; }
+    .msg__ava { width: 30px; height: 30px; font-size: 12px; align-self: flex-end; }
+    .msg__bubble {
+      padding: 10px 14px; border-radius: 16px;
+      font-size: 14px; line-height: 1.45; word-wrap: break-word;
+    }
+    .msg__time { font-size: 11px; color: var(--muted-fg); margin-top: 4px; }
+
+    /* Tin đến (trái) */
+    .msg--in { align-self: flex-start; }
+    .msg--in .msg__bubble { background: var(--muted); color: var(--fg); border-bottom-left-radius: 5px; }
+
+    /* Tin đi (phải) */
+    .msg--out { align-self: flex-end; flex-direction: row-reverse; margin-left: auto; }
+    .msg--out .msg__bubble { background: var(--primary); color: #fff; border-bottom-right-radius: 5px; }
+    .msg--out .msg__time { text-align: right; }
+
+    /* Trả lời nhanh */
+    .quick-row {
+      display: flex; gap: 8px; padding: 10px 16px; overflow-x: auto;
+      border-top: 1px solid var(--border); background: var(--card); flex-shrink: 0;
+      scrollbar-width: none;
+    }
+    .quick-row::-webkit-scrollbar { display: none; }
+    .quick-chip {
+      flex-shrink: 0; white-space: nowrap;
+      padding: 8px 14px; border-radius: var(--radius-pill);
+      border: 1px solid var(--border); background: var(--card);
+      font-size: 13px; font-weight: 600; color: var(--fg);
+    }
+    .quick-chip:hover { border-color: var(--gold); background: var(--gold-soft); }
+
+    /* Thanh nhập */
+    .chat-input {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 12px; border-top: 1px solid var(--border); background: var(--card); flex-shrink: 0;
+    }
+    .chat-input__attach {
+      width: 40px; height: 40px; border-radius: var(--radius-s); color: var(--muted-fg); flex-shrink: 0;
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    .chat-input__attach:hover { background: var(--muted); color: var(--fg); }
+    .chat-input__field {
+      flex: 1; min-width: 0; border: 1px solid var(--input); border-radius: var(--radius-pill);
+      padding: 11px 16px; font-size: 14px; color: var(--fg); background: var(--card);
+    }
+    .chat-input__field:focus { outline: none; border-color: var(--primary); }
+    .chat-input__send {
+      width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0;
+      background: var(--primary); color: #fff;
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    .chat-input__send:hover { background: var(--primary-hover); }
+    .chat-input__send .ic { margin-left: -1px; }
+  </style>
+</head>
+<body>
+  <div id="ht-header" data-active=""></div>
+
+  <main>
+    <div class="container chat-wrap">
+      <div class="chat-grid">
+
+        <!-- PANEL TRÁI -->
+        <aside class="lp">
+          <div class="lp-card lp-sale">
+            <span class="avatar">MT</span>
+            <div class="lp-sale__name">Minh Trọ</div>
+            <div class="lp-sale__role">Sale · Khu vực Gò Vấp</div>
+            <div class="lp-sale__status"><span class="dot-online"></span>Online · trả lời trong 5 phút</div>
+          </div>
+
+          <div class="lp-card">
+            <div class="lp-label">Phòng đang xem</div>
+            <div class="lp-room">
+              <span class="lp-room__img"></span>
+              <div>
+                <div class="lp-room__t">P.201 Duplex Nguyễn Oanh</div>
+                <div class="lp-room__p">2,8 tr/tháng</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="lp-card">
+            <div class="lp-label">Thao tác nhanh</div>
+            <div class="lp-actions">
+              <a class="lp-act lp-act--primary" href="datlich.html?phong=P.201%20Duplex%20Nguy%E1%BB%85n%20Oanh" id="lpBook"></a>
+              <a class="lp-act" href="tel:0949397595" id="lpCall"></a>
+              <a class="lp-act" href="#danhgia" id="lpReview"></a>
+            </div>
+          </div>
+        </aside>
+
+        <!-- KHU CHAT -->
+        <section class="chat">
+          <div class="chat-top">
+            <span class="avatar">MT</span>
+            <div class="chat-top__info">
+              <div class="chat-top__name">Chat với Minh Trọ</div>
+              <div class="chat-top__status"><span class="dot-online"></span>Online · Đã đọc lúc 14:22</div>
+            </div>
+            <div class="chat-top__acts">
+              <a class="chat-top__btn" href="tel:0949397595" id="btnPhone" aria-label="Gọi"></a>
+              <button class="chat-top__btn" id="btnVideo" aria-label="Gọi video"></button>
+              <button class="chat-top__btn" id="btnMore" aria-label="Thêm"></button>
+            </div>
+          </div>
+
+          <div class="chat-body" id="chatBody">
+            <div class="day-sep"><span>Hôm nay</span></div>
+          </div>
+
+          <div class="quick-row" id="quickRow"></div>
+
+          <form class="chat-input" id="chatForm">
+            <button type="button" class="chat-input__attach" id="btnAttach" aria-label="Đính kèm"></button>
+            <input class="chat-input__field" id="chatField" type="text" placeholder="Nhập tin nhắn..." autocomplete="off" />
+            <button type="submit" class="chat-input__send" aria-label="Gửi" id="btnSend"></button>
+          </form>
+        </section>
+
+      </div>
+    </div>
+  </main>
+
+  <script src="assets/js/ht-ui.js"></script>
+  <script>
+  (function () {
+    'use strict';
+
+    var esc = (window.HT && HT.esc) || function (s) { return String(s == null ? '' : s); };
+
+    /* ---- Icon nội bộ (ht-ui.js chưa có) ---- */
+    function pico(name, size) {
+      size = size || 18;
+      var P = {
+        send: '<path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/><path d="m21.854 2.147-10.94 10.939"/>',
+        paperclip: '<path d="M13.234 20.252 21 12.3a4.75 4.75 0 0 0-6.717-6.717l-8.99 9.2a3 3 0 0 0 4.243 4.243l7.68-7.888"/>',
+        calendar: '<path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/>',
+        video: '<path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"/><rect x="2" y="6" width="14" height="12" rx="2"/>',
+        'more-vertical': '<circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/>'
+      };
+      return '<svg class="ic" width="' + size + '" height="' + size + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (P[name] || '') + '</svg>';
+    }
+    var htico = (window.HT && HT.icon) || function () { return ''; };
+
+    /* ---- Nạp icon vào các nút ---- */
+    document.getElementById('lpBook').innerHTML = pico('calendar', 16) + 'Đặt lịch xem phòng';
+    document.getElementById('lpCall').innerHTML = htico('phone', 16) + 'Gọi Minh Trọ';
+    document.getElementById('lpReview').innerHTML = htico('star', 16) + 'Xem đánh giá Sale';
+    document.getElementById('btnPhone').innerHTML = htico('phone', 18);
+    document.getElementById('btnVideo').innerHTML = pico('video', 18);
+    document.getElementById('btnMore').innerHTML = pico('more-vertical', 18);
+    document.getElementById('btnAttach').innerHTML = pico('paperclip', 18);
+    document.getElementById('btnSend').innerHTML = pico('send', 18);
+
+    /* ---- Dữ liệu tin nhắn mẫu ---- */
+    var chatBody = document.getElementById('chatBody');
+
+    function nowTime() {
+      var d = new Date();
+      return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
+    }
+
+    function addMsg(kind, text, time) {
+      var wrap = document.createElement('div');
+      wrap.className = 'msg msg--' + kind;
+      var ava = kind === 'in' ? '<span class="avatar msg__ava">MT</span>' : '';
+      wrap.innerHTML =
+        ava +
+        '<div>' +
+          '<div class="msg__bubble">' + esc(text) + '</div>' +
+          '<div class="msg__time">' + esc(time || nowTime()) + '</div>' +
+        '</div>';
+      chatBody.appendChild(wrap);
+      chatBody.scrollTop = chatBody.scrollHeight;
+      return wrap;
+    }
+
+    /* Tin nhắn khởi tạo */
+    addMsg('in', 'Chào bạn! Mình là Minh Trọ, phụ trách P.201 Duplex Nguyễn Oanh 👋', '14:15');
+    addMsg('in', 'Phòng còn trống, giá 2,8tr/tháng. Bạn muốn xem thực tế khi nào?', '14:15');
+    addMsg('out', 'Chào bạn, mình quan tâm phòng này. Có thể xem chiều mai không?', '14:18');
+    addMsg('in', 'Được! Ngày mai (15/07) mình rảnh 14:00 - 16:00. Bạn muốn khung giờ nào?', '14:19');
+
+    /* ---- Trả lời nhanh ---- */
+    var QUICK = ['14h nhé bạn', '15h30 được không?', 'Cho mình địa chỉ chi tiết', 'Có video review không?'];
+    var quickRow = document.getElementById('quickRow');
+    quickRow.innerHTML = QUICK.map(function (q) {
+      return '<button type="button" class="quick-chip" data-q="' + esc(q) + '">' + esc(q) + '</button>';
+    }).join('');
+
+    /* ---- Câu trả lời tự động mẫu ---- */
+    var REPLIES = [
+      'Dạ được bạn nhé, mình note lịch lại rồi 👍',
+      'Địa chỉ: 123 Nguyễn Oanh, P.17, Gò Vấp. Bạn tới mình dẫn lên xem phòng nha.',
+      'Có video review đầy đủ nha, mình gửi bạn ngay đây 🎬',
+      'Ok bạn! Bạn để lại SĐT mình gọi xác nhận cho nhanh nhé.'
+    ];
+    var replyIdx = 0;
+
+    function autoReply() {
+      var r = REPLIES[replyIdx % REPLIES.length];
+      replyIdx++;
+      setTimeout(function () { addMsg('in', r); }, 1000);
+    }
+
+    function sendText(text) {
+      text = (text || '').trim();
+      if (!text) return;
+      addMsg('out', text);
+      autoReply();
+    }
+
+    /* ---- Sự kiện ---- */
+    var form = document.getElementById('chatForm');
+    var field = document.getElementById('chatField');
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      sendText(field.value);
+      field.value = '';
+      field.focus();
+    });
+
+    quickRow.addEventListener('click', function (e) {
+      var b = e.target.closest('.quick-chip');
+      if (!b) return;
+      sendText(b.getAttribute('data-q'));
+    });
+  })();
+  </script>
+</body>
+</html>
