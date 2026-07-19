@@ -269,7 +269,20 @@
       var m = document.createElement('meta'); m.name = 'theme-color'; m.content = '#000000'; document.head.appendChild(m);
     }
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('sw.js').then(function (reg) {
+          reg.update(); // mỗi lần vào trang: kiểm tra bản SW mới
+        }).catch(function () {});
+        // Nếu đang có SW cũ điều khiển và bị SW mới thay → tự tải lại 1 lần để chạy code mới
+        if (navigator.serviceWorker.controller) {
+          var reloaded = false;
+          navigator.serviceWorker.addEventListener('controllerchange', function () {
+            if (reloaded) return;
+            reloaded = true;
+            window.location.reload();
+          });
+        }
+      });
     }
   })();
 })();
