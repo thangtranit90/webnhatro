@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quản lý nhân viên — HT HOME Nội bộ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/tokens.css" />
+  <link rel="stylesheet" href="assets/css/base.css" />
+  <link rel="stylesheet" href="assets/css/components.css" />
+  <link rel="stylesheet" href="assets/css/internal.css" />
+  <style>
+    /* Ô tìm trên topbar */
+    .nv-search { display: inline-flex; align-items: center; gap: 8px; background: var(--muted); border: 1px solid var(--border); border-radius: var(--radius-m); padding: 8px 12px; color: var(--muted-fg); }
+    .nv-search input { border: 0; background: transparent; outline: none; font-family: inherit; font-size: 13.5px; color: var(--fg); width: 150px; }
+    .nv-search input::placeholder { color: var(--muted-fg); }
+
+    /* KPI */
+    .kpi-row { display: grid; grid-template-columns: 1fr; gap: 16px; }
+    @media (min-width: 560px) { .kpi-row { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 1200px) { .kpi-row { grid-template-columns: repeat(4, 1fr); } }
+    .kpi { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-l); padding: 18px; box-shadow: var(--shadow-card); }
+    .kpi__top { display: flex; align-items: center; justify-content: space-between; color: var(--muted-fg); font-size: 13px; font-weight: 500; }
+    .kpi__ic { width: 34px; height: 34px; border-radius: var(--radius-s); background: var(--gold-soft); color: var(--gold); display: inline-flex; align-items: center; justify-content: center; }
+    .kpi__val { font-size: 26px; font-weight: 800; color: var(--fg); margin-top: 10px; }
+    .kpi__delta { font-size: 12px; margin-top: 4px; color: var(--muted-fg); }
+
+    /* Tabs lọc */
+    .tabs { display: flex; gap: 6px; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 2px; margin-top: 20px; }
+    .tab { flex-shrink: 0; border: 1px solid var(--border); background: var(--card); color: var(--muted-fg); font-family: inherit; font-size: 13px; font-weight: 600; padding: 8px 14px; border-radius: 999px; cursor: pointer; white-space: nowrap; }
+    .tab.is-active { background: var(--fg); color: var(--card); border-color: var(--fg); }
+
+    /* Card + bảng */
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-l); box-shadow: var(--shadow-card); margin-top: 16px; }
+    .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    table.nv { width: 100%; border-collapse: collapse; min-width: 820px; }
+    table.nv th { text-align: left; font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted-fg); padding: 12px 14px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    table.nv td { font-size: 13.5px; color: var(--fg); padding: 13px 14px; border-bottom: 1px solid var(--border); white-space: nowrap; vertical-align: middle; }
+    table.nv tr:last-child td { border-bottom: 0; }
+    .nv-emp { display: flex; align-items: center; gap: 11px; }
+    .nv-emp__name { font-weight: 600; display: block; }
+    .nv-emp__email { font-size: 12px; color: var(--muted-fg); }
+    .nv-num { font-weight: 700; }
+    .nv-more { border: 0; background: transparent; color: var(--muted-fg); font-size: 20px; line-height: 1; cursor: pointer; padding: 4px 8px; border-radius: var(--radius-s); }
+    .nv-more:hover { background: var(--muted); color: var(--fg); }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="app-sidebar" id="ht-sidebar" data-active="nhanvien"></div>
+    <main class="app-main">
+      <!-- Topbar -->
+      <header class="app-topbar">
+        <div style="display:flex;align-items:center;gap:12px">
+          <button class="btn-sidebar" id="btnSidebar" aria-label="Menu"></button>
+          <div>
+            <div class="app-topbar__title">Quản lý nhân viên</div>
+            <div class="app-topbar__sub">Danh sách &amp; hiệu suất đội sale</div>
+          </div>
+        </div>
+        <div class="app-topbar__actions">
+          <span class="nv-search"><span id="nvSearchIc"></span><input type="text" placeholder="Tìm nhân viên..." id="nvSearch" /></span>
+          <button class="btn btn--primary btn--sm" id="btnAdd" type="button"></button>
+        </div>
+      </header>
+
+      <div class="app-content">
+        <!-- KPI -->
+        <div class="kpi-row" id="kpiRow"></div>
+
+        <!-- Tabs lọc -->
+        <div class="tabs" id="tabs"></div>
+
+        <!-- Bảng nhân viên -->
+        <section class="card">
+          <div class="table-wrap">
+            <table class="nv">
+              <thead>
+                <tr>
+                  <th>Nhân viên</th><th>Vai trò</th><th>Khu vực</th>
+                  <th>Deal Th7</th><th>HH Th7</th><th>Trạng thái</th><th></th>
+                </tr>
+              </thead>
+              <tbody id="nvRows"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script src="assets/js/ht-ui.js"></script>
+  <script src="assets/js/ht-internal.js"></script>
+  <script>
+    (function () {
+      'use strict';
+      var I = HTI.icon;
+      document.getElementById('btnSidebar').innerHTML = I('menu', 22);
+      document.getElementById('nvSearchIc').innerHTML = I('search', 16);
+      document.getElementById('btnAdd').innerHTML = I('plus', 16) + 'Thêm nhân viên';
+
+      // KPI
+      var kpis = [
+        { label: 'Tổng nhân viên', ic: 'users', val: '14', delta: 'Toàn hệ thống' },
+        { label: 'Active tháng này', ic: 'user-cog', val: '13', delta: '1 đang tạm nghỉ' },
+        { label: 'Sale cấp 2', ic: 'shield-check', val: '8', delta: 'Nhóm chủ lực' },
+        { label: 'Deal tháng 7', ic: 'file-text', val: '42', delta: 'Toàn đội sale' }
+      ];
+      document.getElementById('kpiRow').innerHTML = kpis.map(function (k) {
+        return '<div class="kpi"><div class="kpi__top"><span>' + k.label + '</span><span class="kpi__ic">' + I(k.ic, 18) + '</span></div>' +
+          '<div class="kpi__val">' + k.val + '</div><div class="kpi__delta">' + k.delta + '</div></div>';
+      }).join('');
+
+      // Tabs lọc
+      var tabs = ['Tất cả (14)', 'Sale cấp 2 (8)', 'Sale cấp 1 (4)', 'Manager (1)', 'Admin (1)', 'Đã nghỉ'];
+      document.getElementById('tabs').innerHTML = tabs.map(function (t, i) {
+        return '<button class="tab' + (i === 0 ? ' is-active' : '') + '" type="button">' + t + '</button>';
+      }).join('');
+      var tabBtns = document.querySelectorAll('.tab');
+      tabBtns.forEach(function (b) {
+        b.addEventListener('click', function () {
+          tabBtns.forEach(function (x) { x.classList.remove('is-active'); });
+          b.classList.add('is-active');
+        });
+      });
+
+      // Vai trò → màu badge
+      function roleBadge(role) {
+        var map = { 'Sale cấp 2': 'gold', 'Sale cấp 1': 'primary', 'Manager': 'success', 'Admin': 'danger' };
+        var c = map[role] || 'muted';
+        var bg = 'var(--' + c + '-soft)', fg = 'var(--' + c + ')';
+        return '<span class="badge" style="background:' + bg + ';color:' + fg + '"><span class="badge__dot" style="background:' + fg + '"></span>' + role + '</span>';
+      }
+      function statusBadge(st) {
+        if (st === 'Active') {
+          return '<span class="badge badge--success"><span class="badge__dot"></span>Active</span>';
+        }
+        return '<span class="badge" style="background:var(--muted);color:var(--muted-fg)"><span class="badge__dot" style="background:var(--muted-fg)"></span>' + st + '</span>';
+      }
+
+      // Dữ liệu nhân viên
+      var emps = [
+        { av: 'MT', name: 'Minh Trọ', email: 'minhtro@hthome.vn', role: 'Sale cấp 2', kv: 'Gò Vấp', deal: 12, hh: '48tr', st: 'Active' },
+        { av: 'TH', name: 'Thu Hà', email: 'thuha@hthome.vn', role: 'Sale cấp 1', kv: 'Gò Vấp', deal: 18, hh: '38tr', st: 'Active' },
+        { av: 'QB', name: 'Quốc Bảo', email: 'quocbao@hthome.vn', role: 'Sale cấp 2', kv: 'Bình Thạnh', deal: 10, hh: '27tr', st: 'Active' },
+        { av: 'LA', name: 'Lan Anh', email: 'lananh@hthome.vn', role: 'Sale cấp 2', kv: 'Phú Nhuận', deal: 7, hh: '20tr', st: 'Active' },
+        { av: 'ĐH', name: 'Đức Huy', email: 'duchuy@hthome.vn', role: 'Sale cấp 2', kv: 'Tân Bình', deal: 5, hh: '13tr', st: 'Active' },
+        { av: 'NT', name: 'Ngọc Trâm', email: 'ngoctram@hthome.vn', role: 'Sale cấp 2', kv: 'Gò Vấp', deal: 9, hh: '24tr', st: 'Active' },
+        { av: 'VK', name: 'Văn Khoa', email: 'vankhoa@hthome.vn', role: 'Sale cấp 2', kv: 'Quận 12', deal: 6, hh: '16tr', st: 'Active' },
+        { av: 'PT', name: 'Phương Thảo', email: 'phuongthao@hthome.vn', role: 'Sale cấp 2', kv: 'Bình Thạnh', deal: 8, hh: '21tr', st: 'Active' },
+        { av: 'HT', name: 'Hữu Thắng', email: 'huuthang@hthome.vn', role: 'Sale cấp 2', kv: 'Thủ Đức', deal: 4, hh: '11tr', st: 'Active' },
+        { av: 'TN', name: 'Tuyết Nhi', email: 'tuyetnhi@hthome.vn', role: 'Sale cấp 1', kv: 'Phú Nhuận', deal: 14, hh: '31tr', st: 'Active' },
+        { av: 'GP', name: 'Gia Phú', email: 'giaphu@hthome.vn', role: 'Sale cấp 1', kv: 'Tân Bình', deal: 11, hh: '26tr', st: 'Active' },
+        { av: 'KL', name: 'Khánh Linh', email: 'khanhlinh@hthome.vn', role: 'Sale cấp 1', kv: 'Quận 12', deal: 9, hh: '22tr', st: 'Active' },
+        { av: 'ĐA', name: 'Quản Đức Anh', email: 'ducanh@hthome.vn', role: 'Manager', kv: 'Toàn khu', deal: 0, hh: '—', st: 'Active' },
+        { av: 'ĐB', name: 'Trần Đình Bảo', email: 'dinhbao@hthome.vn', role: 'Admin', kv: 'Toàn hệ thống', deal: 0, hh: '—', st: 'Đã nghỉ' }
+      ];
+      document.getElementById('nvRows').innerHTML = emps.map(function (e) {
+        return '<tr>' +
+          '<td><div class="nv-emp"><span class="avatar">' + e.av + '</span>' +
+            '<span><span class="nv-emp__name">' + e.name + '</span>' +
+            '<span class="nv-emp__email">' + e.email + '</span></span></div></td>' +
+          '<td>' + roleBadge(e.role) + '</td>' +
+          '<td>' + e.kv + '</td>' +
+          '<td class="nv-num">' + e.deal + '</td>' +
+          '<td class="nv-num">' + e.hh + '</td>' +
+          '<td>' + statusBadge(e.st) + '</td>' +
+          '<td style="text-align:right"><button class="nv-more" type="button" aria-label="Tùy chọn">⋮</button></td>' +
+          '</tr>';
+      }).join('');
+
+      document.getElementById('btnAdd').addEventListener('click', function () {
+        alert('Mở form thêm nhân viên mới (demo).');
+      });
+    })();
+  </script>
+</body>
+</html>

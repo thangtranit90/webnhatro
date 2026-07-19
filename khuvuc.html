@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bản đồ khu vực · TP.HCM — HT HOME Nội bộ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/tokens.css" />
+  <link rel="stylesheet" href="assets/css/base.css" />
+  <link rel="stylesheet" href="assets/css/components.css" />
+  <link rel="stylesheet" href="assets/css/internal.css" />
+  <style>
+    .kv-period { font-size: 13px; font-weight: 600; color: var(--muted-fg); background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-s); padding: 8px 12px; }
+
+    .kv-cols { display: grid; grid-template-columns: 1fr; gap: 20px; }
+    @media (min-width: 1000px) { .kv-cols { grid-template-columns: 1.5fr 1fr; align-items: start; } }
+
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-l); box-shadow: var(--shadow-card); }
+    .card__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 20px; border-bottom: 1px solid var(--border); }
+    .card__head h3 { font-size: 16px; font-weight: 700; color: var(--fg); }
+    .card__head .sub { font-size: 12px; color: var(--muted-fg); margin-top: 2px; }
+    .card__body { padding: 20px; }
+    .stack { display: flex; flex-direction: column; gap: 20px; }
+
+    /* Heatmap lưới quận */
+    .zones { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    @media (min-width: 560px) { .zones { grid-template-columns: repeat(3, 1fr); } }
+    .zone { border-radius: var(--radius-m); padding: 14px; border: 1px solid transparent; min-height: 96px; display: flex; flex-direction: column; justify-content: space-between; }
+    .zone--hot  { background: var(--danger-soft);  border-color: #F3C6C0; }
+    .zone--warm { background: var(--warning-soft); border-color: #EFD9AE; }
+    .zone--cold { background: var(--info-soft);    border-color: #C6D8F2; }
+    .zone__name { font-size: 14px; font-weight: 700; color: var(--fg); }
+    .zone__deal { font-size: 20px; font-weight: 800; margin-top: 4px; }
+    .zone--hot .zone__deal  { color: var(--danger); }
+    .zone--warm .zone__deal { color: var(--warning); }
+    .zone--cold .zone__deal { color: var(--info); }
+    .zone__sub { font-size: 11px; color: var(--muted-fg); margin-top: 3px; }
+
+    .legend { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border); }
+    .legend span { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--muted-fg); }
+    .legend .sw { width: 14px; height: 14px; border-radius: 4px; flex-shrink: 0; }
+    .sw--hot { background: var(--danger); } .sw--warm { background: var(--warning); } .sw--cold { background: var(--info); }
+
+    /* Tổng quan */
+    .ov-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .ov { text-align: center; padding: 8px 4px; }
+    .ov__v { font-size: 24px; font-weight: 800; color: var(--fg); }
+    .ov__l { font-size: 12px; color: var(--muted-fg); margin-top: 2px; }
+
+    /* Xếp hạng */
+    .rk-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+    .rk-row:last-child { border-bottom: 0; }
+    .rk-rank { width: 24px; height: 24px; border-radius: 50%; background: var(--muted); color: var(--muted-fg); font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .rk-name { font-size: 14px; font-weight: 600; color: var(--fg); }
+    .rk-sub { font-size: 12px; color: var(--muted-fg); }
+    .rk-badge { margin-left: auto; font-size: 13px; font-weight: 700; border-radius: 999px; padding: 3px 11px; white-space: nowrap; }
+    .rk-badge--hot  { background: var(--danger-soft);  color: var(--danger); }
+    .rk-badge--warm { background: var(--warning-soft); color: var(--warning); }
+    .rk-badge--cold { background: var(--info-soft);    color: var(--info); }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="app-sidebar" id="ht-sidebar" data-active="khuvuc"></div>
+    <main class="app-main">
+      <header class="app-topbar">
+        <div style="display:flex;align-items:center;gap:12px">
+          <button class="btn-sidebar" id="btnSidebar" aria-label="Menu"></button>
+          <div>
+            <div class="app-topbar__title">Bản đồ khu vực · TP.HCM</div>
+            <div class="app-topbar__sub">9 toà · 218 phòng · Heatmap theo độ hot khu vực</div>
+          </div>
+        </div>
+        <div class="app-topbar__actions">
+          <span class="kv-period">Tháng 7, 2026</span>
+        </div>
+      </header>
+
+      <div class="app-content">
+        <div class="kv-cols">
+          <!-- Trái: heatmap -->
+          <section class="card">
+            <div class="card__head">
+              <div><h3>Bản đồ nhiệt khu vực</h3><div class="sub">Độ hot theo số deal chốt trong tháng</div></div>
+            </div>
+            <div class="card__body">
+              <div class="zones" id="zones"></div>
+              <div class="legend">
+                <span><span class="sw sw--hot"></span>🔥 Hot (>15 deal/tháng)</span>
+                <span><span class="sw sw--warm"></span>🌤 Warm (5-15 deal)</span>
+                <span><span class="sw sw--cold"></span>❄ Cold (&lt;5 deal)</span>
+              </div>
+            </div>
+          </section>
+
+          <!-- Phải -->
+          <div class="stack">
+            <section class="card">
+              <div class="card__head"><div><h3>Tổng quan TP.HCM</h3></div></div>
+              <div class="card__body">
+                <div class="ov-grid">
+                  <div class="ov"><div class="ov__v">9</div><div class="ov__l">Toà</div></div>
+                  <div class="ov"><div class="ov__v">218</div><div class="ov__l">Phòng</div></div>
+                  <div class="ov"><div class="ov__v">156</div><div class="ov__l">Đã thuê</div></div>
+                </div>
+              </div>
+            </section>
+
+            <section class="card">
+              <div class="card__head"><div><h3>Xếp hạng khu vực · T7</h3></div></div>
+              <div class="card__body" id="ranking"></div>
+            </section>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="assets/js/ht-ui.js"></script>
+  <script src="assets/js/ht-internal.js"></script>
+  <script>
+    var I = HTI.icon;
+    document.getElementById('btnSidebar').innerHTML = I('menu', 22);
+
+    /* heat: 'hot' | 'warm' | 'cold' */
+    var districts = [
+      { name: 'Gò Vấp',    deal: 18, rooms: 52, toa: 3, heat: 'hot' },
+      { name: 'Bình Thạnh', deal: 15, rooms: 48, toa: 2, heat: 'warm' },
+      { name: 'Q.7',        deal: 10, rooms: 24, toa: 1, heat: 'warm' },
+      { name: 'Tân Bình',   deal: 8,  rooms: 22, toa: 1, heat: 'warm' },
+      { name: 'Thủ Đức',    deal: 6,  rooms: 26, toa: 1, heat: 'warm' },
+      { name: 'Phú Nhuận',  deal: 4,  rooms: 18, toa: 1, heat: 'cold' },
+      { name: 'Q.10',       deal: 3,  rooms: 14, toa: 0, heat: 'cold' },
+      { name: 'Q.12',       deal: 2,  rooms: 14, toa: 0, heat: 'cold' }
+    ];
+
+    /* Lưới heatmap */
+    document.getElementById('zones').innerHTML = districts.map(function (d) {
+      return '<div class="zone zone--' + d.heat + '">' +
+        '<div><div class="zone__name">' + d.name + '</div>' +
+        '<div class="zone__deal">' + d.deal + '</div></div>' +
+        '<div class="zone__sub">' + d.rooms + ' phòng · ' + d.toa + ' toà</div>' +
+      '</div>';
+    }).join('');
+
+    /* Xếp hạng (đã sắp giảm dần theo deal) */
+    var badgeCls = { hot: 'rk-badge--hot', warm: 'rk-badge--warm', cold: 'rk-badge--cold' };
+    document.getElementById('ranking').innerHTML = districts.map(function (d, i) {
+      return '<div class="rk-row">' +
+        '<span class="rk-rank">' + (i + 1) + '</span>' +
+        '<span><span class="rk-name" style="display:block">' + d.name + '</span>' +
+        '<span class="rk-sub">' + d.rooms + ' phòng · ' + d.toa + ' toà</span></span>' +
+        '<span class="rk-badge ' + badgeCls[d.heat] + '">' + d.deal + ' deal</span>' +
+      '</div>';
+    }).join('');
+  </script>
+</body>
+</html>

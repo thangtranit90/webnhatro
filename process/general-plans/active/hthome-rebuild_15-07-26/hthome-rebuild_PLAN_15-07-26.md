@@ -1,6 +1,6 @@
 # HT HOME — Kế hoạch dựng lại web theo thiết kế `nhatro.pen`
 
-**Cập nhật lần cuối:** 2026-07-15 (Phase 1–5 XONG + đã deploy — ~25 màn: toàn bộ trang khách + auth nội bộ + nghiệp vụ sale. TẠM DỪNG để user review. Tiếp theo: Phase 6 (Tòa nhà/Lịch hẹn/Wizard) rồi Phase 7 (Admin). Để resume: user nói "làm tiếp Phase 6".)
+**Cập nhật lần cuối:** 2026-07-15 (Phase 1–7 XONG + đã deploy — ~36 màn: toàn bộ web HT HOME theo nhatro.pen, mobile-first, PWA, đăng nhập nội bộ demo. Còn lại: **Phase 8 — AI cho đồ án** (hỏi đáp thông tin phòng + tìm kiếm thông minh qua Cloudflare Functions + Claude API) + self-host font + ảnh/video thật.)
 **Mục tiêu:** Dựng lại toàn bộ web HT HOME theo thiết kế `nhatro.pen` (~35 màn), giao diện bám 100% thiết kế, chạy dữ liệu thật từ `data.js`. Static no-build, mobile-first, PWA → sẵn sàng đóng gói Capacitor. Deploy Cloudflare Pages (`hthome.thanghost.io.vn`) qua CI/CD GitHub Actions.
 
 ## Quyết định đã chốt
@@ -25,7 +25,7 @@
 | **4. Auth nội bộ** | Đăng nhập (`dangnhap-noibo.html`) · Quên MK (`quenmatkhau.html`) · OTP (`nhap-otp.html`) · Đặt MK mới (`datmatkhau.html`) | ✅ DONE |
 | **5. Nghiệp vụ sale** | Dashboard (`dashboard.html`) · Kho phòng (`khophong.html`) · CRM (`crm.html`) · Deal (`deal.html`) · Doanh thu (`doanhthu.html`) + **Sidebar dùng chung** (`internal.css`, `ht-internal.js`) | ✅ DONE |
 | **6. Quản lý tòa nhà** | Quản lý tòa nhà (`toanha.html`) · Chi tiết tòa nhà (`toanha-chitiet.html`) · Lịch hẹn (`lichhen.html`) · Wizard thêm phòng (`themphong.html`) + tài khoản đăng nhập demo | ✅ DONE |
-| **7. Admin** | Báo cáo tổng · Nhân viên · Phân quyền · Cài đặt · Quỹ nội bộ · Bảng tin · Territory Map | ⬜ TODO |
+| **7. Admin** | Báo cáo (`baocao.html`) · Nhân viên (`nhanvien.html`) · Phân quyền (`phanquyen.html`) · Cài đặt (`caidat.html`) · Quỹ (`quynoibo.html`) · Bảng tin (`bangtin.html`) · Territory Map (`khuvuc.html`) | ✅ DONE |
 | **8. Hoàn thiện + AI (cho đồ án)** | Self-host font, ảnh/video thật; AI cốt lõi: hỏi đáp thông tin phòng + tìm kiếm thông minh (Cloudflare Functions + Claude API) | ⬜ TODO |
 
 ## Ghi chú kỹ thuật

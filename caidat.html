@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cài đặt hệ thống — HT HOME Nội bộ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/tokens.css" />
+  <link rel="stylesheet" href="assets/css/base.css" />
+  <link rel="stylesheet" href="assets/css/components.css" />
+  <link rel="stylesheet" href="assets/css/internal.css" />
+  <style>
+    .set-cols { display: grid; grid-template-columns: 1fr; gap: 20px; }
+    @media (min-width: 900px) { .set-cols { grid-template-columns: 260px 1fr; align-items: start; } }
+
+    /* Nav trái */
+    .set-nav { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; -webkit-overflow-scrolling: touch; }
+    .set-nav::-webkit-scrollbar { height: 0; }
+    @media (min-width: 900px) {
+      .set-nav { flex-direction: column; overflow: visible; padding-bottom: 0; position: sticky; top: 20px; }
+      .set-nav__item { width: 100%; }
+    }
+    .set-nav__item { flex-shrink: 0; display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: var(--radius-m); border: 1px solid var(--border); background: var(--card); color: var(--muted-fg); font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; text-align: left; transition: all .15s; }
+    .set-nav__item:hover { color: var(--fg); border-color: var(--muted-fg); }
+    .set-nav__item.is-active { background: var(--fg); color: var(--card); border-color: var(--fg); }
+    .set-nav__item .ic { flex-shrink: 0; }
+
+    /* Card */
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-l); box-shadow: var(--shadow-card); margin-bottom: 20px; }
+    .card:last-child { margin-bottom: 0; }
+    .card__head { padding: 18px 20px; border-bottom: 1px solid var(--border); }
+    .card__head h3 { font-size: 16px; font-weight: 700; color: var(--fg); }
+    .card__head .sub { font-size: 12px; color: var(--muted-fg); margin-top: 3px; }
+    .card__body { padding: 20px; }
+
+    /* Logo */
+    .logo-block { display: flex; align-items: center; gap: 16px; padding-bottom: 20px; margin-bottom: 20px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+    .logo-box { width: 72px; height: 72px; border-radius: var(--radius-m); background: var(--fg); color: var(--gold); display: inline-flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 800; flex-shrink: 0; }
+    .logo-meta__t { font-size: 14px; font-weight: 600; color: var(--fg); }
+    .logo-meta__s { font-size: 12px; color: var(--muted-fg); margin-top: 3px; }
+    .logo-actions { display: flex; gap: 8px; margin-top: 10px; }
+
+    /* Form */
+    .form-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+    @media (min-width: 640px) { .form-grid { grid-template-columns: repeat(2, 1fr); } }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field--full { grid-column: 1 / -1; }
+    .field label { font-size: 13px; font-weight: 600; color: var(--fg); }
+    .field input { width: 100%; padding: 10px 12px; border: 1px solid var(--input); border-radius: var(--radius-s); font: inherit; font-size: 14px; color: var(--fg); background: var(--card); }
+    .field input:focus { outline: none; border-color: var(--fg); }
+
+    /* Ma trận HH */
+    .tier-row { display: grid; grid-template-columns: 90px 1fr 1fr; gap: 12px; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--border); }
+    .tier-row:last-child { border-bottom: 0; }
+    .tier-name { font-size: 14px; font-weight: 700; color: var(--fg); }
+    .tier-field { display: flex; flex-direction: column; gap: 5px; }
+    .tier-field span { font-size: 11px; color: var(--muted-fg); font-weight: 600; }
+    .tier-field .pct { display: flex; align-items: center; gap: 6px; }
+    .tier-field input { width: 100%; padding: 8px 10px; border: 1px solid var(--input); border-radius: var(--radius-s); font: inherit; font-size: 14px; font-weight: 700; color: var(--fg); text-align: center; }
+    .tier-field input:focus { outline: none; border-color: var(--fg); }
+    .tier-head { display: grid; grid-template-columns: 90px 1fr 1fr; gap: 12px; font-size: 11px; font-weight: 700; color: var(--muted-fg); text-transform: uppercase; letter-spacing: .04em; padding-bottom: 4px; }
+
+    .save-bar { display: flex; justify-content: flex-end; gap: 10px; margin-top: 4px; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="app-sidebar" id="ht-sidebar" data-active="caidat"></div>
+    <main class="app-main">
+      <header class="app-topbar">
+        <div style="display:flex;align-items:center;gap:12px">
+          <button class="btn-sidebar" id="btnSidebar" aria-label="Menu"></button>
+          <div>
+            <div class="app-topbar__title">Cài đặt hệ thống</div>
+            <div class="app-topbar__sub">Cấu hình chung công ty · Chính sách HH mặc định · Tích hợp bên thứ 3</div>
+          </div>
+        </div>
+      </header>
+
+      <div class="app-content">
+        <div class="set-cols">
+          <!-- Nav trái -->
+          <nav class="set-nav" id="setNav"></nav>
+
+          <!-- Nội dung -->
+          <div>
+            <!-- Thông tin công ty -->
+            <section class="card">
+              <div class="card__head">
+                <h3>Thông tin công ty</h3>
+                <div class="sub">Hiển thị trên footer, hoá đơn, hợp đồng</div>
+              </div>
+              <div class="card__body">
+                <div class="logo-block">
+                  <span class="logo-box">HT</span>
+                  <div>
+                    <div class="logo-meta__t">Logo công ty</div>
+                    <div class="logo-meta__s">PNG/SVG · Tối đa 2MB</div>
+                    <div class="logo-actions">
+                      <button class="btn btn--gold btn--sm">Đổi logo</button>
+                      <button class="btn btn--ghost btn--sm">Xoá</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-grid">
+                  <div class="field field--full">
+                    <label>Tên công ty</label>
+                    <input type="text" value="Công ty Cổ phần Bất động sản HTHOME" />
+                  </div>
+                  <div class="field">
+                    <label>Mã số thuế</label>
+                    <input type="text" value="0319411244" />
+                  </div>
+                  <div class="field">
+                    <label>Hotline</label>
+                    <input type="text" value="0949 397 595" />
+                  </div>
+                  <div class="field field--full">
+                    <label>Địa chỉ trụ sở</label>
+                    <input type="text" value="262A Nam Kỳ Khởi Nghĩa, P. Xuân Hòa, TP.HCM" />
+                  </div>
+                  <div class="field">
+                    <label>Email chính</label>
+                    <input type="text" value="hello@hthome.vn" />
+                  </div>
+                  <div class="field">
+                    <label>Website</label>
+                    <input type="text" value="hthome.vn" />
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Ma trận HH mặc định -->
+            <section class="card">
+              <div class="card__head">
+                <h3>Ma trận hoa hồng mặc định</h3>
+                <div class="sub">Toà nhà mới sẽ tự động dùng ma trận này</div>
+              </div>
+              <div class="card__body">
+                <div class="tier-head">
+                  <span>Kỳ hạn</span><span>% Sale</span><span>% Công ty</span>
+                </div>
+                <div id="tierList"></div>
+              </div>
+            </section>
+
+            <div class="save-bar">
+              <button class="btn btn--ghost">Huỷ</button>
+              <button class="btn btn--primary" id="btnSave">Lưu cài đặt</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="assets/js/ht-ui.js"></script>
+  <script src="assets/js/ht-internal.js"></script>
+  <script>
+    var I = HTI.icon;
+    document.getElementById('btnSidebar').innerHTML = I('menu', 22);
+
+    /* ---- Nav trái ---- */
+    var navItems = [
+      { ic: 'building',      t: 'Thông tin công ty', active: true },
+      { ic: 'wallet',        t: 'Ma trận HH mặc định' },
+      { ic: 'file-text',     t: 'Chính sách release HH' },
+      { ic: 'shield-check',  t: 'Tích hợp (Zalo, Google)' },
+      { ic: 'bell',          t: 'Thông báo & Email' },
+      { ic: 'layout-dashboard', t: 'Giao diện (logo, màu)' },
+      { ic: 'package',       t: 'Sao lưu dữ liệu' },
+      { ic: 'file-text',     t: 'Audit log' }
+    ];
+    var elNav = document.getElementById('setNav');
+    elNav.innerHTML = navItems.map(function (n) {
+      return '<button class="set-nav__item' + (n.active ? ' is-active' : '') + '">' +
+        I(n.ic, 17) + '<span>' + n.t + '</span></button>';
+    }).join('');
+    elNav.addEventListener('click', function (e) {
+      var it = e.target.closest('.set-nav__item');
+      if (!it) return;
+      elNav.querySelectorAll('.set-nav__item').forEach(function (c) { c.classList.remove('is-active'); });
+      it.classList.add('is-active');
+    });
+
+    /* ---- Ma trận HH ---- */
+    var tiers = [
+      { name: '6 tháng',  sale: '50', cty: '50' },
+      { name: '9 tháng',  sale: '60', cty: '40' },
+      { name: '12 tháng', sale: '70', cty: '30' }
+    ];
+    document.getElementById('tierList').innerHTML = tiers.map(function (t) {
+      return '<div class="tier-row">' +
+        '<span class="tier-name">' + t.name + '</span>' +
+        '<span class="tier-field"><div class="pct"><input type="text" value="' + t.sale + '" /><span>%</span></div></span>' +
+        '<span class="tier-field"><div class="pct"><input type="text" value="' + t.cty + '" /><span>%</span></div></span>' +
+      '</div>';
+    }).join('');
+
+    document.getElementById('btnSave').addEventListener('click', function () {
+      this.textContent = 'Đã lưu ✓';
+      var b = this;
+      setTimeout(function () { b.textContent = 'Lưu cài đặt'; }, 1600);
+    });
+  </script>
+</body>
+</html>

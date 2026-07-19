@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Báo cáo tổng · Admin — HT HOME Nội bộ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/tokens.css" />
+  <link rel="stylesheet" href="assets/css/base.css" />
+  <link rel="stylesheet" href="assets/css/components.css" />
+  <link rel="stylesheet" href="assets/css/internal.css" />
+  <style>
+    /* Nhóm chọn kỳ */
+    .seg { display: inline-flex; gap: 3px; background: var(--muted); padding: 3px; border-radius: var(--radius-m); }
+    .seg__btn { border: 0; background: transparent; color: var(--muted-fg); font-family: inherit; font-size: 13px; font-weight: 600; padding: 8px 15px; border-radius: var(--radius-s); cursor: pointer; }
+    .seg__btn.is-active { background: var(--card); color: var(--fg); box-shadow: var(--shadow-card); }
+
+    /* KPI: 5 thẻ */
+    .kpi-row { display: grid; grid-template-columns: 1fr; gap: 16px; }
+    @media (min-width: 560px) { .kpi-row { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 900px) { .kpi-row { grid-template-columns: repeat(3, 1fr); } }
+    @media (min-width: 1280px) { .kpi-row { grid-template-columns: repeat(5, 1fr); } }
+    .kpi { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-l); padding: 18px; box-shadow: var(--shadow-card); }
+    .kpi__top { display: flex; align-items: center; justify-content: space-between; color: var(--muted-fg); font-size: 13px; font-weight: 500; }
+    .kpi__ic { width: 34px; height: 34px; border-radius: var(--radius-s); background: var(--gold-soft); color: var(--gold); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .kpi__val { font-size: 25px; font-weight: 800; color: var(--fg); margin-top: 10px; }
+    .kpi__delta { font-size: 12px; margin-top: 4px; color: var(--muted-fg); }
+    .kpi__delta b { font-weight: 700; }
+    .kpi__delta .up { color: var(--success); font-weight: 700; }
+    .kpi__delta .flat { color: var(--muted-fg); font-weight: 700; }
+
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-l); box-shadow: var(--shadow-card); }
+    .card__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 20px; border-bottom: 1px solid var(--border); }
+    .card__head h3 { font-size: 16px; font-weight: 700; color: var(--fg); }
+    .card__head .sub { font-size: 12px; color: var(--muted-fg); margin-top: 2px; }
+    .card__body { padding: 18px 20px; }
+    .mt20 { margin-top: 20px; }
+
+    .cols { display: grid; grid-template-columns: 1fr; gap: 20px; margin-top: 20px; }
+    @media (min-width: 1100px) { .cols { grid-template-columns: 1.7fr 1fr; } }
+
+    /* Biểu đồ cột chồng */
+    .legend { display: flex; gap: 18px; align-items: center; }
+    .legend span { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted-fg); font-weight: 600; }
+    .legend i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+    .chart { display: flex; align-items: flex-end; gap: 12px; height: 220px; padding-top: 10px; }
+    .chart__col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; height: 100%; justify-content: flex-end; }
+    .chart__stack { width: 100%; max-width: 48px; display: flex; flex-direction: column; justify-content: flex-end; }
+    .chart__seg { width: 100%; }
+    .chart__seg--recv { background: var(--primary); border-radius: 0 0 4px 4px; }
+    .chart__seg--pend { background: var(--gold); border-radius: 4px 4px 0 0; }
+    .chart__col:first-child .chart__seg--recv { border-radius: 0 0 4px 4px; }
+    .chart__total { font-size: 11px; font-weight: 700; color: var(--fg); }
+    .chart__m { font-size: 12px; color: var(--muted-fg); }
+
+    /* Bảng khu vực */
+    .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    table.rpt { width: 100%; border-collapse: collapse; min-width: 460px; }
+    table.rpt th { text-align: left; font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted-fg); padding: 10px 12px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    table.rpt td { font-size: 13.5px; color: var(--fg); padding: 13px 12px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    table.rpt tr:last-child td { border-bottom: 0; }
+    table.rpt td.num { text-align: right; font-weight: 700; }
+    table.rpt td.area { font-weight: 600; }
+    .mini-bar { height: 7px; background: var(--muted); border-radius: 999px; overflow: hidden; min-width: 90px; }
+    .mini-bar span { display: block; height: 100%; background: var(--gold); border-radius: 999px; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="app-sidebar" id="ht-sidebar" data-active="baocao"></div>
+    <main class="app-main">
+      <!-- Topbar -->
+      <header class="app-topbar">
+        <div style="display:flex;align-items:center;gap:12px">
+          <button class="btn-sidebar" id="btnSidebar" aria-label="Menu"></button>
+          <div>
+            <div class="app-topbar__title">Báo cáo tổng · Admin</div>
+            <div class="app-topbar__sub">Tổng quan HT HOME · Đa toà nhà · Đa Sale · KPI thời gian thực</div>
+          </div>
+        </div>
+        <div class="app-topbar__actions">
+          <div class="seg" role="tablist">
+            <button class="seg__btn is-active" type="button">Tháng 7, 2026</button>
+            <button class="seg__btn" type="button">Quý 3</button>
+            <button class="seg__btn" type="button">Năm 2026</button>
+          </div>
+          <button class="btn btn--ghost btn--sm" type="button" id="btnExport"></button>
+        </div>
+      </header>
+
+      <div class="app-content">
+        <!-- KPI -->
+        <div class="kpi-row" id="kpiRow"></div>
+
+        <div class="cols">
+          <!-- Biểu đồ cột chồng -->
+          <section class="card">
+            <div class="card__head">
+              <div>
+                <h3>Doanh thu 6 tháng gần nhất</h3>
+                <div class="sub">So sánh HH đã nhận vs chờ release (triệu đồng)</div>
+              </div>
+              <div class="legend">
+                <span><i style="background:var(--primary)"></i>Đã nhận</span>
+                <span><i style="background:var(--gold)"></i>Chờ release</span>
+              </div>
+            </div>
+            <div class="card__body">
+              <div class="chart" id="chart"></div>
+            </div>
+          </section>
+
+          <!-- Doanh thu theo khu vực -->
+          <section class="card">
+            <div class="card__head">
+              <div><h3>Doanh thu theo khu vực</h3><div class="sub">Tháng 7 · 5 khu vực dẫn đầu</div></div>
+            </div>
+            <div class="card__body" style="padding-top:8px">
+              <div class="table-wrap">
+                <table class="rpt">
+                  <thead>
+                    <tr><th>Khu vực</th><th>Deal</th><th>Tỷ trọng</th><th>Doanh thu</th></tr>
+                  </thead>
+                  <tbody id="areaRows"></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="assets/js/ht-ui.js"></script>
+  <script src="assets/js/ht-internal.js"></script>
+  <script>
+    (function () {
+      'use strict';
+      var I = HTI.icon;
+      document.getElementById('btnSidebar').innerHTML = I('menu', 22);
+      document.getElementById('btnExport').innerHTML = I('file-text', 16) + 'Xuất báo cáo';
+
+      // KPI (5 thẻ)
+      var kpis = [
+        { label: 'Doanh thu tháng', ic: 'wallet', val: '487 tr', delta: '<span class="up">+18%</span> vs 412tr T6', up: true },
+        { label: 'Deal chốt', ic: 'file-text', val: '42', delta: '<span class="up">+11%</span> · 38 T6 · 12 chờ HĐ', up: true },
+        { label: 'Phòng cho thuê', ic: 'package', val: '156/218', delta: '<span class="up">+3%</span> · 72% occupancy', up: true },
+        { label: 'Sale active', ic: 'users', val: '14', delta: '<span class="flat">±0</span> so tháng trước' },
+        { label: 'Hoa hồng đã trả', ic: 'banknote', val: '142 tr', delta: '<span class="up">+22%</span> · 45tr chờ release', up: true }
+      ];
+      document.getElementById('kpiRow').innerHTML = kpis.map(function (k) {
+        return '<div class="kpi"><div class="kpi__top"><span>' + k.label + '</span><span class="kpi__ic">' + I(k.ic, 18) + '</span></div>' +
+          '<div class="kpi__val">' + k.val + '</div><div class="kpi__delta">' + k.delta + '</div></div>';
+      }).join('');
+
+      // Biểu đồ cột chồng — [tháng, đã nhận, chờ release]
+      var data = [
+        ['T2', 264, 36],
+        ['T3', 305, 45],
+        ['T4', 360, 45],
+        ['T5', 378, 52],
+        ['T6', 367, 45],
+        ['T7', 442, 45]
+      ];
+      var max = 0;
+      data.forEach(function (d) { max = Math.max(max, d[1] + d[2]); });
+      document.getElementById('chart').innerHTML = data.map(function (d) {
+        var total = d[1] + d[2];
+        var stackH = Math.round(total / max * 100);
+        var recvPct = d[1] / total * 100;
+        var pendPct = d[2] / total * 100;
+        return '<div class="chart__col">' +
+          '<span class="chart__total">' + total + '</span>' +
+          '<div class="chart__stack" style="height:' + stackH + '%">' +
+            '<div class="chart__seg chart__seg--pend" style="height:' + pendPct + '%" title="Chờ release: ' + d[2] + 'tr"></div>' +
+            '<div class="chart__seg chart__seg--recv" style="height:' + recvPct + '%" title="Đã nhận: ' + d[1] + 'tr"></div>' +
+          '</div>' +
+          '<span class="chart__m">' + d[0] + '</span></div>';
+      }).join('');
+
+      // Doanh thu theo khu vực
+      var areas = [
+        { area: 'Gò Vấp', deal: 13, rev: 152 },
+        { area: 'Bình Thạnh', deal: 11, rev: 128 },
+        { area: 'Thủ Đức', deal: 9, rev: 96 },
+        { area: 'Phú Nhuận', deal: 6, rev: 68 },
+        { area: 'Tân Bình', deal: 3, rev: 43 }
+      ];
+      var maxRev = 0;
+      areas.forEach(function (a) { maxRev = Math.max(maxRev, a.rev); });
+      document.getElementById('areaRows').innerHTML = areas.map(function (a) {
+        var pct = Math.round(a.rev / maxRev * 100);
+        return '<tr>' +
+          '<td class="area">' + a.area + '</td>' +
+          '<td>' + a.deal + '</td>' +
+          '<td><div class="mini-bar"><span style="width:' + pct + '%"></span></div></td>' +
+          '<td class="num">' + a.rev + ' tr</td>' +
+          '</tr>';
+      }).join('');
+
+      // Nút chọn kỳ (demo tĩnh)
+      var segBtns = document.querySelectorAll('.seg__btn');
+      segBtns.forEach(function (b) {
+        b.addEventListener('click', function () {
+          segBtns.forEach(function (x) { x.classList.remove('is-active'); });
+          b.classList.add('is-active');
+        });
+      });
+
+      document.getElementById('btnExport').addEventListener('click', function () {
+        alert('Đang xuất báo cáo tổng (demo).');
+      });
+    })();
+  </script>
+</body>
+</html>

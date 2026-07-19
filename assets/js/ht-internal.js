@@ -48,6 +48,7 @@
     { k: 'khuvuc', label: 'Khu vực', href: 'khuvuc.html', icon: 'map' }
   ];
   var NAV_ADMIN = [
+    { k: 'baocao', label: 'Báo cáo tổng', href: 'baocao.html', icon: 'file-text' },
     { k: 'quy', label: 'Quỹ nội bộ', href: 'quynoibo.html', icon: 'banknote' },
     { k: 'nhanvien', label: 'Nhân viên', href: 'nhanvien.html', icon: 'user-cog' },
     { k: 'phanquyen', label: 'Phân quyền', href: 'phanquyen.html', icon: 'shield-check' },

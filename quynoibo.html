@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quỹ nội bộ · Tài chính công ty — HT HOME Nội bộ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/tokens.css" />
+  <link rel="stylesheet" href="assets/css/base.css" />
+  <link rel="stylesheet" href="assets/css/components.css" />
+  <link rel="stylesheet" href="assets/css/internal.css" />
+  <style>
+    /* KPI: 4 thẻ số dư */
+    .kpi-row { display: grid; grid-template-columns: 1fr; gap: 16px; }
+    @media (min-width: 560px) { .kpi-row { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 1200px) { .kpi-row { grid-template-columns: repeat(4, 1fr); } }
+    .kpi { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-l); padding: 18px; box-shadow: var(--shadow-card); }
+    .kpi__top { display: flex; align-items: center; justify-content: space-between; color: var(--muted-fg); font-size: 13px; font-weight: 500; }
+    .kpi__ic { width: 34px; height: 34px; border-radius: var(--radius-s); background: var(--gold-soft); color: var(--gold); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .kpi__val { font-size: 25px; font-weight: 800; color: var(--fg); margin-top: 10px; }
+    .kpi__delta { font-size: 12px; margin-top: 4px; color: var(--muted-fg); }
+    .kpi__delta .up { color: var(--success); font-weight: 700; }
+
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-l); box-shadow: var(--shadow-card); }
+    .card__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 20px; border-bottom: 1px solid var(--border); }
+    .card__head h3 { font-size: 16px; font-weight: 700; color: var(--fg); }
+    .card__head .sub { font-size: 12px; color: var(--muted-fg); margin-top: 2px; }
+    .card__link { font-size: 13px; font-weight: 600; color: var(--muted-fg); display: inline-flex; align-items: center; gap: 4px; }
+    .card__link:hover { color: var(--fg); }
+    .card__body { padding: 8px 20px 16px; }
+
+    .cols { display: grid; grid-template-columns: 1fr; gap: 20px; margin-top: 20px; }
+    @media (min-width: 1100px) { .cols { grid-template-columns: 1.6fr 1fr; } }
+
+    /* Giao dịch */
+    .tx { display: flex; align-items: center; gap: 12px; padding: 13px 0; border-bottom: 1px solid var(--border); }
+    .tx:last-child { border-bottom: 0; }
+    .tx__ic { width: 36px; height: 36px; border-radius: var(--radius-s); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .tx__ic--in { background: var(--success-soft); color: var(--success); }
+    .tx__ic--out { background: var(--danger-soft); color: var(--danger); }
+    .tx__body { flex: 1; min-width: 0; }
+    .tx__t { font-size: 13.5px; font-weight: 600; color: var(--fg); display: block; }
+    .tx__s { font-size: 12px; color: var(--muted-fg); display: block; margin-top: 2px; }
+    .tx__amt { font-size: 14px; font-weight: 800; white-space: nowrap; flex-shrink: 0; }
+    .tx__amt--in { color: var(--success); }
+    .tx__amt--out { color: var(--danger); }
+
+    /* HH chờ release */
+    .rel { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+    .rel:last-child { border-bottom: 0; }
+    .rel__body { flex: 1; min-width: 0; }
+    .rel__t { font-size: 13.5px; font-weight: 600; color: var(--fg); display: block; }
+    .rel__s { font-size: 12px; color: var(--gold); font-weight: 600; display: block; margin-top: 2px; }
+    .rel__amt { font-size: 13.5px; font-weight: 700; color: var(--fg); white-space: nowrap; flex-shrink: 0; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="app-sidebar" id="ht-sidebar" data-active="quy"></div>
+    <main class="app-main">
+      <!-- Topbar -->
+      <header class="app-topbar">
+        <div style="display:flex;align-items:center;gap:12px">
+          <button class="btn-sidebar" id="btnSidebar" aria-label="Menu"></button>
+          <div>
+            <div class="app-topbar__title">Quỹ nội bộ · Tài chính công ty</div>
+            <div class="app-topbar__sub">Số dư · Thu chi · HH chưa release · Chu kỳ tháng 7/2026</div>
+          </div>
+        </div>
+        <div class="app-topbar__actions">
+          <button class="btn btn--ghost btn--sm" type="button" id="btnExcel"></button>
+          <button class="btn btn--primary btn--sm" type="button" id="btnAdd"></button>
+        </div>
+      </header>
+
+      <div class="app-content">
+        <!-- KPI số dư -->
+        <div class="kpi-row" id="kpiRow"></div>
+
+        <div class="cols">
+          <!-- Giao dịch gần đây -->
+          <section class="card">
+            <div class="card__head">
+              <div><h3>Giao dịch gần đây</h3></div>
+              <a class="card__link" href="#" id="linkAll">Xem tất cả</a>
+            </div>
+            <div class="card__body" id="txList"></div>
+          </section>
+
+          <!-- HH chờ release -->
+          <section class="card">
+            <div class="card__head">
+              <div><h3>HH chờ release</h3><div class="sub">12 deal · 45tr</div></div>
+            </div>
+            <div class="card__body" id="relList"></div>
+          </section>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="assets/js/ht-ui.js"></script>
+  <script src="assets/js/ht-internal.js"></script>
+  <script>
+    (function () {
+      'use strict';
+      var I = HTI.icon;
+      document.getElementById('btnSidebar').innerHTML = I('menu', 22);
+      document.getElementById('btnExcel').innerHTML = I('file-text', 16) + 'Xuất Excel';
+      document.getElementById('btnAdd').innerHTML = I('plus', 16) + 'Thêm giao dịch';
+      // arrow-right không có trong HTI → inline SVG
+      var arrow = '<svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>';
+      document.getElementById('linkAll').insertAdjacentHTML('beforeend', arrow);
+
+      // KPI số dư
+      var kpis = [
+        { label: 'Số dư quỹ', ic: 'banknote', val: '324 tr', delta: '<span class="up">+22%</span> so T6' },
+        { label: 'Đã thu tháng 7', ic: 'wallet', val: '487 tr', delta: '42 giao dịch' },
+        { label: 'Đã chi tháng 7', ic: 'file-text', val: '163 tr', delta: 'Lương + Marketing + OpEx' },
+        { label: 'HH chưa release', ic: 'users', val: '45 tr', delta: '12 deal chờ checkin +7' }
+      ];
+      document.getElementById('kpiRow').innerHTML = kpis.map(function (k) {
+        return '<div class="kpi"><div class="kpi__top"><span>' + k.label + '</span><span class="kpi__ic">' + I(k.ic, 18) + '</span></div>' +
+          '<div class="kpi__val">' + k.val + '</div><div class="kpi__delta">' + k.delta + '</div></div>';
+      }).join('');
+
+      // Giao dịch gần đây — dir: 'in' | 'out'
+      var txs = [
+        { dir: 'in', t: 'HH deal #1039 (Sarah Johnson · P.303)', s: 'Chuyển khoản · MB Bank · 09/07 14:22', amt: '+1.280.000' },
+        { dir: 'in', t: 'HH deal #1041 (Hoàng Minh Trí · P.505)', s: 'Chuyển khoản · Vietcombank · 08/07', amt: '+1.630.000' },
+        { dir: 'out', t: 'Lương tháng 6 · 14 nhân viên', s: 'HR · 05/07', amt: '−98.400.000' },
+        { dir: 'out', t: 'Marketing · Facebook Ads T7', s: 'OpEx · 03/07', amt: '−12.000.000' },
+        { dir: 'in', t: 'HH deal #1035', s: 'Chuyển khoản · 01/07', amt: '+320.000' },
+        { dir: 'out', t: 'Thuê văn phòng T7', s: 'OpEx · 01/07', amt: '−15.000.000' }
+      ];
+      document.getElementById('txList').innerHTML = txs.map(function (x) {
+        var isIn = x.dir === 'in';
+        var ic = isIn ? 'wallet' : 'file-text';
+        return '<div class="tx">' +
+          '<span class="tx__ic ' + (isIn ? 'tx__ic--in' : 'tx__ic--out') + '">' + I(ic, 18) + '</span>' +
+          '<span class="tx__body"><span class="tx__t">' + x.t + '</span><span class="tx__s">' + x.s + '</span></span>' +
+          '<span class="tx__amt ' + (isIn ? 'tx__amt--in' : 'tx__amt--out') + '">' + x.amt + '</span>' +
+          '</div>';
+      }).join('');
+
+      // HH chờ release
+      var rels = [
+        { t: '#1042 · Vũ Bảo Ngọc', s: 'Release +7 ngày', amt: '840.000' },
+        { t: '#1045 · Đặng Thu Trang', s: 'Release +5 ngày', amt: '1.120.000' },
+        { t: '#1048 · Lý Hoàng Nam', s: 'Release +7 ngày', amt: '760.000' },
+        { t: '#1050 · Bùi Khánh Vy', s: 'Release +3 ngày', amt: '1.280.000' },
+        { t: '#1052 · Ngô Gia Bảo', s: 'Release +6 ngày', amt: '520.000' }
+      ];
+      document.getElementById('relList').innerHTML = rels.map(function (r) {
+        return '<div class="rel">' +
+          '<span class="rel__body"><span class="rel__t">' + r.t + '</span><span class="rel__s">' + r.s + '</span></span>' +
+          '<span class="rel__amt">' + r.amt + '</span>' +
+          '</div>';
+      }).join('');
+
+      document.getElementById('btnExcel').addEventListener('click', function () {
+        alert('Đang xuất file Excel quỹ nội bộ (demo).');
+      });
+      document.getElementById('btnAdd').addEventListener('click', function () {
+        alert('Thêm giao dịch mới (demo).');
+      });
+      document.getElementById('linkAll').addEventListener('click', function (e) { e.preventDefault(); });
+    })();
+  </script>
+</body>
+</html>

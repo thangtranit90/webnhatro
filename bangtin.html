@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bảng tin nội bộ — HT HOME Nội bộ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/tokens.css" />
+  <link rel="stylesheet" href="assets/css/base.css" />
+  <link rel="stylesheet" href="assets/css/components.css" />
+  <link rel="stylesheet" href="assets/css/internal.css" />
+  <style>
+    .filters { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 18px; -webkit-overflow-scrolling: touch; }
+    .filters::-webkit-scrollbar { height: 0; }
+    .chip { flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 999px; border: 1px solid var(--border); background: var(--card); color: var(--muted-fg); font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all .15s; }
+    .chip:hover { color: var(--fg); border-color: var(--muted-fg); }
+    .chip.is-active { background: var(--fg); color: var(--card); border-color: var(--fg); }
+
+    .feed { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+
+    .post { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-l); box-shadow: var(--shadow-card); padding: 18px 20px; }
+    .post.is-pinned { border-color: var(--gold); }
+    .post__head { display: flex; align-items: center; gap: 12px; }
+    .post__author { font-size: 14px; font-weight: 700; color: var(--fg); line-height: 1.2; }
+    .post__meta { font-size: 12px; color: var(--muted-fg); margin-top: 2px; }
+    .post__pin { margin-left: auto; font-size: 11px; font-weight: 700; color: var(--gold-fg); background: var(--gold-soft); border-radius: 999px; padding: 3px 10px; white-space: nowrap; }
+
+    .post__tag { display: inline-block; font-size: 11px; font-weight: 700; border-radius: 999px; padding: 3px 10px; margin: 14px 0 8px; }
+    .tag--report { background: var(--info-soft); color: var(--info); }
+    .tag--congrat { background: var(--success-soft); color: var(--success); }
+    .tag--system { background: var(--warning-soft); color: var(--warning); }
+    .tag--meeting { background: var(--gold-soft); color: var(--gold-fg); }
+    .tag--announce { background: var(--danger-soft); color: var(--danger); }
+
+    .post__title { font-size: 16px; font-weight: 700; color: var(--fg); margin-bottom: 6px; }
+    .post__body { font-size: 14px; color: var(--fg); line-height: 1.55; }
+    .post__foot { display: flex; align-items: center; gap: 16px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); font-size: 13px; font-weight: 600; color: var(--muted-fg); }
+    .post__foot span { display: inline-flex; align-items: center; gap: 5px; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="app-sidebar" id="ht-sidebar" data-active="bangtin"></div>
+    <main class="app-main">
+      <header class="app-topbar">
+        <div style="display:flex;align-items:center;gap:12px">
+          <button class="btn-sidebar" id="btnSidebar" aria-label="Menu"></button>
+          <div>
+            <div class="app-topbar__title">Bảng tin nội bộ</div>
+            <div class="app-topbar__sub">Thông báo, meeting notes, cập nhật hệ thống cho toàn team</div>
+          </div>
+        </div>
+        <div class="app-topbar__actions">
+          <button class="btn btn--primary btn--sm" id="btnPost"></button>
+        </div>
+      </header>
+
+      <div class="app-content">
+        <!-- Chip lọc -->
+        <div class="filters" id="filters"></div>
+
+        <!-- Feed -->
+        <div class="feed" id="feed"></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="assets/js/ht-ui.js"></script>
+  <script src="assets/js/ht-internal.js"></script>
+  <script>
+    var I = HTI.icon;
+    document.getElementById('btnSidebar').innerHTML = I('menu', 22);
+    document.getElementById('btnPost').innerHTML = I('plus', 16) + 'Đăng thông báo';
+
+    /* ---- Chip lọc ---- */
+    var filters = [
+      { t: 'Tất cả', active: true }, { t: '📢 Thông báo' }, { t: '🎉 Chúc mừng' },
+      { t: '📅 Meeting' }, { t: '🔧 Cập nhật hệ thống' }, { t: '📊 Báo cáo tháng' }
+    ];
+    var elF = document.getElementById('filters');
+    elF.innerHTML = filters.map(function (f) {
+      return '<button class="chip' + (f.active ? ' is-active' : '') + '">' + f.t + '</button>';
+    }).join('');
+    elF.addEventListener('click', function (e) {
+      var c = e.target.closest('.chip');
+      if (!c) return;
+      elF.querySelectorAll('.chip').forEach(function (x) { x.classList.remove('is-active'); });
+      c.classList.add('is-active');
+    });
+
+    /* ---- Feed ---- */
+    var posts = [
+      {
+        av: 'QĐ', author: 'Quản Đức Anh', role: 'Manager', time: '2 giờ trước', pinned: true,
+        tagCls: 'tag--report', tagTxt: '📊 Báo cáo tháng',
+        title: 'KPI tháng 7: HT HOME đạt 105% target',
+        body: 'Chúc mừng cả team! Doanh thu tháng 7 đạt 487tr (target 465tr), vượt 105% kế hoạch. Đóng góp lớn nhất từ khu Gò Vấp và Bình Thạnh. Chi tiết báo cáo đã gửi qua email, mọi người xem và chuẩn bị cho mục tiêu tháng 8 nhé.',
+        like: 14, cmt: 5
+      },
+      {
+        av: 'TB', author: 'Trần Đình Bảo', role: 'Admin', time: '5 giờ trước', pinned: false,
+        tagCls: 'tag--congrat', tagTxt: '🎉 Chúc mừng',
+        title: 'Chị Thu Hà lên Sale cấp 1',
+        body: 'Xin chúc mừng chị Thu Hà chính thức thăng cấp Sale cấp 1 với 18 deal chốt trong tháng 7! Một cột mốc xứng đáng cho sự nỗ lực bền bỉ. Cả nhà cùng vào chúc mừng chị nào 👏',
+        like: 22, cmt: 11
+      },
+      {
+        av: 'TB', author: 'Trần Đình Bảo', role: 'Admin', time: 'Hôm qua', pinned: false,
+        tagCls: 'tag--system', tagTxt: '🔧 Cập nhật hệ thống',
+        title: 'Cập nhật quy trình upload HĐ',
+        body: 'Từ 15/07, tất cả deal cần upload đủ 3 trang HĐ (trang thông tin, trang điều khoản, trang ký) trước khi chuyển sang trạng thái "Đã chốt". Deal thiếu ảnh sẽ không được tính hoa hồng. Mọi người lưu ý cập nhật các deal đang mở.',
+        like: 9, cmt: 3
+      },
+      {
+        av: 'QĐ', author: 'Quản Đức Anh', role: 'Manager', time: '2 ngày trước', pinned: false,
+        tagCls: 'tag--meeting', tagTxt: '📅 Meeting',
+        title: 'Họp tổng kết tháng',
+        body: 'Lịch họp tổng kết tháng 7 & triển khai mục tiêu tháng 8: 9h00 thứ Hai (05/08) tại phòng họp tầng 3. Nội dung: review KPI từng khu, phân bổ quỹ phòng mới, chốt chính sách hoa hồng Q3. Đề nghị cả team có mặt đầy đủ và đúng giờ.',
+        like: 7, cmt: 4
+      }
+    ];
+
+    document.getElementById('feed').innerHTML = posts.map(function (p) {
+      return '<article class="post' + (p.pinned ? ' is-pinned' : '') + '">' +
+        '<div class="post__head">' +
+          '<span class="avatar">' + p.av + '</span>' +
+          '<span><span class="post__author" style="display:block">' + p.author + '</span>' +
+          '<span class="post__meta">' + p.role + ' · ' + p.time + '</span></span>' +
+          (p.pinned ? '<span class="post__pin">📌 Ghim</span>' : '') +
+        '</div>' +
+        '<span class="post__tag ' + p.tagCls + '">' + p.tagTxt + '</span>' +
+        '<div class="post__title">' + p.title + '</div>' +
+        '<div class="post__body">' + p.body + '</div>' +
+        '<div class="post__foot">' +
+          '<span>♥ ' + p.like + ' like</span>' +
+          '<span>💬 ' + p.cmt + ' bình luận</span>' +
+        '</div>' +
+      '</article>';
+    }).join('');
+  </script>
+</body>
+</html>
