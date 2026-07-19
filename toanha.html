@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quản lý tòa nhà — HT HOME Nội bộ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/tokens.css" />
+  <link rel="stylesheet" href="assets/css/base.css" />
+  <link rel="stylesheet" href="assets/css/components.css" />
+  <link rel="stylesheet" href="assets/css/internal.css" />
+  <style>
+    /* ===== KPI ===== */
+    .kpi-row { display: grid; grid-template-columns: 1fr; gap: 16px; }
+    @media (min-width: 560px) { .kpi-row { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 1200px) { .kpi-row { grid-template-columns: repeat(4, 1fr); } }
+    .kpi { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-l); padding: 18px; box-shadow: var(--shadow-card); }
+    .kpi__top { display: flex; align-items: center; justify-content: space-between; color: var(--muted-fg); font-size: 13px; font-weight: 500; }
+    .kpi__ic { width: 34px; height: 34px; border-radius: var(--radius-s); background: var(--gold-soft); color: var(--gold); display: inline-flex; align-items: center; justify-content: center; }
+    .kpi__val { font-size: 26px; font-weight: 800; color: var(--fg); margin-top: 10px; }
+    .kpi__delta { font-size: 12px; margin-top: 4px; color: var(--muted-fg); }
+    .kpi__delta.up { color: var(--success); }
+    .kpi__delta.down { color: var(--danger); }
+
+    /* ===== Card + toolbar ===== */
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-l); box-shadow: var(--shadow-card); margin-top: 20px; }
+    .card__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 20px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+    .card__head h3 { font-size: 16px; font-weight: 700; color: var(--fg); }
+    .card__head .sub { font-size: 12px; color: var(--muted-fg); margin-top: 2px; }
+    .tb-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+    .tb-btn { display: inline-flex; align-items: center; gap: 6px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-m); padding: 8px 12px; font-size: 13px; font-weight: 600; color: var(--fg); cursor: pointer; transition: border-color .15s; }
+    .tb-btn:hover { border-color: var(--gold); }
+    .tb-btn .ic { color: var(--muted-fg); }
+
+    /* ===== Search ===== */
+    .tn-search { display: flex; align-items: center; gap: 10px; min-width: 0; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-m); padding: 9px 14px; }
+    .tn-search .ic { color: var(--muted-fg); flex-shrink: 0; }
+    .tn-search input { flex: 1; min-width: 0; border: 0; outline: none; background: transparent; font: inherit; font-size: 14px; color: var(--fg); }
+    .tn-search input::placeholder { color: var(--muted-fg); }
+    .topbar-search { width: 240px; max-width: 42vw; }
+
+    /* ===== Bảng ===== */
+    .tn-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    table.tn-table { width: 100%; border-collapse: collapse; min-width: 880px; }
+    .tn-table th, .tn-table td { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--border); font-size: 13px; white-space: nowrap; }
+    .tn-table th { font-size: 12px; font-weight: 700; color: var(--muted-fg); text-transform: uppercase; letter-spacing: .03em; background: var(--bg); }
+    .tn-table tbody tr:hover { background: var(--bg); }
+    .tn-name { display: flex; align-items: center; gap: 12px; }
+    .tn-name__ic { width: 38px; height: 38px; border-radius: var(--radius-s); background: var(--gold-soft); color: var(--gold); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .tn-name__t { font-size: 14px; font-weight: 700; color: var(--fg); }
+    .tn-name__s { font-size: 12px; color: var(--muted-fg); margin-top: 2px; white-space: normal; max-width: 280px; }
+    .tn-badge { display: inline-flex; align-items: center; font-size: 12px; font-weight: 600; border-radius: 999px; padding: 3px 10px; background: var(--muted); color: var(--muted-fg); }
+    .tn-fill { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+    .tn-fill__bar { flex: 1; height: 6px; border-radius: 999px; background: var(--muted); overflow: hidden; }
+    .tn-fill__val { height: 100%; border-radius: 999px; background: var(--success); }
+    .tn-fill__pct { font-size: 12px; font-weight: 700; color: var(--fg); width: 42px; text-align: right; }
+    .tn-view { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 600; color: var(--primary); }
+    .tn-view:hover { text-decoration: underline; }
+    .tn-empty { text-align: center; padding: 36px 20px; color: var(--muted-fg); font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="app-sidebar" id="ht-sidebar" data-active="toanha"></div>
+    <main class="app-main">
+      <!-- Topbar -->
+      <header class="app-topbar">
+        <div style="display:flex;align-items:center;gap:12px">
+          <button class="btn-sidebar" id="btnSidebar" aria-label="Menu"></button>
+          <div>
+            <div class="app-topbar__title">Quản lý tòa nhà</div>
+            <div class="app-topbar__sub">Theo dõi và quản lý toàn bộ tòa nhà cho thuê của bạn</div>
+          </div>
+        </div>
+        <div class="app-topbar__actions">
+          <label class="tn-search topbar-search">
+            <span class="ic" id="icTopSearch"></span>
+            <input type="text" id="tnSearch" placeholder="Tìm tòa nhà, địa chỉ..." />
+          </label>
+          <a class="btn btn--primary btn--sm" id="btnAdd" href="themphong.html"></a>
+        </div>
+      </header>
+
+      <div class="app-content">
+        <!-- KPI -->
+        <div class="kpi-row" id="kpiRow"></div>
+
+        <!-- Bảng danh sách tòa nhà -->
+        <section class="card">
+          <div class="card__head">
+            <div>
+              <h3>Danh sách tòa nhà</h3>
+              <div class="sub" id="tnMeta"></div>
+            </div>
+            <div class="tb-actions" id="tbActions"></div>
+          </div>
+          <div class="tn-table-wrap">
+            <table class="tn-table">
+              <thead>
+                <tr>
+                  <th>Tên tòa nhà</th>
+                  <th>Loại</th>
+                  <th>Tổng phòng</th>
+                  <th>Đã cho thuê</th>
+                  <th>Tỉ lệ lấp đầy</th>
+                  <th>Chủ sở hữu</th>
+                  <th>Cập nhật</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="tnBody"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="assets/js/ht-ui.js"></script>
+  <script src="assets/js/ht-internal.js"></script>
+  <script>
+    (function () {
+      var I = HTI.icon;
+      var esc = HT.esc;
+
+      // ---- Topbar ----
+      document.getElementById('btnSidebar').innerHTML = I('menu', 22);
+      document.getElementById('btnAdd').innerHTML = I('plus', 16) + 'Thêm tòa nhà';
+      document.getElementById('icTopSearch').innerHTML = I('search', 16);
+
+      // ---- Dữ liệu tòa nhà thật ----
+      var buildings = [].concat(
+        (window.HT_BUILDINGS && window.HT_BUILDINGS.ptro) || [],
+        (window.HT_BUILDINGS && window.HT_BUILDINGS.cc) || []
+      );
+
+      var totalRooms = buildings.reduce(function (s, b) { return s + ((b.rooms && b.rooms.length) || 0); }, 0);
+
+      // ---- KPI ----
+      var kpis = [
+        { label: 'Tổng tòa nhà', ic: 'building', val: String(buildings.length), delta: '+2 tháng này', up: true },
+        { label: 'Tổng phòng', ic: 'package', val: (totalRooms || 486).toLocaleString('vi-VN'), delta: 'trên toàn hệ thống' },
+        { label: 'Tỉ lệ lấp đầy', ic: 'shield-check', val: '87.4%', delta: '+3.2% vs tháng trước', up: true },
+        { label: 'Doanh thu tháng', ic: 'wallet', val: '1.28 tỷ', delta: '-2.1% vs tháng trước', down: true }
+      ];
+      document.getElementById('kpiRow').innerHTML = kpis.map(function (k) {
+        var cls = k.up ? ' up' : (k.down ? ' down' : '');
+        return '<div class="kpi"><div class="kpi__top"><span>' + esc(k.label) + '</span><span class="kpi__ic">' + I(k.ic, 18) + '</span></div>' +
+          '<div class="kpi__val">' + esc(k.val) + '</div><div class="kpi__delta' + cls + '">' + esc(k.delta) + '</div></div>';
+      }).join('');
+
+      // ---- Toolbar actions ----
+      var actions = [
+        { ic: 'file-text', label: 'Bộ lọc' },
+        { ic: 'chevrons-up-down', label: 'Sắp xếp' },
+        { ic: 'file-text', label: 'Xuất' }
+      ];
+      document.getElementById('tbActions').innerHTML = actions.map(function (a) {
+        return '<button class="tb-btn" type="button">' + I(a.ic, 15) + '<span>' + esc(a.label) + '</span></button>';
+      }).join('');
+
+      // ---- Suy diễn hiển thị cho mỗi tòa nhà ----
+      function loaiLabel(b) {
+        var l = (b.rooms && b.rooms[0] && b.rooms[0].loai) || '';
+        var map = {
+          'Phòng trọ': 'Nhà trọ', 'Căn hộ DV': 'Căn hộ DV', 'Ký túc xá': 'Ký túc xá',
+          'Chung cư': 'Chung cư', 'Nhà nguyên căn': 'Nhà nguyên căn'
+        };
+        return map[l] || l || '—';
+      }
+      function occupancy(total) {
+        // demo: ~85% tổng, làm tròn
+        return Math.round(total * 0.85);
+      }
+
+      var metaEl = document.getElementById('tnMeta');
+      var bodyEl = document.getElementById('tnBody');
+      var searchEl = document.getElementById('tnSearch');
+
+      function render() {
+        var q = (searchEl.value || '').trim().toLowerCase();
+        var list = buildings.filter(function (b) {
+          if (!q) return true;
+          var hay = ((b.addr || '') + ' ' + (b.addrFull || '') + ' ' + (b.quan || '')).toLowerCase();
+          return hay.indexOf(q) >= 0;
+        });
+
+        metaEl.textContent = list.length + ' tòa nhà · Cập nhật hôm nay';
+
+        if (!list.length) {
+          bodyEl.innerHTML = '<tr><td colspan="8"><div class="tn-empty">Không tìm thấy tòa nhà nào khớp.</div></td></tr>';
+          return;
+        }
+
+        bodyEl.innerHTML = list.map(function (b) {
+          var total = (b.rooms && b.rooms.length) || 0;
+          var rented = occupancy(total);
+          var pct = total ? Math.round(rented / total * 100) : 0;
+          var addrSmall = b.addrFull || (b.quan || '');
+          return '<tr>' +
+            '<td><div class="tn-name"><span class="tn-name__ic">' + I('building', 18) + '</span>' +
+              '<span><span class="tn-name__t" style="display:block">' + esc(b.addr || '—') + '</span>' +
+              '<span class="tn-name__s">' + esc(addrSmall) + '</span></span></div></td>' +
+            '<td><span class="tn-badge">' + esc(loaiLabel(b)) + '</span></td>' +
+            '<td>' + total + '</td>' +
+            '<td>' + rented + '</td>' +
+            '<td><div class="tn-fill"><span class="tn-fill__bar"><span class="tn-fill__val" style="width:' + pct + '%"></span></span>' +
+              '<span class="tn-fill__pct">' + pct + '%</span></div></td>' +
+            '<td>' + esc(b.nv || '—') + '</td>' +
+            '<td>' + esc(b.date || 'Hôm nay') + '</td>' +
+            '<td><a class="tn-view" href="toanha-chitiet.html?bid=' + encodeURIComponent(b.bid) + '">' + HT.icon('arrow-right', 14) + 'Xem</a></td>' +
+          '</tr>';
+        }).join('');
+      }
+
+      searchEl.addEventListener('input', render);
+      render();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chi tiết tòa nhà — HT HOME Nội bộ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/tokens.css" />
+  <link rel="stylesheet" href="assets/css/base.css" />
+  <link rel="stylesheet" href="assets/css/components.css" />
+  <link rel="stylesheet" href="assets/css/internal.css" />
+  <style>
+    /* ===== Back button ===== */
+    .tn-back { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--muted-fg); background: transparent; border: 0; cursor: pointer; padding: 0; }
+    .tn-back:hover { color: var(--fg); }
+
+    /* ===== KPI ===== */
+    .kpi-row { display: grid; grid-template-columns: 1fr; gap: 16px; }
+    @media (min-width: 560px) { .kpi-row { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 1200px) { .kpi-row { grid-template-columns: repeat(4, 1fr); } }
+    .kpi { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-l); padding: 18px; box-shadow: var(--shadow-card); }
+    .kpi__top { display: flex; align-items: center; justify-content: space-between; color: var(--muted-fg); font-size: 13px; font-weight: 500; }
+    .kpi__ic { width: 34px; height: 34px; border-radius: var(--radius-s); background: var(--gold-soft); color: var(--gold); display: inline-flex; align-items: center; justify-content: center; }
+    .kpi__val { font-size: 26px; font-weight: 800; color: var(--fg); margin-top: 10px; }
+    .kpi__delta { font-size: 12px; margin-top: 4px; color: var(--muted-fg); }
+
+    /* ===== Card ===== */
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-l); box-shadow: var(--shadow-card); margin-top: 20px; }
+    .card__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 20px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+    .card__head h3 { font-size: 16px; font-weight: 700; color: var(--fg); }
+    .card__body { padding: 6px 20px 12px; }
+
+    /* ===== Tabs ===== */
+    .rm-tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+    .rm-tab { display: inline-flex; align-items: center; gap: 6px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-pill); padding: 7px 14px; font-size: 13px; font-weight: 600; color: var(--muted-fg); cursor: pointer; transition: all .15s; }
+    .rm-tab:hover { color: var(--fg); border-color: var(--gold); }
+    .rm-tab.is-active { background: var(--primary); border-color: var(--primary); color: #fff; }
+
+    /* ===== Room row ===== */
+    .rm-row { display: flex; align-items: center; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+    .rm-row:last-child { border-bottom: 0; }
+    .rm-ic { width: 40px; height: 40px; border-radius: var(--radius-s); background: var(--gold-soft); color: var(--gold); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .rm-main { flex: 1 1 180px; min-width: 0; }
+    .rm-code { font-size: 14px; font-weight: 700; color: var(--fg); }
+    .rm-meta { font-size: 12px; color: var(--muted-fg); margin-top: 2px; }
+    .rm-guest { flex: 0 0 auto; font-size: 13px; color: var(--muted-fg); min-width: 120px; }
+    .rm-price { flex: 0 0 auto; font-size: 14px; font-weight: 700; color: var(--fg); min-width: 80px; text-align: right; }
+    .rm-status { flex: 0 0 auto; font-size: 12px; font-weight: 600; border-radius: 999px; padding: 3px 10px; }
+    .rm-status.trong { background: var(--success-soft); color: var(--success); }
+    .rm-status.thue { background: var(--muted); color: var(--muted-fg); }
+    .rm-status.sap { background: var(--gold-soft); color: var(--gold); }
+    .rm-more { flex: 0 0 auto; background: transparent; border: 0; color: var(--muted-fg); cursor: pointer; font-size: 18px; line-height: 1; padding: 4px 8px; border-radius: var(--radius-s); }
+    .rm-more:hover { background: var(--bg); color: var(--fg); }
+    .rm-empty { text-align: center; padding: 32px 20px; color: var(--muted-fg); font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="app-sidebar" id="ht-sidebar" data-active="toanha"></div>
+    <main class="app-main">
+      <!-- Topbar -->
+      <header class="app-topbar">
+        <div style="display:flex;align-items:center;gap:12px">
+          <button class="btn-sidebar" id="btnSidebar" aria-label="Menu"></button>
+          <div>
+            <a class="tn-back" href="toanha.html" id="btnBack"></a>
+            <div class="app-topbar__title" id="tnTitle"></div>
+            <div class="app-topbar__sub" id="tnSub"></div>
+          </div>
+        </div>
+        <div class="app-topbar__actions">
+          <a class="btn btn--ghost btn--sm" id="btnEdit" href="themphong.html"></a>
+          <a class="btn btn--primary btn--sm" id="btnAdd" href="themphong.html"></a>
+        </div>
+      </header>
+
+      <div class="app-content">
+        <!-- KPI -->
+        <div class="kpi-row" id="kpiRow"></div>
+
+        <!-- Phòng trong tòa nhà -->
+        <section class="card">
+          <div class="card__head">
+            <h3>Phòng trong tòa nhà</h3>
+            <div class="rm-tabs" id="rmTabs"></div>
+          </div>
+          <div class="card__body" id="rmList"></div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="assets/js/ht-ui.js"></script>
+  <script src="assets/js/ht-internal.js"></script>
+  <script>
+    (function () {
+      var I = HTI.icon;
+      var esc = HT.esc;
+
+      // ---- Topbar tĩnh ----
+      document.getElementById('btnSidebar').innerHTML = I('menu', 22);
+      var arrowLeft = '<svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>';
+      document.getElementById('btnBack').innerHTML = arrowLeft + 'Danh sách toà nhà';
+      document.getElementById('btnEdit').innerHTML = I('settings', 15) + 'Sửa thông tin';
+      document.getElementById('btnAdd').innerHTML = I('plus', 16) + 'Thêm phòng';
+
+      // ---- Tìm tòa nhà theo ?bid= ----
+      var buildings = [].concat(
+        (window.HT_BUILDINGS && window.HT_BUILDINGS.ptro) || [],
+        (window.HT_BUILDINGS && window.HT_BUILDINGS.cc) || []
+      );
+      function getParam(name) {
+        var m = new RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
+        return m ? decodeURIComponent(m[1]) : '';
+      }
+      var bid = getParam('bid');
+      var b = null;
+      for (var i = 0; i < buildings.length; i++) {
+        if (buildings[i].bid === bid) { b = buildings[i]; break; }
+      }
+      if (!b) b = buildings[0] || null;
+
+      var rooms = (b && b.rooms) || [];
+      var total = rooms.length;
+
+      // Trạng thái demo suy từ soTrong/status của mỗi phòng
+      function statusOf(r, idx) {
+        if (r.status === 'open' || (r.soTrong != null && r.soTrong > 0)) return 'trong';
+        if (r.status === 'wait') return 'sap';
+        return 'thue';
+      }
+      var trongCnt = rooms.filter(function (r, i) { return statusOf(r, i) === 'trong'; }).length;
+      var sapCnt = rooms.filter(function (r, i) { return statusOf(r, i) === 'sap'; }).length;
+      var thueCnt = total - trongCnt - sapCnt;
+
+      // ---- Topbar động ----
+      document.getElementById('tnTitle').textContent = b ? (b.addr || 'Tòa nhà') : 'Không tìm thấy tòa nhà';
+      document.getElementById('tnSub').textContent = b
+        ? ((b.addrFull || b.quan || '') + ' · ' + total + ' phòng · ' + thueCnt + ' đang cho thuê · ' + trongCnt + ' còn trống')
+        : 'Kiểm tra lại đường dẫn';
+
+      // ---- KPI ----
+      var occ = Math.round(total * 0.58); // demo ~58% occupancy
+      var kpis = [
+        { label: 'Tổng phòng', ic: 'package', val: String(total), delta: trongCnt + ' còn trống · ' + sapCnt + ' sắp trống' },
+        { label: 'Đang cho thuê', ic: 'users', val: String(occ), delta: 'Tỉ lệ lấp đầy 58%' },
+        { label: 'Doanh thu/tháng', ic: 'wallet', val: '28,4tr', delta: 'Ổn định 40tr' },
+        { label: 'Deal chờ xử lý', ic: 'file-text', val: '1', delta: '1 quan trọng' }
+      ];
+      document.getElementById('kpiRow').innerHTML = kpis.map(function (k) {
+        return '<div class="kpi"><div class="kpi__top"><span>' + esc(k.label) + '</span><span class="kpi__ic">' + I(k.ic, 18) + '</span></div>' +
+          '<div class="kpi__val">' + esc(k.val) + '</div><div class="kpi__delta">' + esc(k.delta) + '</div></div>';
+      }).join('');
+
+      // ---- Tabs ----
+      var tabs = [
+        { k: 'all', label: 'Tất cả' },
+        { k: 'trong', label: 'Còn trống' },
+        { k: 'thue', label: 'Đã cho thuê' },
+        { k: 'sap', label: 'Sắp trống' }
+      ];
+      var activeTab = 'all';
+      var tabsEl = document.getElementById('rmTabs');
+      var listEl = document.getElementById('rmList');
+
+      function renderTabs() {
+        tabsEl.innerHTML = tabs.map(function (t) {
+          return '<button class="rm-tab' + (t.k === activeTab ? ' is-active' : '') + '" type="button" data-k="' + t.k + '">' +
+            esc(t.label) + '</button>';
+        }).join('');
+      }
+
+      var STATUS_LABEL = { trong: 'Còn trống', thue: 'Đã cho thuê', sap: 'Sắp trống' };
+      var guestNames = ['Nguyễn Văn A', 'Trần Thị B', 'Lê Văn C', 'Phạm Thị D'];
+
+      function renderList() {
+        if (!b || !total) {
+          listEl.innerHTML = '<div class="rm-empty">Tòa nhà này chưa có phòng nào.</div>';
+          return;
+        }
+        var rows = rooms.map(function (r, idx) {
+          return { r: r, idx: idx, st: statusOf(r, idx) };
+        });
+        if (activeTab !== 'all') {
+          rows = rows.filter(function (o) { return o.st === activeTab; });
+        }
+        if (!rows.length) {
+          listEl.innerHTML = '<div class="rm-empty">Không có phòng nào trong mục này.</div>';
+          return;
+        }
+        listEl.innerHTML = rows.map(function (o) {
+          var r = o.r;
+          var code = r.rid ? ('P.' + String(r.idx + 201)) : 'P.201';
+          var meta = 'Tầng ' + (o.idx + 1) + ' · ' + (r.loai || '') + (r.m2 ? (' · ' + r.m2 + 'm²') : '') +
+            (r.tags && r.tags.length ? (' · ' + r.tags[0]) : '');
+          var guest = o.st === 'thue' ? guestNames[o.idx % guestNames.length] : 'Chưa có khách';
+          return '<div class="rm-row">' +
+            '<span class="rm-ic">' + I('package', 18) + '</span>' +
+            '<span class="rm-main"><span class="rm-code" style="display:block">' + esc(code) + '</span>' +
+              '<span class="rm-meta">' + esc(meta) + '</span></span>' +
+            '<span class="rm-guest">' + esc(guest) + '</span>' +
+            '<span class="rm-price">' + esc(r.price || '—') + '</span>' +
+            '<span class="rm-status ' + o.st + '">' + esc(STATUS_LABEL[o.st]) + '</span>' +
+            '<button class="rm-more" type="button" aria-label="Tùy chọn">⋮</button>' +
+          '</div>';
+        }).join('');
+      }
+
+      tabsEl.addEventListener('click', function (e) {
+        var btn = e.target.closest('.rm-tab');
+        if (!btn) return;
+        activeTab = btn.getAttribute('data-k');
+        renderTabs();
+        renderList();
+      });
+
+      renderTabs();
+      renderList();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lịch hẹn dẫn xem — HT HOME Nội bộ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/tokens.css" />
+  <link rel="stylesheet" href="assets/css/base.css" />
+  <link rel="stylesheet" href="assets/css/components.css" />
+  <link rel="stylesheet" href="assets/css/internal.css" />
+  <style>
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-l); box-shadow: var(--shadow-card); }
+
+    /* ---------- Thanh điều khiển lịch ---------- */
+    .cal-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 16px 18px; border-bottom: 1px solid var(--border); }
+    .cal-bar__title { font-size: 15px; font-weight: 700; color: var(--fg); }
+    .cal-bar__spacer { flex: 1; }
+    .btn-today { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border: 1px solid var(--border); background: var(--card); color: var(--fg); border-radius: var(--radius-s); font-size: 13px; font-weight: 600; }
+    .btn-today:hover { background: var(--muted); }
+    .seg { display: inline-flex; background: var(--muted); border-radius: var(--radius-s); padding: 3px; gap: 2px; }
+    .seg__btn { padding: 6px 14px; border: 0; background: transparent; color: var(--muted-fg); font-size: 13px; font-weight: 600; border-radius: 6px; cursor: pointer; }
+    .seg__btn.is-active { background: var(--card); color: var(--fg); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+
+    /* Chú thích trạng thái */
+    .legend { display: flex; flex-wrap: wrap; gap: 14px; padding: 12px 18px; border-bottom: 1px solid var(--border); font-size: 12px; color: var(--muted-fg); }
+    .legend span { display: inline-flex; align-items: center; gap: 6px; }
+    .legend i { width: 12px; height: 12px; border-radius: 4px; display: inline-block; }
+    .lg-ok { background: var(--success-soft); border: 1px solid var(--success); }
+    .lg-wait { background: var(--warning-soft); border: 1px solid var(--warning); }
+    .lg-cancel { background: var(--muted); border: 1px solid var(--border); }
+
+    /* ---------- Lưới lịch tuần (desktop) ---------- */
+    .cal-scroll { overflow-x: auto; }
+    .cal-grid {
+      display: grid;
+      grid-template-columns: 60px repeat(7, minmax(120px, 1fr));
+      min-width: 900px;
+    }
+    .cal-grid__head {
+      position: sticky; top: 0; background: var(--card); z-index: 2;
+      padding: 10px 8px; text-align: center; border-bottom: 1px solid var(--border);
+      font-size: 12px; color: var(--muted-fg); font-weight: 600;
+    }
+    .cal-grid__head.is-today { color: var(--fg); }
+    .cal-grid__head--corner { border-right: 1px solid var(--border); }
+    .cal-grid__head b { display: block; font-size: 16px; font-weight: 800; color: var(--fg); margin-top: 2px; }
+    .cal-grid__time {
+      padding: 6px 8px; text-align: right; font-size: 11px; color: var(--muted-fg);
+      border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    .cal-grid__cell {
+      min-height: 52px; padding: 4px; border-bottom: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+    }
+    .cal-grid__cell:nth-child(8n+1) { border-left: 0; }
+    .cal-col-today { background: rgba(244,183,64,.05); }
+
+    /* Thẻ lịch hẹn */
+    .appt { display: block; border-radius: 8px; padding: 6px 8px; font-size: 12px; line-height: 1.35; border-left: 3px solid; }
+    .appt__time { font-weight: 700; }
+    .appt__name { font-weight: 600; display: block; }
+    .appt__room { color: inherit; opacity: .8; display: block; font-size: 11px; }
+    .appt--ok { background: var(--success-soft); color: #135f34; border-left-color: var(--success); }
+    .appt--wait { background: var(--warning-soft); color: #8a5807; border-left-color: var(--warning); }
+    .appt--cancel { background: var(--muted); color: var(--muted-fg); border-left-color: var(--border); }
+    .appt--cancel .appt__name, .appt--cancel .appt__time { text-decoration: line-through; }
+
+    /* ---------- Agenda (mobile) ---------- */
+    .agenda { display: none; padding: 8px 14px 16px; flex-direction: column; gap: 18px; }
+    .agenda__day-h { display: flex; align-items: baseline; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--border); }
+    .agenda__day-h b { font-size: 14px; font-weight: 700; color: var(--fg); }
+    .agenda__day-h span { font-size: 12px; color: var(--muted-fg); }
+    .agenda__day-h .is-today-tag { margin-left: auto; background: var(--gold-soft); color: var(--gold-fg); font-size: 11px; font-weight: 700; border-radius: 999px; padding: 2px 9px; }
+    .agenda__row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+    .agenda__row:last-child { border-bottom: 0; }
+    .agenda__time { font-size: 13px; font-weight: 700; color: var(--fg); width: 48px; flex-shrink: 0; }
+    .agenda__info { flex: 1; min-width: 0; }
+    .agenda__name { font-size: 14px; font-weight: 600; color: var(--fg); display: block; }
+    .agenda__room { font-size: 12px; color: var(--muted-fg); display: block; }
+    .agenda__row--cancel .agenda__name, .agenda__row--cancel .agenda__time { text-decoration: line-through; color: var(--muted-fg); }
+    .badge-st { font-size: 11px; font-weight: 700; border-radius: 999px; padding: 3px 10px; flex-shrink: 0; }
+    .badge-st--ok { background: var(--success-soft); color: var(--success); }
+    .badge-st--wait { background: var(--warning-soft); color: var(--warning); }
+    .badge-st--cancel { background: var(--muted); color: var(--muted-fg); }
+
+    /* Chuyển đổi calendar <-> agenda theo bề rộng */
+    @media (max-width: 1023px) {
+      .cal-scroll { display: none; }
+      .agenda { display: flex; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="app-sidebar" id="ht-sidebar" data-active="lichhen"></div>
+    <main class="app-main">
+      <!-- Topbar -->
+      <header class="app-topbar">
+        <div style="display:flex;align-items:center;gap:12px">
+          <button class="btn-sidebar" id="btnSidebar" aria-label="Menu"></button>
+          <div>
+            <div class="app-topbar__title">Lịch hẹn dẫn xem</div>
+            <div class="app-topbar__sub">Tuần này: 7 lịch · 3 đang chờ xác nhận · 1 đã huỷ</div>
+          </div>
+        </div>
+        <div class="app-topbar__actions">
+          <span class="app-topbar__search" id="topSearch"></span>
+          <a class="btn btn--primary btn--sm" id="btnAdd" href="#"></a>
+        </div>
+      </header>
+
+      <div class="app-content">
+        <section class="card">
+          <!-- Thanh điều khiển -->
+          <div class="cal-bar">
+            <div class="cal-bar__title">Tuần 28 · 13/07 - 19/07</div>
+            <div class="cal-bar__spacer"></div>
+            <button class="btn-today" id="btnToday"></button>
+            <div class="seg">
+              <button class="seg__btn">Ngày</button>
+              <button class="seg__btn is-active">Tuần</button>
+              <button class="seg__btn">Tháng</button>
+            </div>
+          </div>
+
+          <!-- Chú thích -->
+          <div class="legend">
+            <span><i class="lg-ok"></i> Đã xác nhận</span>
+            <span><i class="lg-wait"></i> Chờ xác nhận</span>
+            <span><i class="lg-cancel"></i> Đã huỷ</span>
+          </div>
+
+          <!-- Lưới lịch tuần (desktop) -->
+          <div class="cal-scroll">
+            <div class="cal-grid" id="calGrid"></div>
+          </div>
+
+          <!-- Agenda theo ngày (mobile) -->
+          <div class="agenda" id="agenda"></div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script src="assets/js/ht-ui.js"></script>
+  <script src="assets/js/ht-internal.js"></script>
+  <script>
+    var I = HTI.icon;
+    document.getElementById('btnSidebar').innerHTML = I('menu', 22);
+    document.getElementById('btnToday').innerHTML = I('calendar-days', 15) + 'Hôm nay';
+    document.getElementById('btnAdd').innerHTML = I('plus', 16) + 'Đặt lịch hẹn';
+    document.getElementById('topSearch').innerHTML = I('search', 16) + '<span>Tìm khách, phòng...</span>';
+
+    // Cấu hình tuần
+    var HOURS = [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
+    var DAYS = [
+      { lb: 'T2', d: '13' }, { lb: 'T3', d: '14' }, { lb: 'T4', d: '15' },
+      { lb: 'T5', d: '16' }, { lb: 'T6', d: '17' }, { lb: 'T7', d: '18' }, { lb: 'CN', d: '19' }
+    ];
+    var TODAY = 2; // T4 15/07 (demo)
+
+    // Dữ liệu lịch hẹn: day = chỉ số 0..6 (T2..CN), h = giờ bắt đầu
+    var APPTS = [
+      { day: 0, h: 10, name: 'Sarah Johnson', room: 'P.303 Nguyễn Huệ', st: 'ok' },
+      { day: 0, h: 13, name: 'Trần Minh',     room: 'P.508 Duplex',     st: 'wait' },
+      { day: 1, h: 9,  name: 'Hoàng Nam',      room: 'P.201 Phan Xích Long', st: 'wait' },
+      { day: 1, h: 16, name: 'Vũ Thảo',        room: 'P.107 Cộng Hoà',   st: 'cancel' },
+      { day: 2, h: 15, name: 'Lê Mai',         room: 'P.402 Thảo Điền',  st: 'ok' },
+      { day: 3, h: 11, name: 'Đức Anh',        room: 'P.610 Vinhomes',   st: 'wait' },
+      { day: 4, h: 14, name: 'Quỳnh Anh',      room: 'P.305 Nguyễn Trãi', st: 'ok' }
+    ];
+
+    var ST_LABEL = { ok: 'Đã xác nhận', wait: 'Chờ xác nhận', cancel: 'Đã huỷ' };
+    function hh(h) { return (h < 10 ? '0' + h : h) + ':00'; }
+    function apptAt(day, h) {
+      for (var i = 0; i < APPTS.length; i++) {
+        if (APPTS[i].day === day && APPTS[i].h === h) return APPTS[i];
+      }
+      return null;
+    }
+
+    // ---------- Lưới tuần (desktop) ----------
+    var html = '<div class="cal-grid__head cal-grid__head--corner"></div>';
+    DAYS.forEach(function (d, i) {
+      html += '<div class="cal-grid__head' + (i === TODAY ? ' is-today' : '') + '">' +
+        d.lb + '<b>' + d.d + '</b></div>';
+    });
+    HOURS.forEach(function (h) {
+      html += '<div class="cal-grid__time">' + hh(h) + '</div>';
+      DAYS.forEach(function (d, i) {
+        var a = apptAt(i, h);
+        var cellCls = 'cal-grid__cell' + (i === TODAY ? ' cal-col-today' : '');
+        html += '<div class="' + cellCls + '">';
+        if (a) {
+          html += '<span class="appt appt--' + a.st + '">' +
+            '<span class="appt__time">' + hh(a.h) + '</span> ' +
+            '<span class="appt__name">' + a.name + '</span>' +
+            '<span class="appt__room">' + a.room + '</span></span>';
+        }
+        html += '</div>';
+      });
+    });
+    document.getElementById('calGrid').innerHTML = html;
+
+    // ---------- Agenda (mobile) ----------
+    var ag = '';
+    DAYS.forEach(function (d, i) {
+      var list = APPTS.filter(function (a) { return a.day === i; })
+        .sort(function (a, b) { return a.h - b.h; });
+      if (!list.length) return;
+      ag += '<div>';
+      ag += '<div class="agenda__day-h"><b>' + d.lb + ' ' + d.d + '/07</b>' +
+        '<span>' + list.length + ' lịch hẹn</span>' +
+        (i === TODAY ? '<span class="is-today-tag">Hôm nay</span>' : '') + '</div>';
+      list.forEach(function (a) {
+        ag += '<div class="agenda__row' + (a.st === 'cancel' ? ' agenda__row--cancel' : '') + '">' +
+          '<span class="agenda__time">' + hh(a.h) + '</span>' +
+          '<span class="agenda__info"><span class="agenda__name">' + a.name + '</span>' +
+          '<span class="agenda__room">' + a.room + '</span></span>' +
+          '<span class="badge-st badge-st--' + a.st + '">' + ST_LABEL[a.st] + '</span></div>';
+      });
+      ag += '</div>';
+    });
+    document.getElementById('agenda').innerHTML = ag;
+  </script>
+</body>
+</html>

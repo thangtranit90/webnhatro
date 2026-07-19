@@ -1,6 +1,6 @@
 # HT HOME — Kế hoạch dựng lại web theo thiết kế `nhatro.pen`
 
-**Cập nhật lần cuối:** 2026-07-15 (Phase 1–3 xong; tiếp theo Phase 4 auth nội bộ)
+**Cập nhật lần cuối:** 2026-07-15 (Phase 1–5 XONG + đã deploy — ~25 màn: toàn bộ trang khách + auth nội bộ + nghiệp vụ sale. TẠM DỪNG để user review. Tiếp theo: Phase 6 (Tòa nhà/Lịch hẹn/Wizard) rồi Phase 7 (Admin). Để resume: user nói "làm tiếp Phase 6".)
 **Mục tiêu:** Dựng lại toàn bộ web HT HOME theo thiết kế `nhatro.pen` (~35 màn), giao diện bám 100% thiết kế, chạy dữ liệu thật từ `data.js`. Static no-build, mobile-first, PWA → sẵn sàng đóng gói Capacitor. Deploy Cloudflare Pages (`hthome.thanghost.io.vn`) qua CI/CD GitHub Actions.
 
 ## Quyết định đã chốt
@@ -24,7 +24,7 @@
 | **3. Trang khách phụ** | Đăng ký (`dangky.html`) · Tài khoản của tôi (`taikhoan.html`) · Chat (`chat.html`) · Đặt lịch (`datlich.html`) · Về chúng tôi (`vechungtoi.html`) · Điều khoản (`dieukhoan.html`) · Chính sách (`baomat.html`) · 404 (`404.html`) | ✅ DONE |
 | **4. Auth nội bộ** | Đăng nhập (`dangnhap-noibo.html`) · Quên MK (`quenmatkhau.html`) · OTP (`nhap-otp.html`) · Đặt MK mới (`datmatkhau.html`) | ✅ DONE |
 | **5. Nghiệp vụ sale** | Dashboard (`dashboard.html`) · Kho phòng (`khophong.html`) · CRM (`crm.html`) · Deal (`deal.html`) · Doanh thu (`doanhthu.html`) + **Sidebar dùng chung** (`internal.css`, `ht-internal.js`) | ✅ DONE |
-| **6. Quản lý tòa nhà** | Quản lý tòa nhà · Chi tiết tòa nhà · Lịch hẹn dẫn xem · Wizard thêm phòng | ⬜ TODO |
+| **6. Quản lý tòa nhà** | Quản lý tòa nhà (`toanha.html`) · Chi tiết tòa nhà (`toanha-chitiet.html`) · Lịch hẹn (`lichhen.html`) · Wizard thêm phòng (`themphong.html`) + tài khoản đăng nhập demo | ✅ DONE |
 | **7. Admin** | Báo cáo tổng · Nhân viên · Phân quyền · Cài đặt · Quỹ nội bộ · Bảng tin · Territory Map | ⬜ TODO |
 | **8. Hoàn thiện + AI (cho đồ án)** | Self-host font, ảnh/video thật; AI cốt lõi: hỏi đáp thông tin phòng + tìm kiếm thông minh (Cloudflare Functions + Claude API) | ⬜ TODO |
 

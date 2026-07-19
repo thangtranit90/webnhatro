@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Thêm phòng mới — HT HOME Nội bộ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/tokens.css" />
+  <link rel="stylesheet" href="assets/css/base.css" />
+  <link rel="stylesheet" href="assets/css/components.css" />
+  <link rel="stylesheet" href="assets/css/internal.css" />
+  <style>
+    /* Topbar back + title */
+    .tp-back { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--muted-fg); border: 1px solid var(--border); background: var(--card); border-radius: var(--radius-s); padding: 7px 12px; white-space: nowrap; }
+    .tp-back:hover { border-color: var(--muted-fg); color: var(--fg); }
+    .tp-autosave { font-size: 12px; color: var(--muted-fg); font-weight: 500; opacity: .7; white-space: nowrap; }
+
+    /* Layout form + summary */
+    .tp-cols { display: grid; grid-template-columns: 1fr; gap: 20px; }
+    @media (min-width: 1100px) { .tp-cols { grid-template-columns: 1.7fr 1fr; align-items: start; } }
+    .stack { display: flex; flex-direction: column; gap: 20px; }
+
+    /* Card = 1 section */
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-l); box-shadow: var(--shadow-card); }
+    .card__head { display: flex; align-items: center; gap: 12px; padding: 16px 20px; border-bottom: 1px solid var(--border); }
+    .sec-no { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--primary); color: #fff; font-size: 14px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
+    .card__head h3 { font-size: 15px; font-weight: 700; color: var(--fg); }
+    .card__head .sub { font-size: 12px; color: var(--muted-fg); margin-top: 2px; }
+    .card__body { padding: 18px 20px; }
+
+    /* Form fields */
+    .field { display: block; margin-bottom: 14px; }
+    .field:last-child { margin-bottom: 0; }
+    .field > label { display: block; font-size: 13px; font-weight: 600; color: var(--fg); margin-bottom: 6px; }
+    .field .hint { font-size: 11px; color: var(--muted-fg); font-weight: 500; }
+    .ctrl { width: 100%; font-family: inherit; font-size: 14px; color: var(--fg); background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-s); padding: 11px 12px; }
+    .ctrl:focus { outline: none; border-color: var(--muted-fg); }
+    select.ctrl { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236B7688' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+
+    /* Input với hậu tố đơn vị */
+    .ig { display: flex; align-items: stretch; border: 1px solid var(--border); border-radius: var(--radius-s); overflow: hidden; }
+    .ig:focus-within { border-color: var(--muted-fg); }
+    .ig .ctrl { border: 0; border-radius: 0; }
+    .ig .ig-suf { flex-shrink: 0; display: inline-flex; align-items: center; padding: 0 12px; background: var(--muted); color: var(--muted-fg); font-size: 12.5px; font-weight: 600; }
+
+    .grid2 { display: grid; grid-template-columns: 1fr; gap: 14px; }
+    @media (min-width: 560px) { .grid2 { grid-template-columns: 1fr 1fr; } }
+    .grid3 { display: grid; grid-template-columns: 1fr; gap: 14px; }
+    @media (min-width: 560px) { .grid3 { grid-template-columns: repeat(3, 1fr); } }
+
+    /* Chips */
+    .chip-group { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip { font-family: inherit; font-size: 13px; font-weight: 600; color: var(--muted-fg); background: var(--card); border: 1px solid var(--border); border-radius: 999px; padding: 8px 14px; cursor: pointer; user-select: none; transition: all .12s; }
+    .chip:hover { border-color: var(--muted-fg); color: var(--fg); }
+    .chip.is-on { background: var(--gold-soft); border-color: var(--gold); color: var(--gold); }
+
+    /* Upload */
+    .drop { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; text-align: center; border: 1.5px dashed var(--border); border-radius: var(--radius-m); padding: 26px 16px; color: var(--muted-fg); cursor: pointer; background: var(--muted); }
+    .drop:hover { border-color: var(--muted-fg); color: var(--fg); }
+    .drop__t { font-size: 13px; font-weight: 600; }
+    .drop__s { font-size: 11.5px; }
+
+    /* Summary panel */
+    .sum-row { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; font-size: 13px; border-bottom: 1px dashed var(--border); }
+    .sum-row:last-of-type { border-bottom: 0; }
+    .sum-row span:first-child { color: var(--muted-fg); }
+    .sum-row span:last-child { font-weight: 700; color: var(--fg); text-align: right; }
+    .sum-total { display: flex; justify-content: space-between; margin-top: 8px; padding-top: 12px; border-top: 2px solid var(--border); }
+    .sum-total span:first-child { font-weight: 700; color: var(--fg); }
+    .sum-total span:last-child { font-size: 18px; font-weight: 800; color: var(--fg); }
+
+    .submit-note { font-size: 11.5px; color: var(--muted-fg); margin-top: 12px; text-align: center; line-height: 1.5; }
+    .ok-toast { display: none; margin-bottom: 16px; gap: 10px; align-items: center; background: var(--success-soft); color: var(--success); border-radius: var(--radius-s); padding: 12px 14px; font-size: 13px; font-weight: 600; }
+    .ok-toast.show { display: flex; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="app-sidebar" id="ht-sidebar" data-active="khophong"></div>
+    <main class="app-main">
+      <!-- Topbar -->
+      <header class="app-topbar">
+        <div style="display:flex;align-items:center;gap:12px">
+          <button class="btn-sidebar" id="btnSidebar" aria-label="Menu"></button>
+          <a class="tp-back" href="khophong.html">← Quay lại</a>
+          <div>
+            <div class="app-topbar__title">Thêm phòng mới</div>
+            <div class="app-topbar__sub">Toà nhà Duplex Nguyễn Oanh · Form 1 trang</div>
+          </div>
+        </div>
+        <div class="app-topbar__actions">
+          <span class="tp-autosave">Tự lưu · vừa xong</span>
+          <button class="btn btn--ghost btn--sm" type="button" id="btnDraft">Lưu nháp</button>
+        </div>
+      </header>
+
+      <div class="app-content">
+        <form id="roomForm" class="tp-cols">
+          <!-- Cột form -->
+          <div class="stack">
+            <div class="ok-toast" id="okToast">✓ Đã lưu & đăng phòng thành công! (demo)</div>
+
+            <!-- 1. Toà nhà & Mã phòng -->
+            <section class="card">
+              <div class="card__head">
+                <span class="sec-no">1</span>
+                <div><h3>Toà nhà &amp; Mã phòng</h3><div class="sub">Chọn toà nhà — hệ thống kế thừa ma trận hoa hồng và chủ nhà</div></div>
+              </div>
+              <div class="card__body">
+                <div class="field">
+                  <label for="fBuilding">Toà nhà</label>
+                  <select class="ctrl" id="fBuilding">
+                    <option>Duplex Nguyễn Oanh · Gò Vấp</option>
+                    <option>HT Lê Đức Thọ · Gò Vấp</option>
+                    <option>Studio Phạm Văn Đồng · Thủ Đức</option>
+                  </select>
+                </div>
+                <div class="grid2">
+                  <div class="field">
+                    <label for="fCode">Mã phòng</label>
+                    <input class="ctrl" id="fCode" type="text" value="P.201" />
+                  </div>
+                  <div class="field">
+                    <label for="fFloor">Tầng</label>
+                    <input class="ctrl" id="fFloor" type="number" min="0" value="2" />
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- 2. Loại & Thiết kế -->
+            <section class="card">
+              <div class="card__head">
+                <span class="sec-no">2</span>
+                <div><h3>Loại &amp; Thiết kế</h3><div class="sub">Chọn loại phòng (1 giá trị) và thiết kế (nhiều giá trị)</div></div>
+              </div>
+              <div class="card__body">
+                <div class="field">
+                  <label>Loại phòng <span class="hint">(chọn 1)</span></label>
+                  <div class="chip-group" data-single="loai">
+                    <span class="chip is-on" data-val="Studio">Studio</span>
+                    <span class="chip" data-val="1PN">1PN</span>
+                    <span class="chip" data-val="2PN">2PN</span>
+                    <span class="chip" data-val="3PN">3PN</span>
+                    <span class="chip" data-val="Duplex">Duplex</span>
+                    <span class="chip" data-val="Penthouse">Penthouse</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Thiết kế <span class="hint">(chọn nhiều)</span></label>
+                  <div class="chip-group" data-multi="thietke">
+                    <span class="chip" data-val="Tách bếp">Tách bếp</span>
+                    <span class="chip" data-val="Ban công">Ban công</span>
+                    <span class="chip" data-val="Cửa sổ">Cửa sổ</span>
+                    <span class="chip" data-val="Giếng trời">Giếng trời</span>
+                    <span class="chip" data-val="Sân vườn">Sân vườn</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Nội thất <span class="hint">(chọn 1)</span></label>
+                  <div class="chip-group" data-single="noithat">
+                    <span class="chip is-on" data-val="Cơ bản">Cơ bản</span>
+                    <span class="chip" data-val="Full">Full</span>
+                    <span class="chip" data-val="Đầy đủ">Đầy đủ</span>
+                    <span class="chip" data-val="Luxury">Luxury</span>
+                  </div>
+                </div>
+                <div class="grid3">
+                  <div class="field">
+                    <label for="fArea">Diện tích</label>
+                    <div class="ig"><input class="ctrl" id="fArea" type="number" min="0" value="28" /><span class="ig-suf">m²</span></div>
+                  </div>
+                  <div class="field">
+                    <label for="fBed">Phòng ngủ</label>
+                    <div class="ig"><input class="ctrl" id="fBed" type="number" min="0" value="1" /><span class="ig-suf">PN</span></div>
+                  </div>
+                  <div class="field">
+                    <label for="fWc">Toilet</label>
+                    <div class="ig"><input class="ctrl" id="fWc" type="number" min="0" value="1" /><span class="ig-suf">riêng</span></div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- 3. Giá & Kỳ hạn -->
+            <section class="card">
+              <div class="card__head">
+                <span class="sec-no">3</span>
+                <div><h3>Giá &amp; Kỳ hạn</h3><div class="sub">Giá cơ bản hiển thị cho khách · Kỳ hạn mua cọc</div></div>
+              </div>
+              <div class="card__body">
+                <div class="grid2">
+                  <div class="field">
+                    <label for="fPrice">Giá thuê / tháng</label>
+                    <div class="ig"><input class="ctrl" id="fPrice" type="text" inputmode="numeric" value="2.800.000" /><span class="ig-suf">đ</span></div>
+                  </div>
+                  <div class="field">
+                    <label for="fDeposit">Tiền cọc</label>
+                    <div class="ig"><input class="ctrl" id="fDeposit" type="text" inputmode="numeric" value="2.800.000" /><span class="ig-suf">đ</span></div>
+                  </div>
+                </div>
+                <div class="grid2">
+                  <div class="field">
+                    <label for="fTerm">Kỳ hạn tối thiểu</label>
+                    <div class="ig"><input class="ctrl" id="fTerm" type="number" min="0" value="6" /><span class="ig-suf">tháng</span></div>
+                  </div>
+                  <div class="field">
+                    <label for="fFree">Ngày trống dự kiến</label>
+                    <input class="ctrl" id="fFree" type="date" value="2026-08-01" />
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- 4. Chi phí phụ thu -->
+            <section class="card">
+              <div class="card__head">
+                <span class="sec-no">4</span>
+                <div><h3>Chi phí phụ thu</h3><div class="sub">Điện · nước · dịch vụ · giữ xe</div></div>
+              </div>
+              <div class="card__body">
+                <div class="grid2">
+                  <div class="field">
+                    <label for="fElec">Giá điện</label>
+                    <div class="ig"><input class="ctrl" id="fElec" type="text" inputmode="numeric" value="4.000" /><span class="ig-suf">đ/kWh</span></div>
+                  </div>
+                  <div class="field">
+                    <label for="fWater">Giá nước</label>
+                    <div class="ig"><input class="ctrl" id="fWater" type="text" inputmode="numeric" value="150.000" /><span class="ig-suf">đ/người</span></div>
+                  </div>
+                </div>
+                <div class="grid2">
+                  <div class="field">
+                    <label for="fService">Phí dịch vụ</label>
+                    <div class="ig"><input class="ctrl" id="fService" type="text" inputmode="numeric" value="200.000" /><span class="ig-suf">đ/phòng</span></div>
+                  </div>
+                  <div class="field">
+                    <label for="fPark">Phí xe</label>
+                    <div class="ig"><input class="ctrl" id="fPark" type="text" inputmode="numeric" value="100.000" /><span class="ig-suf">đ/xe</span></div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- 5. Ảnh & Video -->
+            <section class="card">
+              <div class="card__head">
+                <span class="sec-no">5</span>
+                <div><h3>Ảnh &amp; Video</h3><div class="sub">Ảnh phòng và link video giới thiệu</div></div>
+              </div>
+              <div class="card__body">
+                <div class="field">
+                  <label>Ảnh phòng</label>
+                  <div class="drop" id="drop" role="button" tabindex="0">
+                    <span id="dropIc"></span>
+                    <span class="drop__t">Kéo thả hoặc bấm để tải ảnh</span>
+                    <span class="drop__s">PNG, JPG tối đa 5MB · tối đa 12 ảnh</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="fVideo">Link video TikTok</label>
+                  <input class="ctrl" id="fVideo" type="url" placeholder="https://www.tiktok.com/@hthome/video/..." />
+                </div>
+              </div>
+            </section>
+
+            <div>
+              <button class="btn btn--primary btn--block" type="submit">Lưu &amp; Đăng phòng</button>
+              <div class="submit-note">Kiểm tra kỹ thông tin trước khi đăng. Sau khi đăng, phòng sẽ hiển thị trong Kho phòng ở trạng thái "Còn trống".</div>
+            </div>
+          </div>
+
+          <!-- Cột tóm tắt -->
+          <aside class="card" style="position:sticky;top:16px">
+            <div class="card__head" style="border-bottom:1px solid var(--border)">
+              <div><h3>Tóm tắt phòng</h3><div class="sub">Xem nhanh trước khi đăng</div></div>
+            </div>
+            <div class="card__body">
+              <div class="sum-row"><span>Toà nhà</span><span id="sBuilding">Duplex Nguyễn Oanh · Gò Vấp</span></div>
+              <div class="sum-row"><span>Mã phòng</span><span id="sCode">P.201</span></div>
+              <div class="sum-row"><span>Loại phòng</span><span id="sLoai">Studio</span></div>
+              <div class="sum-row"><span>Nội thất</span><span id="sNoithat">Cơ bản</span></div>
+              <div class="sum-row"><span>Thiết kế</span><span id="sThietke">—</span></div>
+              <div class="sum-row"><span>Diện tích</span><span id="sArea">28 m²</span></div>
+              <div class="sum-total"><span>Giá thuê / tháng</span><span id="sPrice">2.800.000 đ</span></div>
+            </div>
+          </aside>
+        </form>
+      </div>
+    </main>
+  </div>
+
+  <script src="assets/js/ht-ui.js"></script>
+  <script src="assets/js/ht-internal.js"></script>
+  <script>
+    (function () {
+      'use strict';
+      var I = HTI.icon;
+      document.getElementById('btnSidebar').innerHTML = I('menu', 22);
+      document.getElementById('dropIc').innerHTML =
+        '<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+        '<rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>';
+
+      // ---- Tóm tắt refs ----
+      var elBuilding = document.getElementById('fBuilding');
+      var elCode = document.getElementById('fCode');
+      var elArea = document.getElementById('fArea');
+      var elPrice = document.getElementById('fPrice');
+      var sBuilding = document.getElementById('sBuilding');
+      var sCode = document.getElementById('sCode');
+      var sLoai = document.getElementById('sLoai');
+      var sNoithat = document.getElementById('sNoithat');
+      var sThietke = document.getElementById('sThietke');
+      var sArea = document.getElementById('sArea');
+      var sPrice = document.getElementById('sPrice');
+
+      function updateSummary() {
+        sBuilding.textContent = elBuilding.value;
+        sCode.textContent = elCode.value || '—';
+        sArea.textContent = (elArea.value || '0') + ' m²';
+        sPrice.textContent = (elPrice.value || '0') + ' đ';
+      }
+      elBuilding.addEventListener('change', updateSummary);
+      elCode.addEventListener('input', updateSummary);
+      elArea.addEventListener('input', updateSummary);
+      elPrice.addEventListener('input', updateSummary);
+
+      // ---- Chip: chọn 1 (single) ----
+      document.querySelectorAll('.chip-group[data-single]').forEach(function (grp) {
+        var key = grp.getAttribute('data-single');
+        grp.addEventListener('click', function (e) {
+          var chip = e.target.closest('.chip');
+          if (!chip) return;
+          grp.querySelectorAll('.chip').forEach(function (c) { c.classList.remove('is-on'); });
+          chip.classList.add('is-on');
+          if (key === 'loai') sLoai.textContent = chip.getAttribute('data-val');
+          if (key === 'noithat') sNoithat.textContent = chip.getAttribute('data-val');
+        });
+      });
+
+      // ---- Chip: chọn nhiều (multi) ----
+      document.querySelectorAll('.chip-group[data-multi]').forEach(function (grp) {
+        grp.addEventListener('click', function (e) {
+          var chip = e.target.closest('.chip');
+          if (!chip) return;
+          chip.classList.toggle('is-on');
+          var vals = [];
+          grp.querySelectorAll('.chip.is-on').forEach(function (c) { vals.push(c.getAttribute('data-val')); });
+          sThietke.textContent = vals.length ? vals.join(', ') : '—';
+        });
+      });
+
+      // ---- Upload (demo) ----
+      var drop = document.getElementById('drop');
+      function pickDemo() { alert('Chọn ảnh từ thiết bị (demo).'); }
+      drop.addEventListener('click', pickDemo);
+      drop.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pickDemo(); }
+      });
+      ['dragover', 'dragenter'].forEach(function (ev) {
+        drop.addEventListener(ev, function (e) { e.preventDefault(); drop.style.borderColor = 'var(--muted-fg)'; });
+      });
+      ['dragleave', 'drop'].forEach(function (ev) {
+        drop.addEventListener(ev, function (e) { e.preventDefault(); drop.style.borderColor = ''; });
+      });
+
+      // ---- Lưu nháp ----
+      document.getElementById('btnDraft').addEventListener('click', function () {
+        alert('Đã lưu nháp phòng (demo).');
+      });
+
+      // ---- Submit ----
+      document.getElementById('roomForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        document.getElementById('okToast').classList.add('show');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+
+      updateSummary();
+    })();
+  </script>
+</body>
+</html>
