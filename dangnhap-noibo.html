@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Đăng nhập nội bộ — HT HOME</title>
+  <meta name="description" content="Đăng nhập hệ thống quản lý nội bộ HT HOME. Chỉ tài khoản do Admin cấp mới có thể truy cập." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/tokens.css" />
+  <link rel="stylesheet" href="assets/css/base.css" />
+  <link rel="stylesheet" href="assets/css/components.css" />
+  <style>
+    /* ===== Layout auth 2 panel — dùng chung 4 trang ===== */
+    .auth { min-height: 100vh; display: grid; grid-template-columns: 1fr; }
+    @media (min-width: 1024px) { .auth { grid-template-columns: 45% 55%; } }
+
+    /* --- Panel thương hiệu (trái) --- */
+    .auth-brand {
+      background: var(--primary); color: #fff; padding: 22px 20px;
+      display: flex; flex-direction: column; justify-content: center;
+    }
+    @media (min-width: 1024px) { .auth-brand { padding: 56px 52px; } }
+    .auth-brand__logo { font-size: 22px; font-weight: 800; letter-spacing: .02em; color: #fff; }
+    .auth-brand__tagline { display: none; }
+    .auth-brand__desc { display: none; }
+    .auth-brand__stats { display: none; }
+    @media (min-width: 1024px) {
+      .auth-brand__tagline {
+        display: block; font-size: 34px; font-weight: 800; line-height: 1.15;
+        letter-spacing: -.02em; margin-top: 40px; max-width: 460px;
+      }
+      .auth-brand__desc {
+        display: block; font-size: 15px; line-height: 1.65; color: rgba(255,255,255,.72);
+        margin-top: 20px; max-width: 440px;
+      }
+      .auth-brand__stats { display: flex; gap: 34px; margin-top: 48px; }
+      .auth-brand__stat-n { font-size: 26px; font-weight: 800; color: var(--gold); }
+      .auth-brand__stat-l { font-size: 13px; color: rgba(255,255,255,.7); margin-top: 4px; }
+    }
+
+    /* --- Panel form (phải) --- */
+    .auth-form {
+      background: var(--card); padding: 36px 20px;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+    }
+    @media (min-width: 640px) { .auth-form { padding: 48px 32px; } }
+    .auth-card { width: 100%; max-width: 400px; }
+    .auth-card__back { display: inline-block; font-size: 13px; font-weight: 600; color: var(--muted-fg); margin-bottom: 22px; }
+    .auth-card__back:hover { color: var(--fg); }
+    .auth-card__h { font-size: 24px; font-weight: 800; letter-spacing: -.01em; color: var(--fg); }
+    @media (min-width: 768px) { .auth-card__h { font-size: 27px; } }
+    .auth-card__sub { font-size: 14px; line-height: 1.6; color: var(--muted-fg); margin-top: 8px; }
+
+    .field { margin-top: 20px; }
+    .field__label { display: block; font-size: 13px; font-weight: 700; color: var(--fg); margin-bottom: 8px; }
+    .field__wrap { position: relative; }
+    .field__input {
+      width: 100%; border: 1px solid var(--input); border-radius: var(--radius-s);
+      padding: 12px 14px; font-size: 15px; color: var(--fg); background: var(--card);
+    }
+    .field__input--pw { padding-right: 46px; }
+    .field__input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--gold-soft); }
+    .field__toggle {
+      position: absolute; top: 50%; right: 8px; transform: translateY(-50%);
+      width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center;
+      border: none; background: transparent; color: var(--muted-fg); cursor: pointer; border-radius: var(--radius-s);
+    }
+    .field__toggle:hover { color: var(--fg); }
+    .field__hint { font-size: 12px; color: var(--muted-fg); margin-top: 7px; }
+
+    .auth-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
+    .auth-check { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--fg); cursor: pointer; }
+    .auth-check input { width: 16px; height: 16px; accent-color: var(--primary); }
+    .auth-link { font-size: 13px; font-weight: 700; color: var(--primary); }
+    .auth-link:hover { text-decoration: underline; }
+
+    .auth-submit { margin-top: 22px; }
+    .auth-error { color: var(--danger); font-size: 13px; font-weight: 600; margin-top: 12px; min-height: 18px; }
+    .auth-foot { font-size: 13px; line-height: 1.6; color: var(--muted-fg); margin-top: 20px; text-align: center; }
+    .auth-foot a { color: var(--primary); font-weight: 700; }
+    .auth-foot a:hover { text-decoration: underline; }
+
+    /* OTP */
+    .otp-row { display: flex; gap: 8px; margin-top: 20px; }
+    .otp-box {
+      width: 100%; max-width: 54px; aspect-ratio: 1 / 1; text-align: center;
+      border: 1px solid var(--input); border-radius: var(--radius-s);
+      font-size: 22px; font-weight: 700; color: var(--fg); background: var(--card);
+    }
+    .otp-box:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--gold-soft); }
+    .otp-resend { font-size: 13px; color: var(--muted-fg); margin-top: 16px; text-align: center; }
+    .otp-resend button { border: none; background: transparent; color: var(--primary); font-weight: 700; font-size: 13px; cursor: pointer; padding: 0; }
+    .otp-resend button:disabled { color: var(--muted-fg); font-weight: 600; cursor: default; }
+
+    /* Thông báo thành công */
+    .auth-success { text-align: center; }
+    .auth-success__icon {
+      width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 18px;
+      background: var(--success-soft); color: var(--success);
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+  </style>
+</head>
+<body>
+  <main class="auth">
+    <!-- PANEL THƯƠNG HIỆU -->
+    <aside class="auth-brand">
+      <a class="auth-brand__logo" href="index.html">HT HOME</a>
+      <h1 class="auth-brand__tagline">Nền tảng vận hành phòng trọ chuyên nghiệp</h1>
+      <p class="auth-brand__desc">Quản lý 500+ tòa nhà, 1.000+ phòng, đội ngũ sale minh bạch — tất cả trong 1 hệ thống.</p>
+      <div class="auth-brand__stats">
+        <div><div class="auth-brand__stat-n">500+</div><div class="auth-brand__stat-l">Tòa nhà</div></div>
+        <div><div class="auth-brand__stat-n">1.024</div><div class="auth-brand__stat-l">Phòng</div></div>
+        <div><div class="auth-brand__stat-n">14</div><div class="auth-brand__stat-l">Nhân viên</div></div>
+      </div>
+    </aside>
+
+    <!-- PANEL FORM -->
+    <section class="auth-form">
+      <div class="auth-card">
+        <a class="auth-card__back" href="index.html">← Về trang chủ</a>
+        <h2 class="auth-card__h">Đăng nhập</h2>
+        <p class="auth-card__sub">Chỉ tài khoản do Admin cấp mới có thể truy cập.</p>
+
+        <form id="loginForm" novalidate>
+          <div class="field">
+            <label class="field__label" for="fPhone">Số điện thoại</label>
+            <input class="field__input" type="tel" id="fPhone" name="phone" placeholder="09••••••••" autocomplete="tel" inputmode="tel" />
+          </div>
+
+          <div class="field">
+            <label class="field__label" for="fPw">Mật khẩu</label>
+            <div class="field__wrap">
+              <input class="field__input field__input--pw" type="password" id="fPw" name="password" placeholder="••••••••" autocomplete="current-password" />
+              <button class="field__toggle" type="button" id="togglePw" aria-label="Hiện mật khẩu"></button>
+            </div>
+          </div>
+
+          <div class="auth-row">
+            <label class="auth-check"><input type="checkbox" id="fRemember" /> Ghi nhớ đăng nhập</label>
+            <a class="auth-link" href="quenmatkhau.html">Quên mật khẩu?</a>
+          </div>
+
+          <div class="auth-error" id="formError" role="alert"></div>
+
+          <button class="btn btn--primary btn--block auth-submit" type="submit">Đăng nhập</button>
+        </form>
+
+        <p class="auth-foot">Cần tài khoản? Liên hệ Admin để được cấp quyền.</p>
+      </div>
+    </section>
+  </main>
+
+  <script src="assets/js/ht-ui.js"></script>
+  <script>
+  (function () {
+    'use strict';
+
+    /* Icon nội bộ: mắt hiện / ẩn */
+    var EYE = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>';
+    var EYE_OFF = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c6.5 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.5 13.5 0 0 0 2 12s3.5 7 10 7a9.12 9.12 0 0 0 5.39-1.61"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="m2 2 20 20"/></svg>';
+
+    /* Hiện / ẩn mật khẩu */
+    var pw = document.getElementById('fPw');
+    var toggle = document.getElementById('togglePw');
+    toggle.innerHTML = EYE;
+    toggle.addEventListener('click', function () {
+      var show = pw.type === 'password';
+      pw.type = show ? 'text' : 'password';
+      toggle.innerHTML = show ? EYE_OFF : EYE;
+      toggle.setAttribute('aria-label', show ? 'Ẩn mật khẩu' : 'Hiện mật khẩu');
+    });
+
+    /* Submit demo */
+    var form = document.getElementById('loginForm');
+    var errEl = document.getElementById('formError');
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var phone = document.getElementById('fPhone').value.trim();
+      var pass = pw.value.trim();
+      if (!phone) { errEl.textContent = 'Vui lòng nhập số điện thoại.'; document.getElementById('fPhone').focus(); return; }
+      if (!pass) { errEl.textContent = 'Vui lòng nhập mật khẩu.'; pw.focus(); return; }
+      errEl.textContent = '';
+      window.location.href = 'dashboard.html';
+    });
+  })();
+  </script>
+</body>
+</html>

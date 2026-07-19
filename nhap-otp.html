@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nhập mã OTP — HT HOME</title>
+  <meta name="description" content="Nhập mã OTP 6 số đã gửi về điện thoại để xác minh tài khoản nội bộ HT HOME." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/tokens.css" />
+  <link rel="stylesheet" href="assets/css/base.css" />
+  <link rel="stylesheet" href="assets/css/components.css" />
+  <style>
+    /* ===== Layout auth 2 panel — dùng chung 4 trang ===== */
+    .auth { min-height: 100vh; display: grid; grid-template-columns: 1fr; }
+    @media (min-width: 1024px) { .auth { grid-template-columns: 45% 55%; } }
+
+    .auth-brand {
+      background: var(--primary); color: #fff; padding: 22px 20px;
+      display: flex; flex-direction: column; justify-content: center;
+    }
+    @media (min-width: 1024px) { .auth-brand { padding: 56px 52px; } }
+    .auth-brand__logo { font-size: 22px; font-weight: 800; letter-spacing: .02em; color: #fff; }
+    .auth-brand__tagline { display: none; }
+    .auth-brand__desc { display: none; }
+    .auth-brand__stats { display: none; }
+    @media (min-width: 1024px) {
+      .auth-brand__tagline {
+        display: block; font-size: 34px; font-weight: 800; line-height: 1.15;
+        letter-spacing: -.02em; margin-top: 40px; max-width: 460px;
+      }
+      .auth-brand__desc {
+        display: block; font-size: 15px; line-height: 1.65; color: rgba(255,255,255,.72);
+        margin-top: 20px; max-width: 440px;
+      }
+      .auth-brand__stats { display: flex; gap: 34px; margin-top: 48px; }
+      .auth-brand__stat-n { font-size: 26px; font-weight: 800; color: var(--gold); }
+      .auth-brand__stat-l { font-size: 13px; color: rgba(255,255,255,.7); margin-top: 4px; }
+    }
+
+    .auth-form {
+      background: var(--card); padding: 36px 20px;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+    }
+    @media (min-width: 640px) { .auth-form { padding: 48px 32px; } }
+    .auth-card { width: 100%; max-width: 400px; }
+    .auth-card__back { display: inline-block; font-size: 13px; font-weight: 600; color: var(--muted-fg); margin-bottom: 22px; }
+    .auth-card__back:hover { color: var(--fg); }
+    .auth-card__h { font-size: 24px; font-weight: 800; letter-spacing: -.01em; color: var(--fg); }
+    @media (min-width: 768px) { .auth-card__h { font-size: 27px; } }
+    .auth-card__sub { font-size: 14px; line-height: 1.6; color: var(--muted-fg); margin-top: 8px; }
+
+    .auth-submit { margin-top: 22px; }
+    .auth-error { color: var(--danger); font-size: 13px; font-weight: 600; margin-top: 12px; min-height: 18px; }
+    .auth-foot { font-size: 13px; line-height: 1.6; color: var(--muted-fg); margin-top: 20px; text-align: center; }
+    .auth-foot a { color: var(--primary); font-weight: 700; }
+    .auth-foot a:hover { text-decoration: underline; }
+
+    .otp-row { display: flex; gap: 8px; margin-top: 24px; }
+    .otp-box {
+      width: 100%; max-width: 54px; aspect-ratio: 1 / 1; text-align: center;
+      border: 1px solid var(--input); border-radius: var(--radius-s);
+      font-size: 22px; font-weight: 700; color: var(--fg); background: var(--card);
+    }
+    .otp-box:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--gold-soft); }
+    .otp-resend { font-size: 13px; color: var(--muted-fg); margin-top: 16px; }
+    .otp-resend button { border: none; background: transparent; color: var(--primary); font-weight: 700; font-size: 13px; cursor: pointer; padding: 0; }
+    .otp-resend button:disabled { color: var(--muted-fg); font-weight: 600; cursor: default; }
+  </style>
+</head>
+<body>
+  <main class="auth">
+    <aside class="auth-brand">
+      <a class="auth-brand__logo" href="index.html">HT HOME</a>
+      <h1 class="auth-brand__tagline">Nền tảng vận hành phòng trọ chuyên nghiệp</h1>
+      <p class="auth-brand__desc">Quản lý 500+ tòa nhà, 1.000+ phòng, đội ngũ sale minh bạch — tất cả trong 1 hệ thống.</p>
+      <div class="auth-brand__stats">
+        <div><div class="auth-brand__stat-n">500+</div><div class="auth-brand__stat-l">Tòa nhà</div></div>
+        <div><div class="auth-brand__stat-n">1.024</div><div class="auth-brand__stat-l">Phòng</div></div>
+        <div><div class="auth-brand__stat-n">14</div><div class="auth-brand__stat-l">Nhân viên</div></div>
+      </div>
+    </aside>
+
+    <section class="auth-form">
+      <div class="auth-card">
+        <a class="auth-card__back" href="index.html">← Về trang chủ</a>
+        <h2 class="auth-card__h">Nhập mã OTP</h2>
+        <p class="auth-card__sub">Nhập 6 số vừa gửi tới điện thoại của bạn.</p>
+
+        <form id="otpForm" novalidate>
+          <div class="otp-row" id="otpRow">
+            <input class="otp-box" type="text" inputmode="numeric" maxlength="1" aria-label="Số OTP 1" autocomplete="one-time-code" />
+            <input class="otp-box" type="text" inputmode="numeric" maxlength="1" aria-label="Số OTP 2" />
+            <input class="otp-box" type="text" inputmode="numeric" maxlength="1" aria-label="Số OTP 3" />
+            <input class="otp-box" type="text" inputmode="numeric" maxlength="1" aria-label="Số OTP 4" />
+            <input class="otp-box" type="text" inputmode="numeric" maxlength="1" aria-label="Số OTP 5" />
+            <input class="otp-box" type="text" inputmode="numeric" maxlength="1" aria-label="Số OTP 6" />
+          </div>
+
+          <p class="otp-resend">Gửi lại mã sau <span id="countdown">60s</span> <button type="button" id="resendBtn" disabled>Gửi lại mã</button></p>
+
+          <div class="auth-error" id="formError" role="alert"></div>
+
+          <button class="btn btn--primary btn--block auth-submit" type="submit">Xác nhận</button>
+        </form>
+
+        <p class="auth-foot"><a href="quenmatkhau.html">← Đổi số điện thoại</a></p>
+      </div>
+    </section>
+  </main>
+
+  <script src="assets/js/ht-ui.js"></script>
+  <script>
+  (function () {
+    'use strict';
+
+    /* OTP: tự nhảy ô + chỉ nhận số + dán mã */
+    var boxes = Array.prototype.slice.call(document.querySelectorAll('.otp-box'));
+    boxes.forEach(function (box, i) {
+      box.addEventListener('input', function () {
+        box.value = box.value.replace(/\D/g, '').slice(0, 1);
+        if (box.value && i < boxes.length - 1) boxes[i + 1].focus();
+      });
+      box.addEventListener('keydown', function (e) {
+        if (e.key === 'Backspace' && !box.value && i > 0) boxes[i - 1].focus();
+      });
+      box.addEventListener('paste', function (e) {
+        e.preventDefault();
+        var digits = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '').slice(0, boxes.length);
+        for (var j = 0; j < digits.length; j++) { if (boxes[i + j]) boxes[i + j].value = digits.charAt(j); }
+        var next = Math.min(i + digits.length, boxes.length - 1);
+        boxes[next].focus();
+      });
+    });
+
+    /* Đếm ngược demo */
+    var countdown = document.getElementById('countdown');
+    var resendBtn = document.getElementById('resendBtn');
+    var timer = null;
+    function startCountdown() {
+      var left = 60;
+      resendBtn.disabled = true;
+      countdown.style.display = '';
+      countdown.textContent = left + 's';
+      timer = setInterval(function () {
+        left--;
+        if (left <= 0) {
+          clearInterval(timer);
+          countdown.style.display = 'none';
+          resendBtn.disabled = false;
+        } else {
+          countdown.textContent = left + 's';
+        }
+      }, 1000);
+    }
+    resendBtn.addEventListener('click', function () {
+      boxes.forEach(function (b) { b.value = ''; });
+      boxes[0].focus();
+      startCountdown();
+    });
+    startCountdown();
+
+    /* Submit demo */
+    var form = document.getElementById('otpForm');
+    var errEl = document.getElementById('formError');
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var code = boxes.map(function (b) { return b.value; }).join('');
+      if (code.length < 6) { errEl.textContent = 'Vui lòng nhập đủ 6 số.'; return; }
+      errEl.textContent = '';
+      window.location.href = 'datmatkhau.html';
+    });
+  })();
+  </script>
+</body>
+</html>

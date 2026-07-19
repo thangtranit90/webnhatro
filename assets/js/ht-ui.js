@@ -87,7 +87,7 @@
             '<div class="lang-toggle"><button class="is-active">VN</button><button>EN</button></div>' +
             '<a class="link-login" href="dangky.html">Đăng nhập</a>' +
             '<a class="btn btn--primary btn--sm" href="dangky.html">Đăng ký</a>' +
-            '<a class="btn btn--ghost btn--staff" href="dashboard.html">' + icon('lock', 13) + 'Nội bộ</a>' +
+            '<a class="btn btn--ghost btn--staff" href="dangnhap-noibo.html">' + icon('lock', 13) + 'Nội bộ</a>' +
             '<button class="btn-hamburger" aria-label="Mở menu" aria-expanded="false">' + icon('menu', 22) + '</button>' +
           '</div>' +
         '</div>' +

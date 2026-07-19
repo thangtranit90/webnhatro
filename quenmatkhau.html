@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quên mật khẩu — HT HOME</title>
+  <meta name="description" content="Khôi phục mật khẩu tài khoản nội bộ HT HOME qua mã OTP gửi về số điện thoại đã đăng ký." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/tokens.css" />
+  <link rel="stylesheet" href="assets/css/base.css" />
+  <link rel="stylesheet" href="assets/css/components.css" />
+  <style>
+    /* ===== Layout auth 2 panel — dùng chung 4 trang ===== */
+    .auth { min-height: 100vh; display: grid; grid-template-columns: 1fr; }
+    @media (min-width: 1024px) { .auth { grid-template-columns: 45% 55%; } }
+
+    .auth-brand {
+      background: var(--primary); color: #fff; padding: 22px 20px;
+      display: flex; flex-direction: column; justify-content: center;
+    }
+    @media (min-width: 1024px) { .auth-brand { padding: 56px 52px; } }
+    .auth-brand__logo { font-size: 22px; font-weight: 800; letter-spacing: .02em; color: #fff; }
+    .auth-brand__tagline { display: none; }
+    .auth-brand__desc { display: none; }
+    .auth-brand__stats { display: none; }
+    @media (min-width: 1024px) {
+      .auth-brand__tagline {
+        display: block; font-size: 34px; font-weight: 800; line-height: 1.15;
+        letter-spacing: -.02em; margin-top: 40px; max-width: 460px;
+      }
+      .auth-brand__desc {
+        display: block; font-size: 15px; line-height: 1.65; color: rgba(255,255,255,.72);
+        margin-top: 20px; max-width: 440px;
+      }
+      .auth-brand__stats { display: flex; gap: 34px; margin-top: 48px; }
+      .auth-brand__stat-n { font-size: 26px; font-weight: 800; color: var(--gold); }
+      .auth-brand__stat-l { font-size: 13px; color: rgba(255,255,255,.7); margin-top: 4px; }
+    }
+
+    .auth-form {
+      background: var(--card); padding: 36px 20px;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+    }
+    @media (min-width: 640px) { .auth-form { padding: 48px 32px; } }
+    .auth-card { width: 100%; max-width: 400px; }
+    .auth-card__back { display: inline-block; font-size: 13px; font-weight: 600; color: var(--muted-fg); margin-bottom: 22px; }
+    .auth-card__back:hover { color: var(--fg); }
+    .auth-card__h { font-size: 24px; font-weight: 800; letter-spacing: -.01em; color: var(--fg); }
+    @media (min-width: 768px) { .auth-card__h { font-size: 27px; } }
+    .auth-card__sub { font-size: 14px; line-height: 1.6; color: var(--muted-fg); margin-top: 8px; }
+
+    .field { margin-top: 20px; }
+    .field__label { display: block; font-size: 13px; font-weight: 700; color: var(--fg); margin-bottom: 8px; }
+    .field__input {
+      width: 100%; border: 1px solid var(--input); border-radius: var(--radius-s);
+      padding: 12px 14px; font-size: 15px; color: var(--fg); background: var(--card);
+    }
+    .field__input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--gold-soft); }
+
+    .auth-submit { margin-top: 22px; }
+    .auth-error { color: var(--danger); font-size: 13px; font-weight: 600; margin-top: 12px; min-height: 18px; }
+    .auth-foot { font-size: 13px; line-height: 1.6; color: var(--muted-fg); margin-top: 20px; text-align: center; }
+    .auth-foot a { color: var(--primary); font-weight: 700; }
+    .auth-foot a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <main class="auth">
+    <aside class="auth-brand">
+      <a class="auth-brand__logo" href="index.html">HT HOME</a>
+      <h1 class="auth-brand__tagline">Nền tảng vận hành phòng trọ chuyên nghiệp</h1>
+      <p class="auth-brand__desc">Quản lý 500+ tòa nhà, 1.000+ phòng, đội ngũ sale minh bạch — tất cả trong 1 hệ thống.</p>
+      <div class="auth-brand__stats">
+        <div><div class="auth-brand__stat-n">500+</div><div class="auth-brand__stat-l">Tòa nhà</div></div>
+        <div><div class="auth-brand__stat-n">1.024</div><div class="auth-brand__stat-l">Phòng</div></div>
+        <div><div class="auth-brand__stat-n">14</div><div class="auth-brand__stat-l">Nhân viên</div></div>
+      </div>
+    </aside>
+
+    <section class="auth-form">
+      <div class="auth-card">
+        <a class="auth-card__back" href="index.html">← Về trang chủ</a>
+        <h2 class="auth-card__h">Quên mật khẩu</h2>
+        <p class="auth-card__sub">Nhập số điện thoại đã đăng ký, chúng tôi sẽ gửi mã OTP.</p>
+
+        <form id="forgotForm" novalidate>
+          <div class="field">
+            <label class="field__label" for="fPhone">Số điện thoại</label>
+            <input class="field__input" type="tel" id="fPhone" name="phone" placeholder="09••••••••" autocomplete="tel" inputmode="tel" />
+          </div>
+
+          <div class="auth-error" id="formError" role="alert"></div>
+
+          <button class="btn btn--primary btn--block auth-submit" type="submit">Gửi mã OTP</button>
+        </form>
+
+        <p class="auth-foot"><a href="dangnhap-noibo.html">← Quay lại đăng nhập</a></p>
+      </div>
+    </section>
+  </main>
+
+  <script src="assets/js/ht-ui.js"></script>
+  <script>
+  (function () {
+    'use strict';
+    var form = document.getElementById('forgotForm');
+    var errEl = document.getElementById('formError');
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var phone = document.getElementById('fPhone').value.trim();
+      if (!phone) { errEl.textContent = 'Vui lòng nhập số điện thoại.'; document.getElementById('fPhone').focus(); return; }
+      errEl.textContent = '';
+      window.location.href = 'nhap-otp.html';
+    });
+  })();
+  </script>
+</body>
+</html>
