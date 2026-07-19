@@ -196,6 +196,19 @@ window.HT_rebuildRooms = function(){
 };
 window.HT_rebuildRooms();
 
+/* ── Nạp danh mục toà nhà THẬT từ D1 (chỉ khu nội bộ gọi) ──
+   Ghi đè HT_BUILDINGS + dựng lại ROOMS rồi gọi cb. Lỗi mạng → giữ seed tĩnh.
+   Trang khách KHÔNG gọi hàm này nên vẫn đọc data.js tĩnh như cũ. */
+window.HT_loadBuildings = function(cb){
+  fetch('/api/toa-nha').then(function(r){ return r.json(); }).then(function(d){
+    if (d && (d.ptro || d.cc)) {
+      window.HT_BUILDINGS = { ptro: d.ptro || [], cc: d.cc || [] };
+      window.HT_rebuildRooms();
+    }
+    if (cb) cb();
+  }).catch(function(){ if (cb) cb(); });
+};
+
 /* CHỈ lưu bền vào localStorage (không đụng vào HT_BUILDINGS đang chạy).
    Dùng cho dashboard — nơi đã tự unshift vào BUILDINGS_DATA in-memory rồi. */
 window.HT_saveListing = function(building, group){
