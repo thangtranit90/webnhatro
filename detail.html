@@ -1,446 +1,537 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chi tiết phòng — HT HOME</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --blue:#1f5fd6;--blue-dark:#164bad;--navy:#132a5e;--orange:#ff6a00;
-    --green:#17a34a;--ink:#1f2a44;--muted:#6b7488;--line:#e4e8f0;--radius:12px;
-  }
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:"Be Vietnam Pro",system-ui,sans-serif;color:var(--ink);background:#f4f6fb;line-height:1.55}
-  a{text-decoration:none;color:inherit}
-  img{max-width:100%;display:block}
-  .wrap{max-width:1160px;margin:0 auto;padding:0 24px}
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chi tiết phòng — HT HOME</title>
+  <meta name="description" content="Thông tin chi tiết phòng cho thuê tại TP.HCM — hình thật, giá minh bạch, video review và sale hỗ trợ tận nơi." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/tokens.css" />
+  <link rel="stylesheet" href="assets/css/base.css" />
+  <link rel="stylesheet" href="assets/css/components.css" />
+  <style>
+    /* ===== Trang chi tiết phòng — style riêng ===== */
 
-  /* header */
-  header{background:#fff;position:sticky;top:0;z-index:50;border-bottom:1px solid var(--line)}
-  .nav{display:flex;align-items:center;gap:32px;height:72px}
-  .logo img{height:42px;width:auto}
-  .menu{display:flex;gap:26px;flex:1}
-  .menu a{font-weight:500;color:#31394f;font-size:15px;white-space:nowrap}
-  .menu a:hover{color:var(--blue)}
-  .btn-primary{background:var(--blue);color:#fff;border:none;border-radius:10px;padding:10px 18px;font-family:inherit;font-weight:600;font-size:14px;cursor:pointer}
-  .btn-primary:hover{background:var(--blue-dark)}
+    /* Thanh breadcrumb + chia sẻ */
+    .topbar { background: var(--card); border-bottom: 1px solid var(--border); }
+    .topbar__inner { display: flex; flex-direction: column; gap: 10px; padding-block: 12px; }
+    @media (min-width: 768px) { .topbar__inner { flex-direction: row; align-items: center; justify-content: space-between; } }
+    .crumb { font-size: 13px; color: var(--muted-fg); display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+    .crumb a:hover { color: var(--fg); }
+    .crumb b { color: var(--fg); font-weight: 600; }
+    .share { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted-fg); }
+    .share__btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 12px; border: 1px solid var(--border); border-radius: var(--radius-pill);
+      font-size: 13px; font-weight: 600; color: var(--fg); background: var(--card);
+    }
+    .share__btn:hover { border-color: var(--muted-fg); }
+    .share__btn .ic, .share__btn svg { width: 15px; height: 15px; }
 
-  main{padding:22px 0 60px}
-  .breadcrumb{font-size:13px;color:var(--muted);margin-bottom:16px}
-  .breadcrumb a:hover{color:var(--blue)}
-  .breadcrumb b{color:var(--ink);font-weight:500}
+    /* Bố cục 2 cột */
+    .detail { padding-block: 24px 48px; }
+    .detail__grid { display: grid; grid-template-columns: 1fr; gap: 24px; }
+    @media (min-width: 1024px) { .detail__grid { grid-template-columns: minmax(0,1fr) 340px; gap: 32px; align-items: start; } }
 
-  .card{background:#fff;border-radius:16px;padding:24px;margin-bottom:18px;box-shadow:0 6px 22px rgba(19,42,94,.06)}
+    /* Panel chung */
+    .panel { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-l); padding: 20px; box-shadow: var(--shadow-card); }
+    .panel + .panel { margin-top: 20px; }
+    .panel__title { font-size: 17px; font-weight: 700; color: var(--fg); margin-bottom: 14px; }
 
-  /* top tags + actions */
-  .tag-row{display:flex;align-items:center;gap:8px;margin-bottom:14px}
-  .chip{font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px}
-  .chip.hot{background:#e8332f;color:#fff}
-  .chip.new{background:#17a34a;color:#fff}
-  .chip.sale{background:#ff6a00;color:#fff}
-  .chip.deal{background:#7c3aed;color:#fff}
-  .tag-row .spacer{flex:1}
-  .icon-btn{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:#fff;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center}
-  .icon-btn:hover{color:var(--ink);border-color:#c7cfdd}
-  .icon-btn svg{width:18px;height:18px}
-  h1.title{font-size:24px;font-weight:800;color:var(--navy);text-transform:uppercase;line-height:1.25;margin-bottom:8px}
-  .addr{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:14px;margin-bottom:18px}
-  .addr svg{width:16px;height:16px}
+    /* Gallery */
+    .gallery__main {
+      position: relative; border-radius: var(--radius-l); overflow: hidden;
+      aspect-ratio: 16 / 10; background: var(--muted);
+    }
+    .gallery__grad { position: absolute; inset: 0; }
+    .gallery__count {
+      position: absolute; bottom: 12px; right: 12px; z-index: 1;
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 10px; border-radius: var(--radius-s);
+      background: rgba(20,26,36,.78); color: #fff; font-size: 12px; font-weight: 600;
+    }
+    .gallery__thumbs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 8px; }
+    .gallery__thumb { position: relative; aspect-ratio: 4 / 3; border-radius: var(--radius-s); overflow: hidden; cursor: pointer; background: var(--muted); }
+    .gallery__thumb .grad { position: absolute; inset: 0; }
+    .gallery__thumb.is-active { outline: 2px solid var(--gold); outline-offset: 1px; }
 
-  /* gallery */
-  /* gallery: cột trái 2 ảnh | cột giữa 3 ảnh | cột phải video TikTok */
-  .gallery{display:grid;grid-template-columns:1.35fr 0.85fr 1.05fr;gap:8px;height:560px;margin-bottom:22px}
-  .gcol{display:grid;gap:8px;min-height:0}
-  .gcol.left{grid-template-rows:1fr 1fr}
-  .gcol.mid{grid-template-rows:1fr 1fr 1fr}
-  .g{border-radius:10px;overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.55);min-height:0}
-  .g .ph{width:40px;height:40px}
-  .g .more{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:#fff;background:rgba(0,0,0,.4)}
-  .g.video{background:#000}
-  .g.video iframe{width:100%;height:100%;border:0;display:block}
+    /* Video TikTok */
+    .videobox { margin-top: 16px; }
+    .videobox__frame { border-radius: var(--radius-m); overflow: hidden; background: #000; aspect-ratio: 9 / 16; max-width: 320px; }
+    .videobox__frame iframe { width: 100%; height: 100%; border: 0; display: block; }
+    .video-note { display: inline-flex; align-items: center; gap: 7px; margin-top: 10px; font-size: 13px; color: var(--muted-fg); }
+    .video-note .ic { color: var(--danger); }
 
-  /* price + contact */
-  .price-row{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-top:6px;border-top:1px solid var(--line);margin-top:4px;padding-top:18px}
-  .price small{display:block;color:var(--muted);font-size:13px;margin-bottom:2px}
-  .price .amount{font-size:26px;font-weight:800;color:var(--orange)}
-  .contact{display:flex;gap:10px}
-  .btn-chat,.btn-owner{border:none;border-radius:10px;padding:12px 20px;font-family:inherit;font-weight:700;font-size:15px;cursor:pointer;color:#fff;display:inline-flex;align-items:center;gap:8px}
-  .btn-chat{background:var(--green)}
-  .btn-owner{background:var(--orange)}
-  .btn-chat svg,.btn-owner svg{width:18px;height:18px}
+    /* Title card */
+    .titlecard__price { font-size: 28px; font-weight: 800; color: var(--fg); line-height: 1.15; }
+    .titlecard__price span { font-size: 15px; font-weight: 500; color: var(--muted-fg); }
+    .titlecard__name { font-size: 20px; font-weight: 700; color: var(--fg); margin-top: 8px; line-height: 1.3; }
+    .titlecard__addr { display: flex; align-items: flex-start; gap: 6px; color: var(--muted-fg); font-size: 14px; margin-top: 10px; }
+    .titlecard__addr .ic { color: var(--gold); margin-top: 2px; }
+    .titlecard__actions { display: flex; gap: 10px; margin-top: 16px; }
 
-  /* info grid */
-  .info-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px 24px;margin-top:20px;padding-top:20px;border-top:1px solid var(--line)}
-  .info-item{display:flex;align-items:center;gap:8px;font-size:14px;color:#31394f}
-  .info-item svg{width:17px;height:17px;color:var(--muted);flex-shrink:0}
-  .info-item.link{color:var(--blue)}
-  .info-item.phone{color:var(--orange);font-weight:600}
+    /* Specs */
+    .specs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    @media (min-width: 560px) { .specs { grid-template-columns: repeat(3, 1fr); } }
+    @media (min-width: 1024px) { .specs { grid-template-columns: repeat(5, 1fr); } }
+    .spec { background: var(--muted); border-radius: var(--radius-m); padding: 14px 12px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; }
+    .spec__ic { width: 34px; height: 34px; border-radius: var(--radius-s); background: var(--gold-soft); color: var(--gold); display: inline-flex; align-items: center; justify-content: center; }
+    .spec__lbl { font-size: 12px; color: var(--muted-fg); }
+    .spec__val { font-size: 14px; font-weight: 700; color: var(--fg); }
 
-  /* sections */
-  .sec-title{font-size:18px;font-weight:700;color:var(--ink);margin-bottom:14px}
-  .intro p{margin-bottom:8px;font-size:14.5px}
-  .intro .lead{font-weight:700}
-  .intro ul{margin:4px 0 8px 20px;font-size:14.5px}
-  .btn-toggle{display:block;margin:14px auto 0;background:none;border:1px solid var(--line);border-radius:20px;color:var(--blue);font-family:inherit;font-weight:600;font-size:14px;padding:8px 22px;cursor:pointer}
-  .btn-toggle:hover{background:#f3f6fc}
-  .subsec{margin-top:26px}
-  .obj{display:flex;align-items:center;gap:8px;font-size:14.5px;color:#31394f}
-  .obj svg{width:18px;height:18px;color:var(--muted)}
-  .feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px 20px;font-size:14.5px}
-  .feature{display:flex;align-items:center;gap:9px;color:#31394f}
-  .feature svg{width:18px;height:18px;color:var(--blue);flex-shrink:0}
-  /* đặc điểm phòng dạng tag theo nhóm */
-  .feat-group{display:flex;align-items:flex-start;gap:10px;padding:8px 0}
-  .feat-label{flex-shrink:0;width:72px;font-weight:700;font-size:14px;color:var(--ink);padding-top:5px}
-  .feat-chips{display:flex;flex-wrap:wrap;gap:8px}
-  .feat-chip{background:#eaf1ff;color:var(--blue);font-size:13px;font-weight:600;padding:5px 12px;border-radius:16px}
-  .empty-note{color:var(--muted);font-size:14px;padding:6px 0}
+    /* Amenities */
+    .amenities { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    @media (min-width: 640px) { .amenities { grid-template-columns: repeat(3, 1fr); } }
+    .amenity { display: flex; align-items: center; gap: 9px; font-size: 14px; color: var(--fg); }
+    .amenity .chk { flex-shrink: 0; width: 20px; height: 20px; border-radius: 50%; background: var(--success-soft); color: var(--success); display: inline-flex; align-items: center; justify-content: center; }
+    .amenity .chk svg { width: 13px; height: 13px; }
 
-  /* map */
-  .map-box{height:340px;border-radius:12px;overflow:hidden;background:#e8edf5}
-  .map-box iframe{width:100%;height:100%;border:0;display:block}
-  .map-link{display:inline-block;margin-top:10px;font-size:13px;color:var(--blue);font-weight:600}
-  .map-link:hover{text-decoration:underline}
-  .nearby-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px 24px;margin-top:8px}
-  .nearby-item{font-size:14px}
-  .nearby-item .n{color:#31394f}
-  .nearby-item .d{color:var(--muted);font-size:13px}
+    /* Intro */
+    .intro p { font-size: 14.5px; color: var(--fg); line-height: 1.65; }
+    .intro p + p { margin-top: 10px; }
 
-  /* related (blue panel) */
-  .related{background:var(--blue);border-radius:16px;padding:22px;margin-bottom:18px}
-  .related h2{color:#fff;font-size:17px;font-weight:800;text-transform:uppercase;margin-bottom:16px}
-  .rel-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
-  .rel-card{background:#fff;border-radius:10px;overflow:hidden;display:block;color:inherit}
-  .rel-media{position:relative;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.55)}
-  .rel-media .ph{width:36px;height:36px}
-  .rel-fav{position:absolute;right:8px;bottom:8px;width:28px;height:28px;border-radius:50%;background:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.18);color:#8a93a5}
-  .rel-fav svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2}
-  .rel-fav.active{color:#e8332f}.rel-fav.active svg{fill:#e8332f}
-  .rel-body{padding:10px}
-  .rel-title{font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:5px}
-  .rel-price{font-size:12px;color:var(--muted);margin-bottom:6px}
-  .rel-price b{color:var(--orange);font-size:14px}
-  .rel-tag{font-size:12px;color:#5b657a;margin-bottom:5px}
-  .rel-loc{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted)}
-  .rel-loc svg{width:12px;height:12px}
-  .btn-more{margin-top:16px;background:#fff;color:var(--blue);border:none;border-radius:9px;padding:9px 18px;font-family:inherit;font-weight:600;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
-  .btn-more svg{width:15px;height:15px}
+    /* Cost */
+    .cost { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    @media (min-width: 640px) { .cost { grid-template-columns: repeat(4, 1fr); } }
+    .cost__item { border: 1px solid var(--border); border-radius: var(--radius-m); padding: 14px; }
+    .cost__lbl { font-size: 12px; color: var(--muted-fg); }
+    .cost__val { font-size: 15px; font-weight: 700; color: var(--fg); margin-top: 4px; }
 
-  /* districts discovery */
-  .dist-title{font-size:17px;font-weight:800;color:var(--orange);text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px}
-  .dist-sub{color:var(--muted);font-size:14px;margin-bottom:18px}
-  .dist-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
-  .dist-card{border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:block;color:inherit;text-decoration:none;transition:.15s}
-  .dist-card:hover{border-color:var(--blue);box-shadow:0 6px 16px rgba(19,42,94,.08)}
-  .dist-card .dn{font-size:14.5px;font-weight:500;color:var(--ink);margin-bottom:8px}
-  .dist-card .dc{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--blue)}
-  .dist-card .dc svg{width:14px;height:14px}
-  @media(max-width:900px){.dist-grid{grid-template-columns:repeat(2,1fr)}}
-  @media(max-width:520px){.dist-grid{grid-template-columns:1fr}}
+    /* Map */
+    .mapbox { height: 300px; border-radius: var(--radius-m); overflow: hidden; background: var(--muted); display: flex; align-items: center; justify-content: center; color: var(--muted-fg); font-size: 14px; text-align: center; padding: 16px; }
+    .mapbox iframe { width: 100%; height: 100%; border: 0; display: block; }
+    .map-link { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 13px; font-weight: 600; color: var(--info); }
 
-  .explore{background:#fff;border-radius:12px;padding:18px 24px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 6px 22px rgba(19,42,94,.06)}
-  .explore span{font-weight:600;color:var(--ink)}
-  .explore a{color:var(--muted);font-size:14px;display:flex;align-items:center;gap:6px}
+    /* Nearby (xung quanh) */
+    .nearby { display: grid; grid-template-columns: 1fr; gap: 22px; }
+    @media (min-width: 768px) { .nearby { grid-template-columns: 1fr 1fr; } }
+    .nearby__h { font-size: 13px; font-weight: 700; color: var(--muted-fg); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 12px; }
+    .nearby__item { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 0; border-bottom: 1px dashed var(--border); font-size: 14px; }
+    .nearby__item:last-child { border-bottom: 0; }
+    .nearby__item .n { color: var(--fg); display: flex; align-items: center; gap: 8px; }
+    .nearby__item .n .ic { color: var(--gold); }
+    .nearby__item .d { color: var(--muted-fg); font-size: 13px; white-space: nowrap; }
 
-  @media(max-width:900px){
-    .menu{display:none}
-    .gallery{grid-template-columns:1fr;height:auto}
-    .gcol.left,.gcol.mid{grid-template-rows:none;grid-auto-rows:190px}
-    .gcol.right{height:520px}
-    .info-grid{grid-template-columns:repeat(2,1fr)}
-    .feature-grid,.nearby-grid{grid-template-columns:repeat(2,1fr)}
-    .rel-grid{grid-template-columns:repeat(2,1fr)}
-  }
-  @media(max-width:560px){
-    .info-grid,.feature-grid,.nearby-grid,.rel-grid{grid-template-columns:1fr}
-    .price-row{flex-direction:column;align-items:flex-start}
-  }
-</style>
+    /* Contact sidebar */
+    .contact-card { border: 1px solid var(--border); border-radius: var(--radius-l); background: var(--card); padding: 20px; box-shadow: var(--shadow-card); }
+    @media (min-width: 1024px) { .contact-wrap { position: sticky; top: calc(var(--header-h) + 16px); } }
+    .sale { display: flex; align-items: center; gap: 12px; }
+    .sale__av { width: 48px; height: 48px; font-size: 17px; }
+    .sale__name { font-size: 16px; font-weight: 700; color: var(--fg); }
+    .sale__role { font-size: 13px; color: var(--muted-fg); }
+    .sale__stars { display: flex; align-items: center; gap: 5px; margin-top: 4px; font-size: 12px; color: var(--muted-fg); }
+    .sale__stars .stars { display: inline-flex; color: var(--gold); }
+    .contact-card__actions { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
+    .qr { margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--border); text-align: center; }
+    .qr__box { width: 128px; height: 128px; margin: 0 auto 10px; border: 1px solid var(--border); border-radius: var(--radius-m); background: var(--muted); display: flex; align-items: center; justify-content: center; color: var(--muted-fg); }
+    .qr__box svg { width: 64px; height: 64px; }
+    .qr__note { font-size: 13px; color: var(--muted-fg); }
+    .qr__note a { color: var(--info); font-weight: 600; }
+
+    /* Similar */
+    .similar__head { margin-bottom: 20px; }
+
+    /* Empty state */
+    .empty { text-align: center; padding: 60px 20px; }
+    .empty h1 { font-size: 22px; font-weight: 700; color: var(--fg); margin-bottom: 8px; }
+    .empty p { color: var(--muted-fg); }
+  </style>
 </head>
 <body>
+  <div id="ht-header" data-active="search"></div>
 
-<header>
-  <div class="wrap nav">
-    <a href="index.html" class="logo"><img src="ht-home-logo.png" alt="HT HOME"></a>
-    <nav class="menu">
-      <a href="index.html">Phòng trọ</a>
-      <a href="index.html">Căn hộ dịch vụ</a>
-      <a href="index.html">Ký túc xá</a>
-      <a href="index.html">Chung cư</a>
-      <a href="index.html">Nhà nguyên căn</a>
-    </nav>
-    <button class="btn-primary" id="openLogin">Đăng nhập</button>
-  </div>
-</header>
-
-<main class="wrap">
-  <div class="breadcrumb">
-    <a href="index.html">Trang chủ</a> / <a href="index.html" id="bcType">Nhà trọ, phòng trọ</a> / <b id="bcTitle">…</b>
-  </div>
-
-  <!-- Overview -->
-  <div class="card">
-    <div class="tag-row">
-      <span id="badges" style="display:inline-flex;gap:8px"></span>
-      <span class="spacer"></span>
-      <button class="icon-btn" title="Chia sẻ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg></button>
-    </div>
-
-    <h1 class="title" id="title">…</h1>
-    <div class="addr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6.3-7-11a7 7 0 0 1 14 0c0 4.7-7 11-7 11Z"/><circle cx="12" cy="10" r="2.4"/></svg><span id="addr">…</span></div>
-
-    <div class="gallery" id="gallery"></div>
-
-    <div class="price-row">
-      <div class="price"><small>Giá chỉ từ</small><span class="amount" id="price">…/tháng</span></div>
-      <div class="contact">
-        <a class="btn-chat" id="btnChat" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/></svg> Chat Zalo ngay</a>
-        <a class="btn-owner" id="btnCall"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.6A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.4-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2Z"/></svg> Liên hệ tư vấn</a>
+  <main id="page">
+    <!-- TOPBAR: breadcrumb + chia sẻ -->
+    <div class="topbar">
+      <div class="container topbar__inner">
+        <nav class="crumb" aria-label="breadcrumb">
+          <a href="index.html">Trang chủ</a> <span>/</span>
+          <a href="timphong.html" id="bcQuan">TP.HCM</a> <span>/</span>
+          <b>Chi tiết phòng</b>
+        </nav>
+        <div class="share">
+          <span>Chia sẻ:</span>
+          <a class="share__btn" id="shareFb" target="_blank" rel="noopener"><span id="shareFbIc"></span> Facebook</a>
+          <a class="share__btn" id="shareZalo" target="_blank" rel="noopener">Zalo</a>
+          <button class="share__btn" id="shareCopy" type="button"><span id="shareCopyIc"></span> Copy link</button>
+        </div>
       </div>
     </div>
 
-    <div class="info-grid">
-      <div class="info-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> <span id="iPrice">Giá từ …</span></div>
-      <div class="info-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg> Ngày đăng: 05-06-2026</div>
-      <div class="info-item link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6.3-7-11a7 7 0 0 1 14 0c0 4.7-7 11-7 11Z"/><circle cx="12" cy="10" r="2.4"/></svg> <span id="iFind">Tìm phòng tại …</span></div>
-      <div class="info-item link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h.01M9 13h.01M9 17h.01M15 9h.01M15 13h.01M15 17h.01"/></svg> <span id="iCity">Hồ Chí Minh</span></div>
-    </div>
-  </div>
+    <section class="detail">
+      <div class="container detail__grid" id="detailGrid">
+        <!-- Cột trái: nội dung -->
+        <div>
+          <!-- Gallery + video -->
+          <div class="panel">
+            <div class="gallery__main">
+              <span class="gallery__grad" id="galMain"></span>
+              <span class="gallery__count" id="galCount"></span>
+            </div>
+            <div class="gallery__thumbs" id="galThumbs"></div>
 
-  <!-- Intro + features -->
-  <div class="card">
-    <h3 class="sec-title">Giới thiệu</h3>
-    <div class="intro" id="intro"></div>
-    <button class="btn-toggle" id="toggleIntro">Hiển thị thêm ﹀</button>
+            <div class="videobox is-hidden" id="videoBox">
+              <div class="videobox__frame" id="videoFrame"></div>
+              <span class="video-note" id="videoNote"></span>
+            </div>
+          </div>
 
-    <div class="subsec">
-      <h3 class="sec-title">Đặc điểm phòng</h3>
-      <div class="feature-grid" id="features"></div>
-    </div>
+          <!-- Title card -->
+          <div class="panel">
+            <div class="titlecard__price"><span id="priceVal">…</span></div>
+            <h1 class="titlecard__name" id="title">…</h1>
+            <div class="titlecard__addr"><span class="ic" id="addrIc"></span><span id="addr">…</span></div>
+            <div class="titlecard__actions">
+              <button class="btn btn--ghost" id="btnSave" type="button"></button>
+              <button class="btn btn--ghost" id="btnShare2" type="button"></button>
+            </div>
+          </div>
 
-    <div class="subsec">
-      <h3 class="sec-title">Môi trường xung quanh</h3>
-      <div class="feature-grid" id="around"></div>
-    </div>
-  </div>
+          <!-- Specs -->
+          <div class="panel">
+            <h2 class="panel__title">Thông tin phòng</h2>
+            <div class="specs" id="specs"></div>
+          </div>
 
-  <!-- Map + nearby -->
-  <div class="card">
-    <h3 class="sec-title">Đường đi</h3>
-    <div class="map-box" id="mapBox"></div>
-    <a class="map-link" id="mapLink" target="_blank" rel="noopener">🗺 Xem bản đồ lớn hơn</a>
-    <div class="subsec">
-      <h3 class="sec-title">Các trường xung quanh</h3>
-      <div class="nearby-grid" id="nearby"></div>
-    </div>
-  </div>
+          <!-- Amenities -->
+          <div class="panel">
+            <h2 class="panel__title">Tiện ích &amp; đặc điểm</h2>
+            <div class="amenities" id="amenities"></div>
+          </div>
 
-  <!-- Related -->
-  <div class="related">
-    <h2 id="relTitle">Các phòng khác gần đó</h2>
-    <div class="rel-grid" id="relGrid"></div>
-    <button class="btn-more" onclick="location.href='index.html'">Xem thêm <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
-  </div>
+          <!-- Intro -->
+          <div class="panel">
+            <h2 class="panel__title">Giới thiệu phòng</h2>
+            <div class="intro" id="intro"></div>
+          </div>
 
-  <!-- Khám phá quận/huyện khác -->
-  <div class="card districts">
-    <h3 class="dist-title" id="distTitle">Khám phá nhà trọ, phòng trọ tại các quận huyện khác</h3>
-    <p class="dist-sub" id="distSub">Tìm kiếm nhà trọ, phòng trọ tại các khu vực lân cận</p>
-    <div class="dist-grid" id="distGrid"></div>
-  </div>
+          <!-- Cost -->
+          <div class="panel">
+            <h2 class="panel__title">Chi phí hàng tháng</h2>
+            <div class="cost">
+              <div class="cost__item"><div class="cost__lbl">Tiền điện</div><div class="cost__val">4.000đ/kWh</div></div>
+              <div class="cost__item"><div class="cost__lbl">Tiền nước</div><div class="cost__val">150k/người</div></div>
+              <div class="cost__item"><div class="cost__lbl">Gửi xe</div><div class="cost__val">100k/xe</div></div>
+              <div class="cost__item"><div class="cost__lbl">Dịch vụ</div><div class="cost__val">200k/phòng</div></div>
+            </div>
+          </div>
 
-</main>
+          <!-- Map -->
+          <div class="panel">
+            <h2 class="panel__title">Vị trí trên bản đồ</h2>
+            <div class="mapbox" id="mapBox"></div>
+            <a class="map-link" id="mapLink" target="_blank" rel="noopener"></a>
+          </div>
 
-<div id="site-footer"></div>
+          <!-- Nearby -->
+          <div class="panel">
+            <h2 class="panel__title">Xung quanh phòng</h2>
+            <div class="nearby">
+              <div>
+                <div class="nearby__h">Tiện ích xung quanh</div>
+                <div class="nearby__item"><span class="n"><span class="ic" id="nb1"></span>Siêu thị Emart</span><span class="d">700m</span></div>
+                <div class="nearby__item"><span class="n"><span class="ic" id="nb2"></span>Bệnh viện 175</span><span class="d">2,1km</span></div>
+                <div class="nearby__item"><span class="n"><span class="ic" id="nb3"></span>Trạm xe buýt</span><span class="d">180m</span></div>
+                <div class="nearby__item"><span class="n"><span class="ic" id="nb4"></span>Công viên Gia Định</span><span class="d">1,4km</span></div>
+              </div>
+              <div>
+                <div class="nearby__h">Trường học lân cận</div>
+                <div class="nearby__item"><span class="n"><span class="ic" id="sc1"></span>ĐH Công nghiệp</span><span class="d">220m</span></div>
+                <div class="nearby__item"><span class="n"><span class="ic" id="sc2"></span>ĐH Văn Lang</span><span class="d">500m</span></div>
+                <div class="nearby__item"><span class="n"><span class="ic" id="sc3"></span>THPT Nguyễn Trãi</span><span class="d">680m</span></div>
+                <div class="nearby__item"><span class="n"><span class="ic" id="sc4"></span>THCS Nguyễn Du</span><span class="d">850m</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-<script src="data.js"></script>
-<script>
-  const ROOMS = window.ROOMS || [];
-  const params = new URLSearchParams(location.search);
-  let i = parseInt(params.get('i'), 10);
-  if(isNaN(i) || i < 0 || i >= ROOMS.length) i = 0;
-  // Lấy phòng theo ?i=; nếu không có dữ liệu (vd mở lẻ trong preview) thì dùng mặc định an toàn để không văng lỗi.
-  const R = ROOMS[i] || ROOMS[0] || {t:'', p:'', ty:'Nhà trọ, phòng trọ', l:''};
-  const esc = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-
-  // Bỏ tiền tố "TP." để khớp key SCHOOLS/DISTRICTS ('Hồ Chí Minh', 'Hà Nội'…)
-  const city = (R.l||'').split(',').pop().trim().replace(/^(TP\.?|Thành phố)\s*/i,'').trim();
-  const district = R.quan || (R.l||'').split(',')[0].trim();
-  const catOf = window.catOf || (r => r.ty);
-  const CAT = catOf(R);  // nhãn loại thống nhất toàn site
-
-  const ICON_PH = '<svg class="ph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="m4 18 5-5 4 4 3-3 4 4"/></svg>';
-  const ICON_PIN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6.3-7-11a7 7 0 0 1 14 0c0 4.7-7 11-7 11Z"/><circle cx="12" cy="10" r="2.4"/></svg>';
-  const ICON_HEART = '<svg viewBox="0 0 24 24"><path d="M12 21s-7-4.6-9.3-9C1.2 8.7 3 5 6.5 5 8.6 5 10 6.3 12 8c2-1.7 3.4-3 5.5-3C21 5 22.8 8.7 21.3 12 19 16.4 12 21 12 21Z"/></svg>';
-
-  // Fill dynamic text
-  document.title = R.t + ' — HT HOME';
-  document.getElementById('bcType').textContent = CAT;
-  document.getElementById('bcTitle').textContent = R.t;
-  // Nhãn trạng thái: Hot / Mới / Giảm giá / Ưu đãi
-  const BADGES = { hot:['Hot','hot'], new:['Mới','new'], sale:['Giảm giá','sale'], deal:['Ưu đãi','deal'] };
-  document.getElementById('badges').innerHTML = (R.b || ['hot'])
-    .filter(k => BADGES[k])
-    .map(k => `<span class="chip ${BADGES[k][1]}">${BADGES[k][0]}</span>`).join('');
-  document.getElementById('title').textContent = R.t;
-  document.getElementById('addr').textContent = R.l;
-  document.getElementById('price').textContent = R.p ? (R.p + '/tháng') : '';
-  document.getElementById('iPrice').textContent = R.p ? ('Giá từ ' + R.p + '/tháng') : '';
-
-  // Liên hệ người đăng: Zalo + gọi điện
-  const phone = (R.phone || '0974180000').replace(/[^\d+]/g,'');
-  const zalo  = R.zalo || ('https://zalo.me/' + phone);
-  document.getElementById('btnChat').href = zalo;
-  document.getElementById('btnCall').href = 'tel:' + phone;
-  document.getElementById('iFind').textContent = 'Tìm ' + CAT.toLowerCase() + ' tại ' + district;
-  document.getElementById('iCity').textContent = city;
-
-  // Gallery: cột trái 2 ảnh, cột giữa 3 ảnh, cột phải video TikTok (nếu có link).
-  // Ảnh thật: thay .ph bằng <img src="..."> trong từng ô .g
-  const hue = (i * 41) % 360;
-  const bg = h => `background:linear-gradient(135deg,hsl(${h},42%,78%),hsl(${(h+30)%360},46%,64%))`;
-  const cell = h => `<div class="g" style="${bg(h)}">${ICON_PH}</div>`;
-
-  // Trích ID video từ link TikTok rồi tạo iframe nhúng
-  function tiktokEmbed(url){
-    const m = (url||'').match(/\/video\/(\d+)/) || (url||'').match(/(\d{15,})/);
-    return m ? 'https://www.tiktok.com/embed/v2/' + m[1] : '';
-  }
-  const embed = tiktokEmbed(R.video);
-  const rightCol = embed
-    ? `<div class="gcol right"><div class="g video"><iframe src="${embed}" allow="encrypted-media; fullscreen" allowfullscreen scrolling="no"></iframe></div></div>`
-    : `<div class="gcol right">${cell(hue+80)}</div>`;
-
-  document.getElementById('gallery').innerHTML = `
-    <div class="gcol left">
-      ${cell(hue)}
-      ${cell(hue+15)}
-    </div>
-    <div class="gcol mid">
-      <div class="g" style="${bg(hue+30)}">${ICON_PH}<div class="more">+4</div></div>
-      ${cell(hue+45)}
-      ${cell(hue+60)}
-    </div>
-    ${rightCol}`;
-
-  // Intro (nội dung mẫu — thay bằng mô tả thật của từng phòng sau này)
-  document.getElementById('intro').innerHTML = `
-    <p class="lead">${esc(R.t).toUpperCase()}</p>
-    <p><b>Địa chỉ:</b> ${esc(R.l)}</p>
-    <p><b>Giá:</b></p>
-    <ul>
-      <li>Phòng thường, có quạt trần — giá từ ${R.p}/tháng.</li>
-      <li>Phòng máy lạnh — phụ thu thêm theo thoả thuận.</li>
-    </ul>
-    <p>Cọc 1 tháng, hợp đồng tối thiểu 3 tháng. Khu vực an ninh, gần trường học, chợ và siêu thị, thuận tiện di chuyển.</p>`;
-
-  // Đặc điểm phòng: nhóm theo Nội thất / Thiết kế / Tiện ích, lấy từ tags của phòng (khớp bộ lọc nâng cao).
-  const ADV_GROUPS = window.ADV_GROUPS || {};
-  const roomTags = (R.tags && R.tags.length) ? R.tags : (window.DEFAULT_TAGS || []);
-  const featHTML = Object.entries(ADV_GROUPS).map(([label, all]) => {
-    const has = all.filter(t => roomTags.includes(t));
-    if(!has.length) return '';
-    return `<div class="feat-group"><span class="feat-label">${label}:</span>
-      <div class="feat-chips">${has.map(t => `<span class="feat-chip">${t}</span>`).join('')}</div></div>`;
-  }).join('');
-  document.getElementById('features').innerHTML = featHTML || '<div class="empty-note">Đang cập nhật đặc điểm phòng.</div>';
-
-  // Môi trường xung quanh (chung)
-  const AROUND = ['Chợ','Siêu thị','Bệnh viện','Trường học','Bến xe Bus','Trung tâm thể dục thể thao'];
-  const CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>';
-  document.getElementById('around').innerHTML = AROUND.map(f=>`<div class="feature">${CHECK}<span>${f}</span></div>`).join('');
-
-  // ===== Bản đồ: Google Maps nhúng theo vị trí phòng =====
-  // Có toạ độ (lat/lng) thì dùng toạ độ, không thì dùng địa chỉ dạng chữ.
-  const mapQ = (R.lat && R.lng) ? (R.lat + ',' + R.lng) : R.l;
-  document.getElementById('mapBox').innerHTML =
-    `<iframe src="https://maps.google.com/maps?q=${encodeURIComponent(mapQ)}&z=15&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>`;
-  document.getElementById('mapLink').href =
-    'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(mapQ);
-
-  // ===== Các trường xung quanh: cao đẳng/đại học, bán kính < 7km =====
-  // Danh sách trường theo tỉnh/TP + khoảng cách ước lượng. Khi có toạ độ thật của
-  // phòng và trường, thay bằng lọc bán kính haversine <= 7km cho chính xác.
-  const SCHOOLS = {
-    'Hồ Chí Minh': [
-      ['Đại học Công nghiệp TP.HCM',0.22],['Đại học Mỹ thuật TP.HCM',2.25],['Trường ĐH Quốc tế Hồng Bàng',2.99],
-      ['Đại học Sư phạm TP.HCM',4.09],['ĐH Khoa học Xã hội & Nhân văn',4.29],['Đại học Kiến trúc TP.HCM',4.47],
-      ['Đại học Sài Gòn (cơ sở 1)',4.79],['Đại học Mở TP.HCM',5.13],['Cao đẳng Kỹ thuật Cao Thắng',5.40],
-      ['ĐH Ngân hàng TP.HCM',6.00],['ĐH Kinh tế TP.HCM (cơ sở A)',6.03],['ĐH Bách Khoa - ĐHQG TP.HCM',6.59],
-    ],
-    'Hà Nội': [
-      ['Học viện Báo chí & Tuyên truyền',1.20],['Đại học Hà Nội',2.40],['Học viện Ngân hàng',3.10],
-      ['Đại học Thăng Long',3.60],['ĐH Khoa học Tự nhiên - ĐHQGHN',4.50],['Đại học Bách Khoa Hà Nội',5.20],
-      ['Đại học Kinh tế Quốc dân',5.80],['Cao đẳng Sư phạm Trung ương',6.40],
-    ],
-    'Cần Thơ': [
-      ['Đại học Cần Thơ',2.80],['Đại học Y Dược Cần Thơ',4.10],['Cao đẳng Cần Thơ',5.60],
-    ],
-    'Hà Nam': [
-      ['Cao đẳng Y tế Hà Nam',3.50],['ĐH Công nghiệp Hà Nội (cơ sở Hà Nam)',6.20],
-    ],
-  };
-  const RADIUS_KM = 7;
-  const fmtKm = km => km < 1 ? Math.round(km*1000)+' m' : km.toFixed(2)+' km';
-  const schools = (SCHOOLS[city] || []).filter(([,km]) => km < RADIUS_KM).sort((a,b)=>a[1]-b[1]);
-  document.getElementById('nearby').innerHTML = schools.length
-    ? schools.map(([n,km]) => `<div class="nearby-item"><div class="n">${n}</div><div class="d">(${fmtKm(km)})</div></div>`).join('')
-    : '<div style="color:var(--muted);font-size:14px">Đang cập nhật trường học quanh khu vực này.</div>';
-
-  // Các phòng khác gần đó: mô phỏng "bán kính ~5km" bằng cách ưu tiên cùng quận/huyện,
-  // rồi cùng tỉnh/TP với phòng đang xem. Khi có toạ độ thật (lat/lng) thì thay bằng
-  // công thức tính khoảng cách (haversine) và lọc <= 5km.
-  const cityOf = l => (l||'').split(',').pop().trim().replace(/^(TP\.?|Thành phố)\s*/i,'').trim();
-  const sameDist = x => (x.quan||'') === district ? 1 : 0;
-  const others = ROOMS.map((x,k)=>({x,k})).filter(o => o.k !== i);
-  let pool = others.filter(o => cityOf(o.x.l) === city);
-  if(pool.length < 4) pool = others;                 // ít quá thì bổ sung phòng khác
-  pool.sort((a,b) => sameDist(b.x) - sameDist(a.x)); // cùng quận lên trước
-  const rel = pool.slice(0, 8);
-  document.getElementById('relGrid').innerHTML = rel.map(({x,k})=>{
-    const h=(k*41)%360;
-    return `<a class="rel-card" href="detail.html?i=${k}">
-      <div class="rel-media" style="${bg(h)}">${ICON_PH}
-        <button class="rel-fav" aria-label="Lưu tin">${ICON_HEART}</button>
+        <!-- Cột phải: liên hệ (sticky) -->
+        <aside>
+          <div class="contact-wrap">
+            <div class="contact-card">
+              <div class="sale">
+                <span class="avatar sale__av" id="saleAv">M</span>
+                <div>
+                  <div class="sale__name">Minh Trọ · HT HOME</div>
+                  <div class="sale__role">Chuyên viên tư vấn phòng</div>
+                  <div class="sale__stars"><span class="stars" id="saleStars"></span> 4.9 · 42 đánh giá</div>
+                </div>
+              </div>
+              <div class="contact-card__actions">
+                <a class="btn btn--primary btn--block" id="btnChat" target="_blank" rel="noopener"></a>
+                <a class="btn btn--ghost btn--block" id="btnCall"></a>
+                <button class="btn btn--ghost btn--block" id="btnBook" type="button"></button>
+              </div>
+              <div class="qr">
+                <a class="qr__box" id="qrBox" target="_blank" rel="noopener"></a>
+                <div class="qr__note">Quét mã <a id="qrLink" target="_blank" rel="noopener">Zalo QR</a> để chat nhanh với sale</div>
+              </div>
+            </div>
+          </div>
+        </aside>
       </div>
-      <div class="rel-body">
-        <div class="rel-title" title="${esc(x.t)}">${esc(x.t)}</div>
-        <div class="rel-price">Từ <b>${esc(x.p)}</b>/tháng</div>
-        <div class="rel-tag">${esc(catOf(x))}</div>
-        <div class="rel-loc">${ICON_PIN} ${esc(x.l)}</div>
+    </section>
+
+    <!-- Phòng tương tự -->
+    <section class="section section--card" id="similarSec">
+      <div class="container">
+        <div class="section__head similar__head">
+          <div>
+            <h2 class="t-heading">Phòng tương tự gần đây</h2>
+            <p class="t-caption" id="similarSub">Cùng khu vực</p>
+          </div>
+          <a class="section__link" href="timphong.html">Xem tất cả</a>
+        </div>
+        <div class="room-grid" id="similar"></div>
       </div>
-    </a>`;
-  }).join('');
+    </section>
+  </main>
 
-  // favorite toggles (chỉ còn ở phần phòng liên quan)
-  document.getElementById('relGrid').addEventListener('click', e => {
-    const f = e.target.closest('.rel-fav');
-    if(f){ e.preventDefault(); e.stopPropagation(); f.classList.toggle('active'); }
-  });
+  <div id="ht-footer"></div>
 
-  // intro toggle (demo)
-  let expanded = false;
-  document.getElementById('toggleIntro').addEventListener('click', () => {
-    expanded = !expanded;
-    document.getElementById('toggleIntro').textContent = expanded ? 'Rút gọn ﹀' : 'Hiển thị thêm ﹀';
-  });
+  <script src="data.js"></script>
+  <script src="assets/js/ht-ui.js"></script>
+  <script>
+    (function () {
+      'use strict';
 
-  // ===== Khám phá quận/huyện khác (theo tỉnh/TP của phòng) =====
-  const DISTRICTS = window.DISTRICTS || {};
-  const dList = (DISTRICTS[city] || []).filter(([n]) => n !== district); // bỏ quận hiện tại
-  const HOME_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10 12 3l9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1Z"/></svg>';
-  document.getElementById('distTitle').textContent = 'Khám phá ' + CAT.toLowerCase() + ' tại các quận huyện khác';
-  document.getElementById('distSub').textContent = 'Tìm kiếm ' + CAT.toLowerCase() + ' tại các khu vực lân cận thuộc ' + city;
-  document.getElementById('distGrid').innerHTML = dList.map(([n,c]) =>
-    `<a class="dist-card" href="index.html">
-       <div class="dn">${CAT} ${n}</div>
-       <div class="dc">${HOME_ICON} ${c} tin đăng</div>
-     </a>`).join('');
-</script>
-<script src="footer.js"></script>
-<script src="login.js"></script>
+      // ---- Icon nội bộ (những icon không có trong ht-ui.js) — inline SVG ----
+      function svg(body, size) {
+        size = size || 16;
+        return '<svg class="ic" width="' + size + '" height="' + size + '" viewBox="0 0 24 24" fill="none" ' +
+          'stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + body + '</svg>';
+      }
+      var IC = {
+        check:   function (s) { return svg('<path d="M20 6 9 17l-5-5"/>', s); },
+        share:   function (s) { return svg('<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/>', s); },
+        copy:    function (s) { return svg('<rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2"/>', s); },
+        calendar:function (s) { return svg('<rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/>', s); },
+        message: function (s) { return svg('<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/>', s); },
+        cart:    function (s) { return svg('<circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>', s); },
+        hospital:function (s) { return svg('<path d="M12 6v4M14 8h-4"/><path d="M18 22V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v18"/><path d="M4 22h16"/>', s); },
+        bus:     function (s) { return svg('<path d="M8 6v6M15 6v6M2 12h19.6M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.4-.1-.8-.2-1.2l-1.4-5C20.1 6.8 19.1 6 18 6H4a2 2 0 0 0-2 2v10h3"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/>', s); },
+        tree:    function (s) { return svg('<path d="M12 22v-7M9 8a3 3 0 1 1 5.8-1A3 3 0 0 1 17 12a3 3 0 0 1-2 5.2A3 3 0 0 1 9 17a3 3 0 0 1-1-6 3 3 0 0 1 1-3Z"/>', s); },
+        school:  function (s) { return svg('<path d="M14 22v-4a2 2 0 0 0-4 0v4M18 10V6l-6-4-6 4v4M4 22V10l8-5 8 5v12Z"/>', s); },
+        qr:      function (s) { return svg('<rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3M21 21v.01M12 7v3a2 2 0 0 1-2 2H7M3 12h.01M12 3h.01M12 16v.01M16 12h1M21 12v.01M12 21v-1"/>', s); }
+      };
+      function HTicon(name, size) { return window.HT ? window.HT.icon(name, size) : ''; }
+      function esc(s) { return window.HT ? window.HT.esc(s) : String(s == null ? '' : s); }
+
+      // ---- Lấy phòng theo ?i= ----
+      var ROOMS = window.ROOMS || [];
+      var i = parseInt(new URLSearchParams(location.search).get('i') || '0', 10);
+      if (isNaN(i) || i < 0 || i >= ROOMS.length) i = 0;
+      var r = ROOMS[i] || ROOMS[0];
+
+      // ---- Không có phòng nào → thông báo lịch sự ----
+      if (!r) {
+        document.getElementById('page').innerHTML =
+          '<div class="container empty">' +
+            '<h1>Không tìm thấy phòng</h1>' +
+            '<p>Phòng bạn tìm không tồn tại hoặc đã được cho thuê. ' +
+            '<a href="index.html" style="color:var(--info);font-weight:600">Về trang chủ</a> để xem các phòng khác.</p>' +
+          '</div>';
+        return;
+      }
+
+      var catOf = window.catOf ? window.catOf(r) : (r.cat || r.ty || 'Phòng trọ');
+      var tags = (r.tags && r.tags.length) ? r.tags : (window.DEFAULT_TAGS || []);
+      var tagStr = tags.join(' ');
+      function hasTag(re) { return re.test(tagStr); }
+
+      document.title = (r.t || 'Chi tiết phòng') + ' — HT HOME';
+
+      // ---- Breadcrumb ----
+      var quan = r.quan || (r.l || '').split(',')[0].trim() || 'TP.HCM';
+      var bcQuan = document.getElementById('bcQuan');
+      bcQuan.textContent = quan;
+      bcQuan.href = 'timphong.html?quan=' + encodeURIComponent(quan);
+
+      // ---- Chia sẻ ----
+      var pageUrl = location.href;
+      var phone = (r.phone || '0974180000').replace(/[^\d+]/g, '');
+      var zalo = r.zalo || ('https://zalo.me/' + phone);
+      document.getElementById('shareFbIc').innerHTML = HTicon('facebook', 15);
+      document.getElementById('shareCopyIc').innerHTML = IC.copy(15);
+      document.getElementById('shareFb').href = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(pageUrl);
+      document.getElementById('shareZalo').href = 'https://zalo.me/share/link?u=' + encodeURIComponent(pageUrl);
+      function doCopy(btn) {
+        var done = function () { var t = btn.innerHTML; btn.innerHTML = IC.check(15) + ' Đã copy'; setTimeout(function () { btn.innerHTML = t; }, 1600); };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(pageUrl).then(done, done);
+        } else {
+          var ta = document.createElement('textarea'); ta.value = pageUrl; document.body.appendChild(ta);
+          ta.select(); try { document.execCommand('copy'); } catch (e) {} document.body.removeChild(ta); done();
+        }
+      }
+      document.getElementById('shareCopy').addEventListener('click', function () { doCopy(this); });
+
+      // ---- Gallery ----
+      var imgs = (r.imgs && r.imgs.length) ? r.imgs : ['#c8d8ff,#a0b8f0'];
+      function gradOf(v) {
+        if (!v) return 'background:var(--muted)';
+        if (/^https?:/i.test(v)) return "background-image:url('" + v + "');background-size:cover;background-position:center";
+        var cols = String(v).split(',').map(function (s) { return s.trim(); });
+        return 'background:' + (cols.length > 1 ? 'linear-gradient(135deg,' + cols.join(',') + ')' : cols[0]);
+      }
+      var galMain = document.getElementById('galMain');
+      galMain.setAttribute('style', gradOf(imgs[0]));
+      document.getElementById('galCount').innerHTML = HTicon('area', 13) + Math.max(imgs.length, 4) + ' ảnh';
+      // 4 thumbnail: lặp lại nếu thiếu
+      var thumbs = [];
+      for (var t = 0; t < 4; t++) thumbs.push(imgs[t % imgs.length]);
+      document.getElementById('galThumbs').innerHTML = thumbs.map(function (v, idx) {
+        return '<div class="gallery__thumb' + (idx === 0 ? ' is-active' : '') + '" data-g="' + esc(v) + '">' +
+          '<span class="grad" style="' + gradOf(v) + '"></span></div>';
+      }).join('');
+      document.getElementById('galThumbs').addEventListener('click', function (e) {
+        var th = e.target.closest('.gallery__thumb'); if (!th) return;
+        galMain.setAttribute('style', gradOf(th.getAttribute('data-g')));
+        this.querySelectorAll('.gallery__thumb').forEach(function (x) { x.classList.remove('is-active'); });
+        th.classList.add('is-active');
+      });
+
+      // ---- Video TikTok ----
+      function tiktokId(url) {
+        var m = (url || '').match(/\/video\/(\d+)/) || (url || '').match(/(\d{15,})/);
+        return m ? m[1] : '';
+      }
+      var vid = tiktokId(r.video);
+      if (r.video && vid) {
+        document.getElementById('videoBox').classList.remove('is-hidden');
+        document.getElementById('videoFrame').innerHTML =
+          '<iframe src="https://www.tiktok.com/embed/v2/' + vid + '" allow="encrypted-media; fullscreen" allowfullscreen scrolling="no"></iframe>';
+        document.getElementById('videoNote').innerHTML = HTicon('play', 14) + ' Video review · TikTok';
+      }
+
+      // ---- Title card ----
+      document.getElementById('priceVal').innerHTML = esc(r.p || 'Liên hệ') + '<span>/tháng</span>';
+      document.getElementById('title').textContent = r.t || '';
+      document.getElementById('addrIc').innerHTML = HTicon('map-pin', 16);
+      document.getElementById('addr').textContent = (r.l || '') + ' · Xem số nhà khi liên hệ';
+      document.getElementById('btnSave').innerHTML = HTicon('heart', 15) + ' Lưu';
+      document.getElementById('btnShare2').innerHTML = IC.share(15) + ' Chia sẻ';
+      document.getElementById('btnSave').addEventListener('click', function () {
+        this.classList.toggle('text-gold');
+      });
+      document.getElementById('btnShare2').addEventListener('click', function () {
+        document.getElementById('shareCopy').click();
+      });
+
+      // ---- Specs (suy từ tags) ----
+      var beds = hasTag(/(\d)\s*PN/i) ? (tagStr.match(/(\d)\s*PN/i)[1] + ' PN')
+        : hasTag(/studio/i) ? 'Studio'
+        : hasTag(/duplex/i) ? 'Duplex'
+        : hasTag(/penthouse/i) ? 'Penthouse'
+        : '1 PN';
+      var noithat = hasTag(/(Full|Đầy đủ|Cao cấp)/i) ? 'Full'
+        : hasTag(/(Cơ bản|Máy lạnh|Giường|Bàn ghế|Tủ)/i) ? 'Cơ bản'
+        : 'Cơ bản';
+      var design = hasTag(/duplex/i) ? 'Duplex'
+        : hasTag(/penthouse/i) ? 'Penthouse'
+        : hasTag(/studio/i) ? 'Studio'
+        : hasTag(/gác/i) ? 'Gác lửng'
+        : 'Tiêu chuẩn';
+      var specs = [
+        ['area', 'Diện tích', r.a || '20m²'],
+        ['bed', 'Phòng ngủ', beds],
+        ['building', 'Nội thất', noithat],
+        ['bath', 'WC', 'Riêng'],
+        ['layout-grid', 'Thiết kế', design]
+      ];
+      document.getElementById('specs').innerHTML = specs.map(function (s) {
+        return '<div class="spec"><span class="spec__ic">' + HTicon(s[0], 18) + '</span>' +
+          '<span class="spec__lbl">' + s[1] + '</span><span class="spec__val">' + esc(s[2]) + '</span></div>';
+      }).join('');
+
+      // ---- Amenities ----
+      var amen = tags.slice();
+      if (!amen.length) amen = ['Wifi', 'Chỗ để xe', 'Camera 24/7', 'Máy giặt chung', 'Giờ giấc tự do', 'An ninh 24/7'];
+      // loại trùng
+      amen = amen.filter(function (v, k, a) { return a.indexOf(v) === k; });
+      document.getElementById('amenities').innerHTML = amen.map(function (a) {
+        return '<div class="amenity"><span class="chk">' + IC.check(13) + '</span><span>' + esc(a) + '</span></div>';
+      }).join('');
+
+      // ---- Intro ----
+      document.getElementById('intro').innerHTML =
+        '<p>Phòng <b>' + esc(catOf) + '</b> tại <b>' + esc(quan) + '</b>, diện tích ' + esc(r.a || '20m²') +
+        ', thiết kế thoáng đãng, phù hợp cho người đi làm và sinh viên. Khu vực an ninh, có camera và bảo vệ, thuận tiện di chuyển đến trung tâm.</p>' +
+        '<p>Nội thất ' + noithat.toLowerCase() + ', sẵn sàng dọn vào ở ngay. Gần chợ, siêu thị, trường học và bệnh viện. ' +
+        'Giá thuê ' + esc(r.p || 'liên hệ') + '/tháng, cọc 1 tháng, hợp đồng tối thiểu 3 tháng. Liên hệ sale để xem phòng và nhận số nhà chính xác.</p>';
+
+      // ---- Map ----
+      var mapQ = r.l || (quan + ', TP.HCM');
+      document.getElementById('mapBox').innerHTML =
+        '<iframe src="https://maps.google.com/maps?q=' + encodeURIComponent(mapQ) + '&z=15&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>';
+      var mapLink = document.getElementById('mapLink');
+      mapLink.href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(mapQ);
+      mapLink.innerHTML = HTicon('map-pin', 14) + ' Xem bản đồ lớn hơn';
+
+      // ---- Icon cho khối xung quanh ----
+      document.getElementById('nb1').innerHTML = IC.cart(15);
+      document.getElementById('nb2').innerHTML = IC.hospital(15);
+      document.getElementById('nb3').innerHTML = IC.bus(15);
+      document.getElementById('nb4').innerHTML = IC.tree(15);
+      document.getElementById('sc1').innerHTML = HTicon('graduation-cap', 15);
+      document.getElementById('sc2').innerHTML = HTicon('graduation-cap', 15);
+      document.getElementById('sc3').innerHTML = IC.school(15);
+      document.getElementById('sc4').innerHTML = IC.school(15);
+
+      // ---- Contact card ----
+      var initial = (r.t || 'M').trim().charAt(0).toUpperCase() || 'M';
+      document.getElementById('saleAv').textContent = initial;
+      document.getElementById('saleStars').innerHTML = Array(5).fill(HTicon('star', 12)).join('');
+      var btnChat = document.getElementById('btnChat');
+      btnChat.href = zalo;
+      btnChat.innerHTML = IC.message(16) + ' Chat với sale ngay';
+      var btnCall = document.getElementById('btnCall');
+      btnCall.href = 'tel:' + phone;
+      btnCall.innerHTML = HTicon('phone', 16) + ' Gọi ngay: ' + esc(r.phone || phone);
+      document.getElementById('btnBook').innerHTML = IC.calendar(16) + ' Đặt lịch xem phòng';
+      document.getElementById('btnBook').addEventListener('click', function () {
+        window.open(zalo, '_blank', 'noopener');
+      });
+      var qrBox = document.getElementById('qrBox');
+      qrBox.href = zalo;
+      qrBox.innerHTML = IC.qr(64);
+      document.getElementById('qrLink').href = zalo;
+
+      // ---- Phòng tương tự ----
+      function shortType(cat) { return { 'Căn hộ dịch vụ': 'CHDV', 'Ký túc xá': 'KTX' }[cat] || cat; }
+      function toCard(x, idx) {
+        return {
+          href: 'detail.html?i=' + idx,
+          img: (x.imgs && x.imgs[0]) || '',
+          price: x.p,
+          type: shortType(window.catOf ? window.catOf(x) : (x.cat || x.ty)),
+          title: x.t,
+          addr: x.quan ? (x.quan + ', TP.HCM') : (x.l || ''),
+          area: x.a,
+          beds: '',
+          status: 'Còn trống', statusKey: 'success',
+          video: !!x.video
+        };
+      }
+      var pool = ROOMS.map(function (x, k) { return { x: x, k: k }; }).filter(function (o) { return o.k !== i; });
+      var same = pool.filter(function (o) { return (o.x.quan || '') === quan; });
+      var list = same.length >= 4 ? same : same.concat(pool.filter(function (o) { return same.indexOf(o) < 0; }));
+      list = list.slice(0, 4);
+      document.getElementById('similarSub').textContent = same.length ? ('Cùng khu vực ' + quan) : 'Gợi ý cho bạn';
+      var similarEl = document.getElementById('similar');
+      if (list.length && window.HT && window.HT.roomCard) {
+        similarEl.innerHTML = list.map(function (o) { return window.HT.roomCard(toCard(o.x, o.k)); }).join('');
+        // favorite toggle
+        similarEl.addEventListener('click', function (e) {
+          var f = e.target.closest('.room-card__fav');
+          if (f) { e.preventDefault(); f.classList.toggle('is-active'); }
+        });
+      } else {
+        document.getElementById('similarSec').classList.add('is-hidden');
+      }
+    })();
+  </script>
 </body>
 </html>

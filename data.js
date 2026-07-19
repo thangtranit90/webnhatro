@@ -174,6 +174,7 @@ window.HT_rebuildRooms = function(){
       rooms.push({
         rid: r.rid,
         t: r.loai + ' — ' + b.addr,
+        imgs: b.imgs || [],
         p: priceTrieu(r.price),
         ty: LOAI_TO_TY[r.loai] || r.loai,
         a: r.m2 ? (r.m2 + 'm²') : '',

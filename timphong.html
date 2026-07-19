@@ -1,0 +1,676 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tìm phòng — HT HOME</title>
+  <meta name="description" content="Tìm phòng trọ, căn hộ dịch vụ & ký túc xá tại TP.HCM. Lọc theo giá, loại phòng, tiện ích — phòng thật, giá minh bạch." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/tokens.css" />
+  <link rel="stylesheet" href="assets/css/base.css" />
+  <link rel="stylesheet" href="assets/css/components.css" />
+  <style>
+    /* ===== Trang Tìm phòng — style riêng ===== */
+
+    /* --- ResultsHeader --- */
+    .results-header { background: var(--card); border-bottom: 1px solid var(--border); }
+    .results-header__inner { padding-block: 18px 20px; }
+    .breadcrumb { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 13px; color: var(--muted-fg); margin-bottom: 12px; }
+    .breadcrumb a:hover { color: var(--fg); }
+    .breadcrumb .sep { color: var(--input); }
+    .breadcrumb .cur { color: var(--fg); font-weight: 600; }
+    .title-row { display: flex; flex-direction: column; gap: 14px; }
+    @media (min-width: 768px) { .title-row { flex-direction: row; align-items: flex-end; justify-content: space-between; } }
+    .title-row__h { font-size: 22px; font-weight: 800; line-height: 1.2; letter-spacing: -.01em; color: var(--fg); }
+    @media (min-width: 768px) { .title-row__h { font-size: 26px; } }
+    .title-row__sub { font-size: 14px; color: var(--muted-fg); margin-top: 4px; }
+    .sort-wrap { display: inline-flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .sort-wrap label { font-size: 13px; font-weight: 600; color: var(--muted-fg); white-space: nowrap; }
+    .sort-select {
+      appearance: none; -webkit-appearance: none;
+      background: var(--card) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236B7688' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>") no-repeat right 10px center;
+      border: 1px solid var(--border); border-radius: var(--radius-s);
+      padding: 9px 34px 9px 12px; font-size: 13px; font-weight: 600; color: var(--fg); cursor: pointer;
+    }
+    .sort-select:hover { border-color: var(--muted-fg); }
+
+    /* --- Body layout --- */
+    .browse { padding-block: 24px 48px; }
+    .browse__grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+    @media (min-width: 1024px) { .browse__grid { grid-template-columns: 288px 1fr; gap: 28px; align-items: start; } }
+
+    /* --- Nút mở bộ lọc (mobile) --- */
+    .filter-toggle {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-s);
+      padding: 11px 16px; font-size: 14px; font-weight: 600; color: var(--fg);
+    }
+    .filter-toggle:hover { border-color: var(--muted-fg); }
+    .filter-toggle .ic { color: var(--gold); }
+    @media (min-width: 1024px) { .filter-toggle { display: none; } }
+
+    /* --- Sidebar bộ lọc --- */
+    .filters {
+      background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-l);
+      padding: 18px 18px 20px;
+    }
+    @media (max-width: 1023px) {
+      .filters { display: none; margin-top: 14px; }
+      .filters.is-open { display: block; }
+    }
+    @media (min-width: 1024px) { .filters { position: sticky; top: calc(var(--header-h) + 16px); } }
+    .filters__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+    .filters__title { font-size: 16px; font-weight: 700; color: var(--fg); }
+    .filters__clear { font-size: 13px; font-weight: 600; color: var(--muted-fg); }
+    .filters__clear:hover { color: var(--danger); }
+    .fgroup { padding-block: 16px; border-top: 1px solid var(--border); }
+    .fgroup:first-of-type { border-top: 0; }
+    .fgroup__label { font-size: 13px; font-weight: 700; color: var(--fg); margin-bottom: 12px; }
+
+    /* Khoảng giá */
+    .price-inputs { display: flex; align-items: center; gap: 10px; }
+    .price-inputs input {
+      width: 100%; min-width: 0; border: 1px solid var(--input); border-radius: var(--radius-s);
+      padding: 9px 11px; font-size: 14px; color: var(--fg); background: var(--card);
+    }
+    .price-inputs input:focus { outline: none; border-color: var(--primary); }
+    .price-inputs span { color: var(--muted-fg); font-size: 13px; flex-shrink: 0; }
+
+    /* Chip chọn nhiều */
+    .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+    .fchip {
+      padding: 7px 13px; border-radius: var(--radius-pill); border: 1px solid var(--border);
+      background: var(--card); color: var(--muted-fg); font-size: 13px; font-weight: 600; transition: all .15s;
+    }
+    .fchip:hover { border-color: var(--muted-fg); color: var(--fg); }
+    .fchip.is-on { background: var(--primary); border-color: var(--primary); color: #fff; }
+
+    /* Checkbox list */
+    .check-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; }
+    @media (max-width: 1023px) and (min-width: 560px) { .check-list { grid-template-columns: repeat(3, 1fr); } }
+    .check { display: flex; align-items: center; gap: 9px; font-size: 13px; color: var(--fg); cursor: pointer; }
+    .check input { position: absolute; opacity: 0; width: 0; height: 0; }
+    .check__box {
+      width: 18px; height: 18px; border-radius: 5px; border: 1.5px solid var(--input);
+      display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all .15s; color: #fff;
+    }
+    .check__box .ic { opacity: 0; }
+    .check input:checked + .check__box { background: var(--primary); border-color: var(--primary); }
+    .check input:checked + .check__box .ic { opacity: 1; }
+    .check input:focus-visible + .check__box { box-shadow: 0 0 0 3px var(--gold-soft); }
+
+    .filters__apply { margin-top: 20px; }
+
+    /* --- Kết quả --- */
+    .results-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+    .results-head__count { font-size: 14px; color: var(--muted-fg); }
+    .results-head__count b { color: var(--fg); font-weight: 700; }
+
+    .result-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+    @media (min-width: 560px)  { .result-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 1024px) { .result-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 1360px) { .result-grid { grid-template-columns: repeat(3, 1fr); } }
+
+    /* Wrapper thẻ + checkbox so sánh */
+    .result { position: relative; }
+    .result__cmp-layer { position: absolute; top: 0; left: 0; right: 0; aspect-ratio: 320 / 190; pointer-events: none; z-index: 4; }
+    .cmp-toggle {
+      position: absolute; bottom: 10px; right: 10px; pointer-events: auto;
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,.94); box-shadow: var(--shadow-card);
+      border-radius: var(--radius-pill); padding: 5px 11px 5px 8px;
+      font-size: 12px; font-weight: 600; color: var(--fg); cursor: pointer; user-select: none;
+    }
+    .cmp-toggle input { position: absolute; opacity: 0; width: 0; height: 0; }
+    .cmp-toggle .cmp-box {
+      width: 16px; height: 16px; border-radius: 4px; border: 1.5px solid var(--input);
+      display: inline-flex; align-items: center; justify-content: center; color: #fff; transition: all .15s;
+    }
+    .cmp-toggle .cmp-box .ic { opacity: 0; }
+    .cmp-toggle input:checked + .cmp-box { background: var(--gold); border-color: var(--gold); color: var(--gold-fg); }
+    .cmp-toggle input:checked + .cmp-box .ic { opacity: 1; }
+
+    .empty { grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: var(--muted-fg); }
+    .empty__t { font-size: 15px; font-weight: 600; color: var(--fg); margin-bottom: 4px; }
+
+    /* --- Pagination --- */
+    .pager { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 6px; margin-top: 32px; }
+    .pager button, .pager span.dots {
+      min-width: 38px; height: 38px; padding: 0 6px; border-radius: var(--radius-s);
+      border: 1px solid var(--border); background: var(--card); color: var(--fg);
+      font-size: 14px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center;
+    }
+    .pager button:hover:not(:disabled) { border-color: var(--muted-fg); }
+    .pager button.is-active { background: var(--primary); border-color: var(--primary); color: #fff; }
+    .pager button:disabled { opacity: .4; cursor: not-allowed; }
+    .pager span.dots { border: 0; background: none; color: var(--muted-fg); }
+
+    /* --- CompareBar --- */
+    .compare-bar {
+      position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%) translateY(140%);
+      z-index: 60; display: flex; align-items: center; gap: 16px;
+      background: var(--primary); color: #fff; border-radius: var(--radius-pill);
+      padding: 10px 12px 10px 20px; box-shadow: 0 14px 40px rgba(20,26,36,.4);
+      transition: transform .28s cubic-bezier(.2,.8,.2,1); max-width: calc(100vw - 24px);
+    }
+    .compare-bar.is-show { transform: translateX(-50%) translateY(0); }
+    .compare-bar__text { font-size: 14px; font-weight: 600; white-space: nowrap; }
+    .compare-bar__text b { color: var(--gold); }
+    .compare-bar__x {
+      width: 32px; height: 32px; border-radius: 50%; color: #fff;
+      display: inline-flex; align-items: center; justify-content: center; background: rgba(255,255,255,.14);
+    }
+    .compare-bar__x:hover { background: rgba(255,255,255,.26); }
+    @media (max-width: 480px) { .compare-bar__text { white-space: normal; font-size: 13px; } }
+
+    /* --- Modal so sánh --- */
+    .modal { position: fixed; inset: 0; z-index: 80; display: none; }
+    .modal.is-open { display: block; }
+    .modal__scrim { position: absolute; inset: 0; background: rgba(10,15,26,.6); }
+    .modal__panel {
+      position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+      width: calc(100vw - 24px); max-width: 900px; max-height: calc(100vh - 48px); overflow: auto;
+      background: var(--card); border-radius: var(--radius-l); box-shadow: var(--shadow-hover);
+    }
+    .modal__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 20px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--card); }
+    .modal__title { font-size: 17px; font-weight: 800; color: var(--fg); }
+    .modal__close { width: 34px; height: 34px; border-radius: var(--radius-s); color: var(--muted-fg); display: inline-flex; align-items: center; justify-content: center; }
+    .modal__close:hover { background: var(--muted); color: var(--fg); }
+    .modal__body { padding: 20px; }
+    .cmp-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .cmp-table th, .cmp-table td { text-align: left; padding: 12px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    .cmp-table thead th { position: sticky; }
+    .cmp-table .row-label { font-weight: 700; color: var(--muted-fg); white-space: nowrap; width: 108px; background: var(--bg); }
+    .cmp-col-media { aspect-ratio: 320/160; border-radius: var(--radius-s); overflow: hidden; margin-bottom: 8px; }
+    .cmp-col-media .g { display: block; width: 100%; height: 100%; }
+    .cmp-col-title { font-size: 13px; font-weight: 700; color: var(--fg); line-height: 1.35; }
+    .cmp-price { font-size: 16px; font-weight: 800; color: var(--fg); }
+    .cmp-empty { text-align: center; color: var(--muted-fg); padding: 30px; }
+  </style>
+</head>
+<body>
+  <div id="ht-header" data-active="search"></div>
+
+  <main>
+    <!-- RESULTS HEADER -->
+    <section class="results-header">
+      <div class="container results-header__inner">
+        <nav class="breadcrumb" id="crumb">
+          <a href="index.html">Trang chủ</a>
+          <span class="sep">/</span>
+          <span class="cur">Tìm phòng</span>
+        </nav>
+        <div class="title-row">
+          <div>
+            <h1 class="title-row__h" id="hTitle">Phòng cho thuê tại TP.HCM</h1>
+            <p class="title-row__sub" id="hSub">Đang tải kết quả…</p>
+          </div>
+          <div class="sort-wrap">
+            <label for="sortSel">Sắp xếp:</label>
+            <select class="sort-select" id="sortSel">
+              <option value="new">Mới nhất</option>
+              <option value="asc">Giá thấp → cao</option>
+              <option value="desc">Giá cao → thấp</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- BODY -->
+    <section class="browse">
+      <div class="container">
+        <button class="filter-toggle" id="filterToggle" aria-expanded="false"></button>
+        <div class="browse__grid">
+
+          <!-- SIDEBAR BỘ LỌC -->
+          <aside class="filters" id="filters">
+            <div class="filters__head">
+              <span class="filters__title">Bộ lọc</span>
+              <button class="filters__clear" id="clearFilters">Xóa lọc</button>
+            </div>
+
+            <div class="fgroup">
+              <div class="fgroup__label">Khoảng giá (triệu/tháng)</div>
+              <div class="price-inputs">
+                <input type="number" id="priceMin" inputmode="decimal" min="0" step="0.1" placeholder="Từ" />
+                <span>—</span>
+                <input type="number" id="priceMax" inputmode="decimal" min="0" step="0.1" placeholder="Đến" />
+              </div>
+            </div>
+
+            <div class="fgroup">
+              <div class="fgroup__label">Loại phòng</div>
+              <div class="chip-row" id="typeChips"></div>
+            </div>
+
+            <div class="fgroup">
+              <div class="fgroup__label">Nội thất</div>
+              <div class="chip-row" id="furnChips"></div>
+            </div>
+
+            <div class="fgroup">
+              <div class="fgroup__label">Tiện ích</div>
+              <div class="check-list" id="amenChecks"></div>
+            </div>
+
+            <div class="fgroup">
+              <div class="fgroup__label">Thiết kế</div>
+              <div class="check-list" id="designChecks"></div>
+            </div>
+
+            <button class="btn btn--primary btn--block filters__apply" id="applyBtn">Áp dụng bộ lọc</button>
+          </aside>
+
+          <!-- KẾT QUẢ -->
+          <div class="results">
+            <div class="results-head">
+              <div class="results-head__count" id="countLine"></div>
+            </div>
+            <div class="result-grid" id="grid"></div>
+            <div class="pager" id="pager"></div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="ht-footer"></div>
+
+  <!-- CompareBar -->
+  <div class="compare-bar" id="compareBar">
+    <span class="compare-bar__text"><b id="cmpCount">0</b> phòng đã chọn để so sánh</span>
+    <button class="btn btn--gold btn--sm" id="cmpOpen">So sánh ngay</button>
+    <button class="compare-bar__x" id="cmpClear" aria-label="Bỏ chọn hết"></button>
+  </div>
+
+  <!-- Modal so sánh -->
+  <div class="modal" id="cmpModal" role="dialog" aria-modal="true" aria-labelledby="cmpModalTitle">
+    <div class="modal__scrim" data-close="1"></div>
+    <div class="modal__panel">
+      <div class="modal__head">
+        <span class="modal__title" id="cmpModalTitle">So sánh phòng</span>
+        <button class="modal__close" id="cmpModalClose" data-close="1" aria-label="Đóng"></button>
+      </div>
+      <div class="modal__body" id="cmpModalBody"></div>
+    </div>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="assets/js/ht-ui.js"></script>
+  <script>
+  (function () {
+    'use strict';
+
+    /* ---- Icon nội bộ (những icon ht-ui.js chưa có) ---- */
+    function pico(name, size) {
+      size = size || 16;
+      var P = {
+        sliders: '<line x1="4" x2="4" y1="21" y2="14"/><line x1="4" x2="4" y1="10" y2="3"/><line x1="12" x2="12" y1="21" y2="12"/><line x1="12" x2="12" y1="8" y2="3"/><line x1="20" x2="20" y1="21" y2="16"/><line x1="20" x2="20" y1="12" y2="3"/><line x1="2" x2="6" y1="14" y2="14"/><line x1="10" x2="14" y1="8" y2="8"/><line x1="18" x2="22" y1="16" y2="16"/>',
+        check: '<path d="M20 6 9 17l-5-5"/>',
+        'chevron-left': '<path d="m15 18-6-6 6-6"/>',
+        'chevron-right': '<path d="m9 18 6-6-6-6"/>'
+      };
+      return '<svg class="ic" width="' + size + '" height="' + size + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (P[name] || '') + '</svg>';
+    }
+
+    var esc = (window.HT && HT.esc) || function (s) { return String(s == null ? '' : s); };
+
+    /* ---- Adapter (dùng lại từ index.html) ---- */
+    function shortType(cat) { return { 'Căn hộ dịch vụ': 'CHDV', 'Ký túc xá': 'KTX' }[cat] || cat; }
+    function bedsFromTags(tags) {
+      var t = (tags || []).join(' ');
+      var m = t.match(/(\d)\s*PN/i); if (m) return m[1] + ' PN';
+      if (/studio/i.test(t)) return 'Studio';
+      if (/duplex/i.test(t)) return 'Duplex';
+      if (/penthouse/i.test(t)) return 'Penthouse';
+      return '';
+    }
+    function catOfR(r) { return window.catOf ? window.catOf(r) : (r.cat || r.ty); }
+    function toCard(r, i) {
+      return {
+        href: 'detail.html?i=' + i,
+        img: (r.imgs && r.imgs[0]) || '',
+        price: r.p,
+        type: shortType(catOfR(r)),
+        title: r.t,
+        addr: r.quan ? (r.quan + ', TP.HCM') : (r.l || ''),
+        area: r.a,
+        beds: bedsFromTags(r.tags),
+        status: 'Còn trống', statusKey: 'success',
+        video: !!r.video
+      };
+    }
+
+    /* ---- Tiện ích parse ---- */
+    function priceNum(p) {
+      var m = String(p || '').match(/([\d.,]+)/);
+      if (!m) return 0;
+      return parseFloat(m[1].replace(/\./g, '').replace(',', '.')) || 0;
+    }
+    function areaNum(a) {
+      var m = String(a || '').match(/([\d.,]+)/);
+      if (!m) return 0;
+      return parseFloat(m[1].replace(',', '.')) || 0;
+    }
+    function haystack(r) {
+      return ((r.tags || []).join(' ') + ' ' + (r.t || '') + ' ' + catOfR(r)).toLowerCase();
+    }
+    function hasTag(hay, val) {
+      val = String(val).toLowerCase();
+      if (hay.indexOf(val) >= 0) return true;
+      var first = val.split(/\s+/)[0];
+      return first.length > 2 && hay.indexOf(first) >= 0;
+    }
+    function qparam(k) {
+      var m = new RegExp('[?&]' + k + '=([^&]*)').exec(location.search);
+      return m ? decodeURIComponent(m[1].replace(/\+/g, ' ')) : '';
+    }
+
+    /* ---- Dữ liệu gốc ---- */
+    var ROOMS = window.ROOMS || [];
+    // Giữ index gốc để link detail.html?i=<index> luôn đúng
+    var ALL = ROOMS.map(function (r, i) { return { r: r, i: i }; });
+
+    /* ---- Cấu hình bộ lọc ---- */
+    var TYPES = ['Studio', '1PN', '2PN', '3PN', 'Duplex', 'Penthouse'];
+    var FURN = ['Full', 'Cơ bản', 'Trống', 'Luxury'];
+    var AMEN = ['Thang máy', 'Máy giặt', 'Camera', 'Bảo vệ 24/7', 'Wifi', 'Chỗ để xe', 'Hồ bơi', 'Gym'];
+    var DESIGN = ['Ban công', 'Cửa sổ lớn', 'Giếng trời', 'Sân vườn', 'Tách bếp'];
+    // Từ khóa mềm cho vài mục thiết kế/nội thất không khớp trực tiếp trong data
+    var SOFT = {
+      'Cửa sổ lớn': 'cửa sổ', 'Tách bếp': 'bếp', 'Luxury': 'cao cấp', 'Full': 'full', 'Trống': 'trống', 'Cơ bản': 'cơ bản', 'Camera': 'camera', 'Bảo vệ 24/7': 'bảo vệ'
+    };
+
+    /* ---- Trạng thái ---- */
+    var state = {
+      priceMin: null, priceMax: null,
+      types: [], furn: [], amen: [], design: [],
+      sort: 'new', page: 1
+    };
+    var PAGE_SIZE = 6;
+    var selected = {}; // rid -> {r, i}
+
+    /* ---- Render chip / checkbox ---- */
+    function renderChips(host, list, bag) {
+      host.innerHTML = list.map(function (v) {
+        return '<button type="button" class="fchip" data-v="' + esc(v) + '">' + esc(v) + '</button>';
+      }).join('');
+      host.addEventListener('click', function (e) {
+        var b = e.target.closest('.fchip'); if (!b) return;
+        var v = b.getAttribute('data-v');
+        var on = b.classList.toggle('is-on');
+        var idx = bag.indexOf(v);
+        if (on && idx < 0) bag.push(v);
+        else if (!on && idx >= 0) bag.splice(idx, 1);
+      });
+    }
+    function renderChecks(host, list) {
+      host.innerHTML = list.map(function (v) {
+        return '<label class="check"><input type="checkbox" value="' + esc(v) + '"/>' +
+          '<span class="check__box">' + pico('check', 12) + '</span>' + esc(v) + '</label>';
+      }).join('');
+    }
+    function readChecks(host) {
+      return Array.prototype.slice.call(host.querySelectorAll('input:checked')).map(function (c) { return c.value; });
+    }
+
+    var typeChips = document.getElementById('typeChips');
+    var furnChips = document.getElementById('furnChips');
+    var amenChecks = document.getElementById('amenChecks');
+    var designChecks = document.getElementById('designChecks');
+    renderChips(typeChips, TYPES, state.types);
+    renderChips(furnChips, FURN, state.furn);
+    renderChecks(amenChecks, AMEN);
+    renderChecks(designChecks, DESIGN);
+
+    /* ---- Lọc ---- */
+    function matchOne(entry) {
+      var r = entry.r, hay = haystack(r);
+      // Giá
+      var pn = priceNum(r.p);
+      if (state.priceMin != null && pn < state.priceMin) return false;
+      if (state.priceMax != null && pn > state.priceMax) return false;
+      // Loại phòng (OR)
+      if (state.types.length) {
+        var okT = state.types.some(function (v) { return hasTag(hay, SOFT[v] || v); });
+        if (!okT) return false;
+      }
+      // Nội thất (OR)
+      if (state.furn.length) {
+        var okF = state.furn.some(function (v) { return hasTag(hay, SOFT[v] || v); });
+        if (!okF) return false;
+      }
+      // Tiện ích (AND)
+      for (var a = 0; a < state.amen.length; a++) {
+        if (!hasTag(hay, SOFT[state.amen[a]] || state.amen[a])) return false;
+      }
+      // Thiết kế (AND)
+      for (var d = 0; d < state.design.length; d++) {
+        if (!hasTag(hay, SOFT[state.design[d]] || state.design[d])) return false;
+      }
+      return true;
+    }
+
+    function computeList() {
+      var list = ALL.filter(matchOne);
+      if (state.sort === 'asc') list.sort(function (x, y) { return priceNum(x.r.p) - priceNum(y.r.p); });
+      else if (state.sort === 'desc') list.sort(function (x, y) { return priceNum(y.r.p) - priceNum(x.r.p); });
+      // 'new': giữ nguyên thứ tự ROOMS (mới nhất unshift lên đầu trong data.js)
+      return list;
+    }
+
+    /* ---- Render kết quả ---- */
+    var grid = document.getElementById('grid');
+    var pager = document.getElementById('pager');
+    var countLine = document.getElementById('countLine');
+
+    function render() {
+      var list = computeList();
+      var total = list.length;
+      var pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+      if (state.page > pages) state.page = pages;
+      var start = (state.page - 1) * PAGE_SIZE;
+      var pageItems = list.slice(start, start + PAGE_SIZE);
+
+      countLine.innerHTML = 'Hiển thị <b>' + (total ? (start + 1) + '–' + (start + pageItems.length) : 0) + '</b> trong <b>' + total + '</b> phòng';
+
+      if (!ROOMS.length) {
+        grid.innerHTML = '<div class="empty"><div class="empty__t">Chưa có phòng nào.</div></div>';
+        pager.innerHTML = ''; return;
+      }
+      if (!total) {
+        grid.innerHTML = '<div class="empty"><div class="empty__t">Không tìm thấy phòng phù hợp</div>Thử nới lỏng bộ lọc hoặc xóa bớt điều kiện.</div>';
+        pager.innerHTML = ''; return;
+      }
+
+      grid.innerHTML = pageItems.map(function (e) {
+        var checked = selected[e.r.rid] ? ' checked' : '';
+        return '<div class="result">' +
+          HT.roomCard(toCard(e.r, e.i)) +
+          '<div class="result__cmp-layer"><label class="cmp-toggle">' +
+            '<input type="checkbox" class="cmpChk" data-rid="' + esc(e.r.rid) + '" data-i="' + e.i + '"' + checked + '/>' +
+            '<span class="cmp-box">' + pico('check', 11) + '</span>So sánh</label></div>' +
+        '</div>';
+      }).join('');
+
+      renderPager(pages);
+    }
+
+    function renderPager(pages) {
+      if (pages <= 1) { pager.innerHTML = ''; return; }
+      var cur = state.page, html = '';
+      html += '<button data-go="' + (cur - 1) + '"' + (cur === 1 ? ' disabled' : '') + ' aria-label="Trước">' + pico('chevron-left', 16) + '</button>';
+      var nums = [];
+      for (var p = 1; p <= pages; p++) {
+        if (p === 1 || p === pages || Math.abs(p - cur) <= 1) nums.push(p);
+        else if (nums[nums.length - 1] !== '…') nums.push('…');
+      }
+      nums.forEach(function (n) {
+        if (n === '…') { html += '<span class="dots">…</span>'; return; }
+        html += '<button data-go="' + n + '"' + (n === cur ? ' class="is-active"' : '') + '>' + n + '</button>';
+      });
+      html += '<button data-go="' + (cur + 1) + '"' + (cur === pages ? ' disabled' : '') + ' aria-label="Sau">' + pico('chevron-right', 16) + '</button>';
+      pager.innerHTML = html;
+    }
+
+    pager.addEventListener('click', function (e) {
+      var b = e.target.closest('button[data-go]'); if (!b || b.disabled) return;
+      state.page = parseInt(b.getAttribute('data-go'), 10) || 1;
+      render();
+      document.querySelector('.browse').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    /* ---- So sánh (chọn thẻ) ---- */
+    grid.addEventListener('change', function (e) {
+      var c = e.target.closest('.cmpChk'); if (!c) return;
+      var rid = c.getAttribute('data-rid');
+      var i = parseInt(c.getAttribute('data-i'), 10);
+      if (c.checked) selected[rid] = { r: ROOMS[i], i: i };
+      else delete selected[rid];
+      updateCompareBar();
+    });
+
+    var compareBar = document.getElementById('compareBar');
+    var cmpCountEl = document.getElementById('cmpCount');
+    function selectedList() {
+      return Object.keys(selected).map(function (k) { return selected[k]; });
+    }
+    function updateCompareBar() {
+      var n = Object.keys(selected).length;
+      cmpCountEl.textContent = n;
+      compareBar.classList.toggle('is-show', n > 0);
+    }
+
+    document.getElementById('cmpClear').addEventListener('click', function () {
+      selected = {};
+      Array.prototype.forEach.call(document.querySelectorAll('.cmpChk'), function (c) { c.checked = false; });
+      updateCompareBar();
+    });
+
+    /* ---- Modal so sánh ---- */
+    var modal = document.getElementById('cmpModal');
+    var modalBody = document.getElementById('cmpModalBody');
+    function gradFill(img) {
+      if (!img) return '<span class="g" style="background:var(--muted)"></span>';
+      if (/^https?:/i.test(img)) return '<img class="g" src="' + esc(img) + '" alt="" style="object-fit:cover"/>';
+      var cols = img.split(',').map(function (s) { return s.trim(); });
+      var bg = cols.length > 1 ? 'linear-gradient(135deg,' + cols.join(',') + ')' : cols[0];
+      return '<span class="g" style="background:' + bg + '"></span>';
+    }
+    function openModal() {
+      var items = selectedList();
+      if (!items.length) {
+        modalBody.innerHTML = '<div class="cmp-empty">Chưa chọn phòng nào để so sánh.</div>';
+      } else {
+        var cols = items.map(function (e) {
+          var r = e.r;
+          return '<td>' +
+            '<a href="detail.html?i=' + e.i + '"><div class="cmp-col-media">' + gradFill((r.imgs && r.imgs[0]) || '') + '</div></a>' +
+            '<div class="cmp-col-title">' + esc(r.t) + '</div>' +
+          '</td>';
+        }).join('');
+        function rowFn(label, fn) {
+          return '<tr><td class="row-label">' + label + '</td>' +
+            items.map(function (e) { return '<td>' + fn(e.r) + '</td>'; }).join('') + '</tr>';
+        }
+        modalBody.innerHTML =
+          '<table class="cmp-table"><thead><tr><th class="row-label"></th>' + cols + '</tr></thead><tbody>' +
+            rowFn('Giá thuê', function (r) { return '<span class="cmp-price">' + esc(r.p) + '</span>'; }) +
+            rowFn('Loại', function (r) { return esc(catOfR(r)); }) +
+            rowFn('Diện tích', function (r) { return esc(r.a || '—'); }) +
+            rowFn('Địa chỉ', function (r) { return esc(r.l || (r.quan ? r.quan + ', TP.HCM' : '—')); }) +
+          '</tbody></table>';
+      }
+      modal.classList.add('is-open');
+    }
+    function closeModal() { modal.classList.remove('is-open'); }
+    document.getElementById('cmpOpen').addEventListener('click', openModal);
+    modal.addEventListener('click', function (e) { if (e.target.closest('[data-close]')) closeModal(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeModal(); });
+
+    /* ---- Nút Áp dụng / Xóa lọc ---- */
+    function readFilters() {
+      var mn = parseFloat(document.getElementById('priceMin').value);
+      var mx = parseFloat(document.getElementById('priceMax').value);
+      state.priceMin = isNaN(mn) ? null : mn;
+      state.priceMax = isNaN(mx) ? null : mx;
+      state.amen = readChecks(amenChecks);
+      state.design = readChecks(designChecks);
+      // types & furn được cập nhật trực tiếp qua chip click
+      state.page = 1;
+    }
+    document.getElementById('applyBtn').addEventListener('click', function () {
+      readFilters(); render();
+      if (window.matchMedia('(max-width: 1023px)').matches) {
+        document.getElementById('filters').classList.remove('is-open');
+        document.querySelector('.results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+    document.getElementById('clearFilters').addEventListener('click', function () {
+      document.getElementById('priceMin').value = '';
+      document.getElementById('priceMax').value = '';
+      Array.prototype.forEach.call(document.querySelectorAll('.check input:checked'), function (c) { c.checked = false; });
+      Array.prototype.forEach.call(document.querySelectorAll('.fchip.is-on'), function (b) { b.classList.remove('is-on'); });
+      state.priceMin = state.priceMax = null;
+      state.types = []; state.furn = []; state.amen = []; state.design = [];
+      state.page = 1;
+      render();
+    });
+
+    document.getElementById('sortSel').addEventListener('change', function (e) {
+      state.sort = e.target.value; state.page = 1; render();
+    });
+
+    /* ---- Toggle bộ lọc (mobile) ---- */
+    var ftBtn = document.getElementById('filterToggle');
+    ftBtn.innerHTML = pico('sliders', 16) + 'Bộ lọc';
+    ftBtn.addEventListener('click', function () {
+      var open = document.getElementById('filters').classList.toggle('is-open');
+      ftBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+    document.getElementById('cmpClear').innerHTML = HT.icon ? HT.icon('x', 16) : '×';
+
+    /* ---- Áp query param từ trang chủ ---- */
+    (function initFromQuery() {
+      var quan = qparam('quan');
+      var loai = qparam('loai');
+      var khuvuc = quan ? quan : 'TP.HCM';
+
+      // Breadcrumb + tiêu đề
+      var crumb = document.getElementById('crumb');
+      crumb.innerHTML =
+        '<a href="index.html">Trang chủ</a><span class="sep">/</span>' +
+        '<a href="timphong.html">Tìm phòng</a><span class="sep">/</span>' +
+        '<span class="cur">' + esc(khuvuc) + '</span>';
+      document.getElementById('hTitle').textContent = 'Phòng cho thuê tại ' + khuvuc;
+
+      // Lọc theo quận: thu hẹp ALL
+      if (quan) {
+        var q = quan.toLowerCase();
+        ALL = ALL.filter(function (e) { return (e.r.quan || '').toLowerCase().indexOf(q) >= 0; });
+      }
+      // Chọn sẵn chip loại
+      if (loai && TYPES.indexOf(loai) >= 0) {
+        var chip = typeChips.querySelector('.fchip[data-v="' + loai + '"]');
+        if (chip) { chip.classList.add('is-on'); state.types.push(loai); }
+      }
+    })();
+
+    /* ---- Cập nhật phụ đề theo tổng số sau khi lọc ban đầu ---- */
+    function refreshSub() {
+      var n = computeList().length;
+      document.getElementById('hSub').textContent = 'Tìm thấy ' + n + ' phòng phù hợp';
+    }
+    var _render = render;
+    render = function () { _render(); refreshSub(); };
+
+    render();
+    updateCompareBar();
+  })();
+  </script>
+</body>
+</html>

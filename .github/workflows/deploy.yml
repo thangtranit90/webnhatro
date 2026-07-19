@@ -17,9 +17,11 @@ jobs:
       - name: Gom rieng cac file website (khong dua tai lieu noi bo len web)
         run: |
           mkdir -p site-upload
-          cp index.html detail.html dashboard.html chon-loai.html them-tin.html \
-             data.js footer.js login.js ht-home-logo.png _headers _redirects \
+          cp index.html detail.html timphong.html dashboard.html chon-loai.html them-tin.html \
+             data.js footer.js login.js ht-home-logo.png \
+             manifest.json sw.js _headers _redirects \
              site-upload/
+          cp -r assets site-upload/
 
       - name: Deploy len Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
