@@ -334,6 +334,10 @@
                 e.name = nm; e.av = initials(nm); e.role = elx.querySelector('#eRole').value; e.kv = kv;
                 refreshAll();
                 HT.toast('Đã cập nhật nhân viên', 'success');
+                fetch('/api/nhan-vien', {
+                  method: 'PATCH', headers: { 'content-type': 'application/json' },
+                  body: JSON.stringify({ id: e.id, name: e.name, av: e.av, role: e.role, kv: e.kv })
+                }).catch(function () { HT.toast('Lỗi lưu, thử lại', 'danger'); });
                 return true;
               }
             });

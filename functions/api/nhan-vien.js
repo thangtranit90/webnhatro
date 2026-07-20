@@ -29,7 +29,14 @@ export async function onRequestPatch({ request, env }) {
   try {
     const b = await request.json();
     if (!b.id) return json({ error: 'Thiếu id' }, 400);
-    await env.DB.prepare('UPDATE nhan_vien SET st=? WHERE id=?').bind(b.st || 'Active', b.id).run();
+    // Cập nhật những field được gửi lên (đổi trạng thái HOẶC sửa hồ sơ)
+    const cols = [], vals = [];
+    ['av', 'name', 'email', 'role', 'kv', 'st'].forEach(function (k) {
+      if (b[k] !== undefined) { cols.push(k + '=?'); vals.push(b[k]); }
+    });
+    if (!cols.length) return json({ error: 'Không có gì để cập nhật' }, 400);
+    vals.push(b.id);
+    await env.DB.prepare('UPDATE nhan_vien SET ' + cols.join(',') + ' WHERE id=?').bind(...vals).run();
     return json({ ok: true });
   } catch (e) { return json({ error: String(e) }, 500); }
 }
