@@ -254,8 +254,10 @@
                   <div class="drop" id="drop" role="button" tabindex="0">
                     <span id="dropIc"></span>
                     <span class="drop__t">Kéo thả hoặc bấm để tải ảnh</span>
-                    <span class="drop__s">PNG, JPG tối đa 5MB · tối đa 12 ảnh</span>
+                    <span class="drop__s">PNG, JPG tối đa 8MB · tối đa 12 ảnh</span>
                   </div>
+                  <input type="file" id="upInput" accept="image/*" multiple hidden>
+                  <div id="upGrid" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"></div>
                 </div>
                 <div class="field">
                   <label for="fVideo">Link video TikTok</label>
@@ -352,11 +354,33 @@
       });
 
       // ---- Upload (demo) ----
+      // ---- Upload ảnh THẬT lên R2 ----
       var drop = document.getElementById('drop');
-      function pickDemo() { alert('Chọn ảnh từ thiết bị (demo).'); }
-      drop.addEventListener('click', pickDemo);
-      drop.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pickDemo(); }
+      var upInput = document.getElementById('upInput');
+      var upGrid = document.getElementById('upGrid');
+      var roomImgs = []; // các URL /img/... đã lên R2
+      function renderUpGrid() {
+        upGrid.innerHTML = roomImgs.map(function (u, i) {
+          return '<div style="position:relative;width:72px;height:72px;border-radius:8px;overflow:hidden;border:1px solid var(--border)">' +
+            '<img src="' + u + '" style="width:100%;height:100%;object-fit:cover"/>' +
+            '<button type="button" data-i="' + i + '" aria-label="Xoá" style="position:absolute;top:2px;right:2px;background:rgba(0,0,0,.6);color:#fff;border:0;border-radius:50%;width:18px;height:18px;cursor:pointer;font-size:11px;line-height:1">✕</button></div>';
+        }).join('');
+      }
+      function uploadFiles(files) {
+        Array.prototype.slice.call(files).filter(function (f) { return f.type.indexOf('image/') === 0; }).forEach(function (f) {
+          if (roomImgs.length >= 12) { HT.toast('Tối đa 12 ảnh', 'warning'); return; }
+          fetch('/api/upload', { method: 'POST', headers: { 'content-type': f.type }, body: f })
+            .then(function (r) { return r.json(); }).then(function (res) {
+              if (res && res.url) { roomImgs.push(res.url); renderUpGrid(); }
+              else { HT.toast((res && res.error) || 'Tải ảnh lỗi', 'danger'); }
+            }).catch(function () { HT.toast('Lỗi mạng khi tải ảnh', 'danger'); });
+        });
+      }
+      drop.addEventListener('click', function () { upInput.click(); });
+      drop.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); upInput.click(); } });
+      upInput.addEventListener('change', function () { uploadFiles(upInput.files); upInput.value = ''; });
+      upGrid.addEventListener('click', function (e) {
+        var b = e.target.closest('button[data-i]'); if (b) { roomImgs.splice(+b.getAttribute('data-i'), 1); renderUpGrid(); }
       });
       ['dragover', 'dragenter'].forEach(function (ev) {
         drop.addEventListener(ev, function (e) { e.preventDefault(); drop.style.borderColor = 'var(--muted-fg)'; });
@@ -364,6 +388,7 @@
       ['dragleave', 'drop'].forEach(function (ev) {
         drop.addEventListener(ev, function (e) { e.preventDefault(); drop.style.borderColor = ''; });
       });
+      drop.addEventListener('drop', function (e) { if (e.dataTransfer && e.dataTransfer.files) uploadFiles(e.dataTransfer.files); });
 
       // ---- Lưu nháp ----
       document.getElementById('btnDraft').addEventListener('click', function () {
@@ -404,6 +429,7 @@
           chiPhi: { loai: 'tro' }, soLuong: 1, soTrong: 1, status: 'open'
         };
         b.rooms = (b.rooms || []).concat([room]);
+        if (roomImgs.length) { b.imgs = (b.imgs || []).filter(function (x) { return /^https?:|^\/img\//.test(x); }).concat(roomImgs); }
         fetch('/api/toa-nha', {
           method: 'PATCH', headers: { 'content-type': 'application/json' },
           body: JSON.stringify({ bid: bid, building: b })

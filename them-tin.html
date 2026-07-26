@@ -291,9 +291,17 @@
     [...files].filter(f=>f.type.startsWith('image/')).forEach(f=>{
       const reader = new FileReader();
       reader.onload = () => {
-        const url = reader.result;
-        roomImages.push({ media_type:f.type, data:url.split(',')[1], url, name:f.name });
+        const dataUrl = reader.result;
+        // Giữ base64 cho AI đọc; đồng thời upload lên R2 lấy URL nhẹ để lưu (không tràn bộ nhớ)
+        const item = { media_type:f.type, data:dataUrl.split(',')[1], url:dataUrl, name:f.name, uploading:true };
+        roomImages.push(item);
         renderUpGrid();
+        fetch('/api/upload', { method:'POST', headers:{'content-type':f.type}, body:f })
+          .then(r=>r.json()).then(res=>{
+            if(res && res.url){ item.url = res.url; item.uploading = false; }
+            else { alert('Tải ảnh lỗi: ' + ((res && res.error) || '')); roomImages.splice(roomImages.indexOf(item),1); }
+            renderUpGrid();
+          }).catch(()=>{ item.uploading = false; alert('Lỗi mạng khi tải ảnh, thử lại.'); renderUpGrid(); });
       };
       reader.readAsDataURL(f);
     });
@@ -497,7 +505,9 @@
     }
 
     const m2 = $('fArea').value.replace(/m²|m2/gi,'').trim();
-    const imgs = roomImages.length ? roomImages.map(im=>im.url) : ['#c8d8ff,#a0b8f0'];
+    // Chỉ lưu URL ảnh đã lên R2 (dạng /img/...); bỏ ảnh chưa upload xong để không phình bộ nhớ
+    const r2urls = roomImages.map(im=>im.url).filter(u=>/^\/img\//.test(u));
+    const imgs = r2urls.length ? r2urls : ['#c8d8ff,#a0b8f0'];
 
     const building = {
       bid: 'u_' + Date.now(),
