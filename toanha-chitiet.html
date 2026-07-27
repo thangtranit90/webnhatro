@@ -240,8 +240,10 @@
         listEl.innerHTML = rows.map(function (o) {
           var r = o.r;
           var gi = globalIndex(r);
-          var code = r.rid ? ('P.' + String(o.idx + 201)) : 'P.201';
-          var meta = 'Tầng ' + (o.idx + 1) + ' · ' + (r.loai || '') + (r.m2 ? (' · ' + r.m2 + 'm²') : '') +
+          // Dùng mã phòng thật nếu có (r.ma); nếu chưa có thì mới tự sinh theo thứ tự
+          var code = r.ma ? (/^p\./i.test(r.ma) ? r.ma : 'P.' + r.ma) : (r.rid ? ('P.' + String(o.idx + 201)) : 'P.201');
+          var tang = (r.tang !== undefined && r.tang !== '' && r.tang !== null) ? r.tang : (o.idx + 1);
+          var meta = 'Tầng ' + tang + ' · ' + (r.loai || '') + (r.m2 ? (' · ' + r.m2 + 'm²') : '') +
             (r.tags && r.tags.length ? (' · ' + r.tags[0]) : '');
           var guest = o.st === 'thue' ? guestNames[o.idx % guestNames.length] : 'Chưa có khách';
           return '<div class="rm-row">' +

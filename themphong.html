@@ -418,8 +418,11 @@
         function chipMulti(sel) {
           return Array.prototype.map.call(document.querySelectorAll(sel + ' .chip.is-on'), function (c) { return c.getAttribute('data-val'); });
         }
+        var floorEl = document.getElementById('fFloor');
         var room = {
           rid: bid + '_r' + Date.now(),
+          ma: (elCode.value || '').trim(),
+          tang: floorEl ? (floorEl.value || '').trim() : '',
           loai: chipVal('.chip-group[data-single="loai"]') || 'Phòng trọ',
           tags: chipMulti('.chip-group[data-multi="thietke"]'),
           noithat: [chipVal('.chip-group[data-single="noithat"]') || 'Cơ bản'],
