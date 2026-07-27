@@ -291,6 +291,7 @@
               (e.st === 'Active'
                 ? '<button class="btn btn--ghost" data-act="off" type="button" style="justify-content:flex-start;color:var(--danger)">Vô hiệu hoá</button>'
                 : '<button class="btn btn--ghost" data-act="on" type="button" style="justify-content:flex-start;color:var(--success)">Kích hoạt lại</button>') +
+              '<button class="btn btn--ghost" data-act="del" type="button" style="justify-content:flex-start;color:var(--danger)">Xoá</button>' +
             '</div>',
           onSubmit: null
         });
@@ -357,6 +358,17 @@
             closeMd();
             e.st = 'Active'; refreshAll(); HT.toast('Đã kích hoạt lại nhân viên', 'success');
             fetch('/api/nhan-vien', { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id: e.id, st: e.st }) }).catch(function () {});
+          } else if (act === 'del') {
+            closeMd();
+            HT.confirm({
+              title: 'Xoá nhân viên', message: 'Xoá hẳn "' + e.name + '"? Không khôi phục được.', danger: true, confirmLabel: 'Xoá',
+              onConfirm: function () {
+                fetch('/api/nhan-vien', { method: 'DELETE', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id: e.id }) })
+                  .then(function (r) { return r.json(); })
+                  .then(function (res) { if (res.error) { HT.toast(res.error, 'danger'); return; } HT.toast('Đã xoá nhân viên', 'success'); loadEmps(); })
+                  .catch(function () { HT.toast('Lỗi mạng', 'danger'); });
+              }
+            });
           }
         });
       });

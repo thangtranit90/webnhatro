@@ -267,6 +267,9 @@
           '<button class="btn btn--ghost btn--sm" id="d_zalo" style="flex:1;justify-content:center">Nhắn Zalo</button>' +
           '<button class="btn btn--ghost btn--sm" id="d_lich" style="flex:1;justify-content:center">Đặt lịch xem</button>' +
         '</div>' +
+        '<div style="display:flex;margin-bottom:16px">' +
+          '<button class="btn btn--primary btn--sm" id="d_del" style="flex:1;justify-content:center;background:var(--danger);border-color:var(--danger)">Xoá khách</button>' +
+        '</div>' +
         '<div style="font-size:13px;font-weight:700;color:var(--fg);margin-bottom:2px">Lịch sử tương tác</div>' +
         hist;
     }
@@ -275,7 +278,7 @@
       if (!el) return;
       var c = cardMap[el.getAttribute('data-id')];
       if (!c) return;
-      HT.modal({
+      var detailModal = HT.modal({
         title: 'Chi tiết khách', sub: c.name,
         bodyHTML: detailBody(c),
         submitLabel: 'Chuyển bước',
@@ -294,6 +297,30 @@
       if (m) {
         var z = m.querySelector('#d_zalo'); if (z) z.addEventListener('click', function () { HT.toast('Đang mở Zalo tới ' + c.name + '…', 'success'); });
         var l = m.querySelector('#d_lich'); if (l) l.addEventListener('click', function () { HT.toast('Đã tạo lịch xem phòng cho ' + c.name, 'success'); });
+        var d = m.querySelector('#d_del'); if (d) d.addEventListener('click', function () {
+          HT.confirm({
+            title: 'Xoá khách',
+            message: 'Xoá "' + c.name + '" khỏi hệ thống? Không khôi phục được.',
+            danger: true,
+            confirmLabel: 'Xoá',
+            onConfirm: function () {
+              if (!c.dbid) { HT.toast('Khách chưa lưu trên hệ thống', 'danger'); return; }
+              fetch('/api/khach', {
+                method: 'DELETE',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({ id: c.dbid })
+              }).then(function (r) { return r.json(); }).then(function (res) {
+                if (res && res.ok) {
+                  if (detailModal && detailModal.close) detailModal.close();
+                  HT.toast('Đã xoá khách', 'success');
+                  loadCustomers();
+                } else {
+                  HT.toast((res && res.error) || 'Lỗi xoá', 'danger');
+                }
+              }).catch(function () { HT.toast('Lỗi mạng', 'danger'); });
+            }
+          });
+        });
       }
     });
 

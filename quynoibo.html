@@ -149,7 +149,7 @@
         var isIn = r.loai === 'thu';
         var dd = fmtDDMM(r.ngay);
         var s = (r.kenh || '') + (dd ? ((r.kenh ? ' · ' : '') + dd) : '');
-        return { dir: isIn ? 'in' : 'out', t: r.noi_dung, s: s, amt: (isIn ? '+' : '−') + fmtVN(r.so_tien) };
+        return { id: r.id, dir: isIn ? 'in' : 'out', t: r.noi_dung, s: s, amt: (isIn ? '+' : '−') + fmtVN(r.so_tien) };
       }
       function loadTx() {
         return fetch('/api/giao-dich').then(function (r) { return r.json(); }).then(function (rows) {
@@ -218,11 +218,42 @@
         });
       });
 
+      function renderTxRow(x) {
+        var isIn = x.dir === 'in';
+        var ic = isIn ? 'wallet' : 'file-text';
+        return '<div class="tx">' +
+          '<span class="tx__ic ' + (isIn ? 'tx__ic--in' : 'tx__ic--out') + '">' + I(ic, 18) + '</span>' +
+          '<span class="tx__body"><span class="tx__t">' + HT.esc(x.t) + '</span><span class="tx__s">' + HT.esc(x.s) + '</span></span>' +
+          '<span class="tx__amt ' + (isIn ? 'tx__amt--in' : 'tx__amt--out') + '">' + HT.esc(x.amt) + '</span>' +
+          '<button class="btn btn--ghost btn--sm" type="button" data-del="' + x.id + '" style="color:var(--danger);flex-shrink:0">Xoá</button>' +
+          '</div>';
+      }
+      function delTx(id, close) {
+        HT.confirm({
+          title: 'Xoá giao dịch', message: 'Xoá phiếu này?', danger: true, confirmLabel: 'Xoá',
+          onConfirm: function () {
+            fetch('/api/giao-dich', { method: 'DELETE', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id: id }) })
+              .then(function (r) { return r.json(); })
+              .then(function (res) {
+                if (res && res.error) { HT.toast(res.error, 'danger'); return; }
+                HT.toast('Đã xoá', 'success');
+                if (close) close();
+                loadTx();
+              })
+              .catch(function () { HT.toast('Lỗi mạng', 'danger'); });
+          }
+        });
+      }
       document.getElementById('linkAll').addEventListener('click', function (e) {
         e.preventDefault();
-        HT.modal({
+        var m = HT.modal({
           title: 'Tất cả giao dịch', sub: txs.length + ' giao dịch', wide: true, submitLabel: null,
-          bodyHTML: '<div style="max-height:60vh;overflow:auto">' + txs.map(renderTx).join('') + '</div>'
+          bodyHTML: '<div style="max-height:60vh;overflow:auto">' + txs.map(renderTxRow).join('') + '</div>'
+        });
+        m.el.addEventListener('click', function (ev) {
+          var btn = ev.target.closest('[data-del]');
+          if (!btn) return;
+          delTx(btn.getAttribute('data-del'), m.close);
         });
       });
     })();

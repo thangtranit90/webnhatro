@@ -277,6 +277,7 @@
         '<div class="mrow" style="margin-top:8px">' +
           '<button class="btn btn--primary" data-ok>Xác nhận</button>' +
           '<button class="btn btn--ghost" data-cancel style="color:var(--danger)">Huỷ lịch</button>' +
+          '<button class="btn btn--ghost" data-del style="color:var(--danger)">Xoá lịch</button>' +
         '</div>';
       var m = HT.modal({ title: 'Chi tiết lịch hẹn', sub: a.name + ' · ' + a.room, submitLabel: null, bodyHTML: body });
       m.el.querySelector('[data-ok]').addEventListener('click', function () {
@@ -286,6 +287,20 @@
       m.el.querySelector('[data-cancel]').addEventListener('click', function () {
         a.st = 'cancel'; renderAll(); m.close(); HT.toast('Đã huỷ lịch hẹn', 'warning');
         patchStatus(a, 'cancel');
+      });
+      m.el.querySelector('[data-del]').addEventListener('click', function () {
+        HT.confirm({
+          title: 'Xoá lịch hẹn', message: 'Xoá lịch của ' + a.name + '?', danger: true, confirmLabel: 'Xoá',
+          onConfirm: function () {
+            fetch('/api/lich-hen', { method: 'DELETE', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id: a.dbid }) })
+              .then(function (r) { return r.json(); })
+              .then(function (res) {
+                if (res && res.error) { HT.toast(res.error, 'danger'); return; }
+                m.close(); HT.toast('Đã xoá lịch', 'success'); loadAppts();
+              })
+              .catch(function () { HT.toast('Lỗi mạng', 'danger'); });
+          }
+        });
       });
     }
     document.getElementById('calGrid').addEventListener('click', function (e) {

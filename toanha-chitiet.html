@@ -253,7 +253,7 @@
             '<span class="rm-guest">' + esc(guest) + '</span>' +
             '<span class="rm-price">' + esc(r.price || '—') + '</span>' +
             '<span class="rm-status ' + o.st + '">' + esc(STATUS_LABEL[o.st]) + '</span>' +
-            '<button class="rm-more" type="button" aria-label="Tùy chọn" data-gi="' + gi + '" data-code="' + esc(code) + '">⋮</button>' +
+            '<button class="rm-more" type="button" aria-label="Tùy chọn" data-gi="' + gi + '" data-code="' + esc(code) + '" data-rid="' + esc(r.rid || '') + '">⋮</button>' +
           '</div>';
         }).join('');
       }
@@ -278,11 +278,13 @@
         closeMenu();
         var gi = btn.getAttribute('data-gi');
         var code = btn.getAttribute('data-code');
+        var rid = btn.getAttribute('data-rid');
         var menu = document.createElement('div');
         menu.className = 'rm-menu';
         menu.innerHTML =
           '<button type="button" data-act="xem">' + HT.icon('arrow-right', 15) + 'Xem chi tiết</button>' +
-          '<button type="button" data-act="doi">' + I('shield-check', 15) + 'Đổi trạng thái</button>';
+          '<button type="button" data-act="doi">' + I('shield-check', 15) + 'Đổi trạng thái</button>' +
+          '<button type="button" data-act="xoa" style="color:var(--danger)">' + I('x', 15) + 'Xoá phòng</button>';
         document.body.appendChild(menu);
         var rect = btn.getBoundingClientRect();
         menu.style.top = (rect.bottom + window.scrollY + 4) + 'px';
@@ -298,6 +300,25 @@
             window.location.href = 'phong-noibo.html?i=' + (gi != null && gi !== '-1' ? gi : 0);
           } else if (act === 'doi') {
             HT.toast('Đã cập nhật trạng thái ' + code, 'success');
+          } else if (act === 'xoa') {
+            HT.confirm({
+              title: 'Xoá phòng',
+              message: 'Xoá phòng này khỏi toà nhà?',
+              danger: true,
+              confirmLabel: 'Xoá',
+              onConfirm: function () {
+                b.rooms = (b.rooms || []).filter(function (x) { return x.rid !== rid; });
+                fetch('/api/toa-nha', {
+                  method: 'PATCH',
+                  headers: { 'content-type': 'application/json' },
+                  body: JSON.stringify({ bid: b.bid, building: b })
+                }).then(function (res) { return res.json(); }).then(function (j) {
+                  if (j && j.error) { HT.toast(j.error, 'danger'); return; }
+                  HT.toast('Đã xoá phòng', 'success');
+                  location.reload();
+                }).catch(function () { HT.toast('Lỗi mạng', 'danger'); });
+              }
+            });
           }
         });
       });

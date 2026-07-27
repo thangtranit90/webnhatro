@@ -219,13 +219,56 @@
               '<span class="tn-fill__pct">' + pct + '%</span></div></td>' +
             '<td>' + esc(b.nv || '—') + '</td>' +
             '<td>' + esc(b.date || 'Hôm nay') + '</td>' +
-            '<td><a class="tn-view" href="toanha-chitiet.html?bid=' + encodeURIComponent(b.bid) + '">' + HT.icon('arrow-right', 14) + 'Xem</a></td>' +
+            '<td><div style="display:flex;align-items:center;justify-content:flex-end;gap:14px">' +
+              '<a class="tn-view" href="toanha-chitiet.html?bid=' + encodeURIComponent(b.bid) + '">' + HT.icon('arrow-right', 14) + 'Xem</a>' +
+              '<button class="tn-view" type="button" data-delbid="' + esc(b.bid) + '" style="color:var(--danger);background:transparent;border:0;cursor:pointer;font:inherit">' + I('x', 14) + 'Xoá</button>' +
+            '</div></td>' +
           '</tr>';
         }).join('');
       }
 
       searchEl.addEventListener('input', render);
       render();
+
+      // ---- Nạp lại danh sách tòa nhà từ D1 rồi dựng lại KPI + bảng ----
+      function reloadBuildings() {
+        window.HT_loadBuildings(function () {
+          computeBuildings();
+          kpis[0].val = String(buildings.length);
+          kpis[1].val = (totalRooms || 486).toLocaleString('vi-VN');
+          renderKpis();
+          render();
+        });
+      }
+
+      // ---- Xoá tòa nhà ----
+      bodyEl.addEventListener('click', function (e) {
+        var btn = e.target.closest('[data-delbid]');
+        if (!btn) return;
+        var bid = btn.getAttribute('data-delbid');
+        var found = null;
+        for (var i = 0; i < buildings.length; i++) {
+          if (buildings[i].bid === bid) { found = buildings[i]; break; }
+        }
+        var addr = (found && found.addr) || '';
+        HT.confirm({
+          title: 'Xoá toà nhà',
+          message: 'Xoá toà "' + addr + '" và TẤT CẢ phòng bên trong? Không khôi phục được.',
+          danger: true,
+          confirmLabel: 'Xoá',
+          onConfirm: function () {
+            fetch('/api/toa-nha', {
+              method: 'DELETE',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({ bid: bid })
+            }).then(function (r) { return r.json(); }).then(function (res) {
+              if (res && res.error) { HT.toast(res.error, 'danger'); return; }
+              HT.toast('Đã xoá toà nhà', 'success');
+              reloadBuildings();
+            }).catch(function () { HT.toast('Lỗi mạng', 'danger'); });
+          }
+        });
+      });
 
       // ---- Modal "Thêm tòa nhà" ----
       document.getElementById('btnAdd').addEventListener('click', function () {

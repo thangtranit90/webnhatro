@@ -127,6 +127,7 @@
         '<div class="post__foot">' +
           '<span class="post__like" style="cursor:pointer">♥ <b>' + p.like + '</b> like</span>' +
           '<span class="post__cmt" style="cursor:pointer">💬 <b>' + p.cmt + '</b> bình luận</span>' +
+          '<span class="post__del" data-del="' + p.id + '" title="Xoá bài" style="cursor:pointer;color:var(--danger);margin-left:auto">🗑 Xoá</span>' +
         '</div>' +
       '</article>';
     }
@@ -141,6 +142,20 @@
 
     // Like / bình luận: tăng số đếm demo khi bấm
     feedEl.addEventListener('click', function (e) {
+      var del = e.target.closest ? e.target.closest('.post__del') : null;
+      if (del) {
+        var id = del.getAttribute('data-del');
+        HT.confirm({
+          title: 'Xoá bài', message: 'Xoá bài này khỏi bảng tin?', danger: true, confirmLabel: 'Xoá',
+          onConfirm: function () {
+            fetch('/api/bang-tin', { method: 'DELETE', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id: id }) })
+              .then(function (r) { return r.json(); })
+              .then(function (res) { if (res.error) { HT.toast(res.error, 'danger'); return; } HT.toast('Đã xoá bài', 'success'); loadPosts(); })
+              .catch(function () { HT.toast('Lỗi mạng', 'danger'); });
+          }
+        });
+        return;
+      }
       var s = e.target.closest('.post__like, .post__cmt');
       if (!s) return;
       var b = s.querySelector('b');
