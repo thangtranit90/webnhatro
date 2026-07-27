@@ -45,3 +45,13 @@ export async function onRequestPatch({ request, env }) {
     return json({ ok: true });
   } catch (e) { return json({ error: String(e) }, 500); }
 }
+
+export async function onRequestDelete({ request, env }) {
+  try {
+    const b = await request.json();
+    const bid = b.bid || (b.building && b.building.bid);
+    if (!bid) return json({ error: 'Thiếu bid' }, 400);
+    await env.DB.prepare('DELETE FROM toa_nha WHERE bid=?').bind(bid).run();
+    return json({ ok: true });
+  } catch (e) { return json({ error: String(e) }, 500); }
+}

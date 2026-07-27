@@ -26,3 +26,12 @@ export async function onRequestPost({ request, env }) {
     return json({ ok: true, id: r.meta.last_row_id });
   } catch (e) { return json({ error: String(e) }, 500); }
 }
+
+export async function onRequestDelete({ request, env }) {
+  try {
+    const b = await request.json();
+    if (!b.id) return json({ error: 'Thiếu id' }, 400);
+    await env.DB.prepare('DELETE FROM giao_dich WHERE id=?').bind(b.id).run();
+    return json({ ok: true });
+  } catch (e) { return json({ error: String(e) }, 500); }
+}
