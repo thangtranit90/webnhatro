@@ -372,7 +372,7 @@
       var imgs = (r.imgs && r.imgs.length) ? r.imgs : ['#c8d8ff,#a0b8f0'];
       function gradOf(v) {
         if (!v) return 'background:var(--muted)';
-        if (/^https?:/i.test(v)) return "background-image:url('" + v + "');background-size:cover;background-position:center";
+        if (/^(https?:|\/)/i.test(v)) return "background-image:url('" + v + "');background-size:cover;background-position:center";
         var cols = String(v).split(',').map(function (s) { return s.trim(); });
         return 'background:' + (cols.length > 1 ? 'linear-gradient(135deg,' + cols.join(',') + ')' : cols[0]);
       }

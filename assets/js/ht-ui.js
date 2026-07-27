@@ -142,7 +142,7 @@
   // Ảnh thẻ: URL http → thẻ img; chuỗi màu "#aaa,#bbb" → nền gradient; rỗng → nền xám
   function mediaFill(img, alt) {
     if (!img) return '';
-    if (/^https?:/i.test(img)) return '<img src="' + esc(img) + '" alt="' + esc(alt || '') + '" loading="lazy"/>';
+    if (/^(https?:|\/)/i.test(img)) return '<img src="' + esc(img) + '" alt="' + esc(alt || '') + '" loading="lazy"/>';
     if (img.charAt(0) === '#') {
       var cols = img.split(',').map(function (s) { return s.trim(); });
       var bg = cols.length > 1 ? 'linear-gradient(135deg,' + cols.join(',') + ')' : cols[0];
