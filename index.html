@@ -261,12 +261,17 @@
       newRooms.map(function(r){ return HT.roomCard(toCard(r, rooms.indexOf(r))); }).join('') ||
       '<p class="t-caption">Chưa có phòng mới.</p>';
 
-    // ---- Khối khu vực (dùng dữ liệu quận HCM từ data.js nếu có) ----
-    var areaIcons = ['building','building-2','graduation-cap','house','house','landmark'];
-    var areaList = [['Gò Vấp',320],['Bình Thạnh',280],['Thủ Đức',410],['Tân Phú',190],['Quận 8',150],['Quận 11',210]];
-    document.getElementById('areas').innerHTML = areaList.map(function(a, i){
+    // ---- Khối khu vực: TÍNH TỪ DỮ LIỆU THẬT (chỉ hiện quận có phòng, số đếm thật) ----
+    var areaIcons = ['building','building-2','graduation-cap','house','landmark','building'];
+    var _acount = {};
+    (window.ROOMS || []).forEach(function (r) { if (r.quan) _acount[r.quan] = (_acount[r.quan] || 0) + 1; });
+    var areaList = Object.keys(_acount).map(function (k) { return [k, _acount[k]]; })
+      .sort(function (a, b) { return b[1] - a[1]; });
+    var areasEl = document.getElementById('areas');
+    if (!areaList.length) { areasEl.innerHTML = '<p class="t-caption">Chưa có khu vực nào.</p>'; }
+    else areasEl.innerHTML = areaList.map(function (a, i) {
       return '<a class="area-card" href="timphong.html?quan=' + encodeURIComponent(a[0]) + '">' +
-        '<span class="area-card__icon">' + HT.icon(areaIcons[i], 20) + '</span>' +
+        '<span class="area-card__icon">' + HT.icon(areaIcons[i % areaIcons.length], 20) + '</span>' +
         '<span class="area-card__name">' + a[0] + '</span>' +
         '<span class="area-card__count">' + a[1] + ' phòng</span>' +
       '</a>';
