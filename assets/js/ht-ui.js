@@ -118,7 +118,7 @@
             '</div>' +
             '<div class="footer-col"><div class="footer-col__title">Khám phá</div>' + kham.map(link).join('') + '</div>' +
             '<div class="footer-col"><div class="footer-col__title">Khu vực</div>' + khu.map(link).join('') + '</div>' +
-            '<div class="footer-col"><div class="footer-col__title">Liên hệ</div>' +
+            '<div class="footer-col" id="lien-he"><div class="footer-col__title">Liên hệ</div>' +
               row('map-pin', '262A Nam Kỳ Khởi Nghĩa, P. Xuân Hòa, TP.HCM') +
               row('phone', '0949 397 595') +
               row('mail', 'hello@hthome.vn') +
