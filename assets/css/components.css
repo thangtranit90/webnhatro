@@ -242,3 +242,16 @@
 .empty-state__ic { width: 56px; height: 56px; border-radius: var(--radius-pill); background: var(--muted); color: var(--muted-fg); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 12px; }
 .empty-state__t { font-size: 15px; font-weight: 600; color: var(--fg); }
 .empty-state__s { font-size: 13px; margin-top: 4px; }
+
+/* ===== Modal Thêm phòng (dùng chung — HT.roomModal) ===== */
+.rm-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.rm-chip { border: 1px solid var(--border); background: var(--card); color: var(--muted-fg); font: inherit; font-size: 13px; font-weight: 600; padding: 7px 13px; border-radius: 999px; cursor: pointer; transition: all .15s; }
+.rm-chip:hover { color: var(--fg); border-color: var(--muted-fg); }
+.rm-chip.is-on { background: var(--gold-soft); color: var(--gold-fg); border-color: var(--gold); }
+.rm-drop { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; text-align: center; border: 1.5px dashed var(--border); border-radius: var(--radius-m); padding: 22px 16px; color: var(--muted-fg); cursor: pointer; background: var(--muted); font-size: 13px; font-weight: 600; }
+.rm-drop:hover, .rm-drop.is-drag { border-color: var(--gold); color: var(--fg); }
+.rm-drop__s { font-size: 11.5px; font-weight: 400; }
+.rm-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.rm-thumb { position: relative; width: 72px; height: 72px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
+.rm-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.rm-thumb button { position: absolute; top: 2px; right: 2px; background: rgba(0,0,0,.6); color: #fff; border: 0; border-radius: 50%; width: 18px; height: 18px; cursor: pointer; font-size: 11px; line-height: 1; }

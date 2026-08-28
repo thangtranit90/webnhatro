@@ -5,7 +5,7 @@ var CORE = [
   './index.html',
   './assets/css/tokens.css?v=4',
   './assets/css/base.css?v=4',
-  './assets/css/components.css?v=4',
+  './assets/css/components.css?v=5',
   './assets/js/ht-ui.js?v=5',
   './data.js',
   './ht-home-logo.png',

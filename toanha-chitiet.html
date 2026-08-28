@@ -9,7 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/css/tokens.css?v=4" />
   <link rel="stylesheet" href="assets/css/base.css?v=4" />
-  <link rel="stylesheet" href="assets/css/components.css?v=4" />
+  <link rel="stylesheet" href="assets/css/components.css?v=5" />
   <link rel="stylesheet" href="assets/css/internal.css?v=4" />
   <style>
     /* ===== Back button ===== */
@@ -78,7 +78,7 @@
         </div>
         <div class="app-topbar__actions">
           <button class="btn btn--ghost btn--sm" id="btnEdit" type="button"></button>
-          <a class="btn btn--primary btn--sm" id="btnAdd" href="themphong.html"></a>
+          <button class="btn btn--primary btn--sm" id="btnAdd" type="button"></button>
         </div>
       </header>
 
@@ -101,6 +101,7 @@
   <script src="data.js"></script>
   <script src="assets/js/ht-ui.js?v=5"></script>
   <script src="assets/js/ht-internal.js?v=4"></script>
+  <script src="assets/js/ht-room-modal.js?v=5"></script>
   <script>
     (function () {
       var I = HTI.icon;
@@ -112,6 +113,10 @@
       document.getElementById('btnBack').innerHTML = arrowLeft + 'Danh sách toà nhà';
       document.getElementById('btnEdit').innerHTML = I('settings', 15) + 'Sửa thông tin';
       document.getElementById('btnAdd').innerHTML = I('plus', 16) + 'Thêm phòng';
+      document.getElementById('btnAdd').addEventListener('click', function () {
+        var m = /[?&]bid=([^&]*)/.exec(location.search);
+        HT.roomModal({ bid: m ? decodeURIComponent(m[1]) : undefined, onDone: function () { location.reload(); } });
+      });
 
       // ---- Nạp dữ liệu THẬT từ D1 rồi mới dựng chi tiết ----
       window.HT_loadBuildings(function () {
