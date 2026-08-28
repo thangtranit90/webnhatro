@@ -43,6 +43,28 @@
     .kc__meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin-top: 10px; font-size: 12px; color: var(--muted-fg); }
     .kc__meta .dot { width: 3px; height: 3px; border-radius: 50%; background: var(--border); display: inline-block; }
     .kc__meta strong { color: var(--fg); font-weight: 600; }
+
+    /* ---- 2 cột: kanban + panel chi tiết (theo v2) ---- */
+    .crm-2col { display: flex; gap: 16px; align-items: flex-start; }
+    .kanban { flex: 1; min-width: 0; }
+    .crm-panel { flex: 0 0 340px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-l); box-shadow: var(--shadow-card); padding: 18px; position: sticky; top: 16px; max-height: calc(100vh - 90px); overflow-y: auto; }
+    .crm-panel__empty { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; color: var(--muted-fg); font-size: 13px; padding: 40px 12px; }
+    .crm-panel__empty-ic { width: 52px; height: 52px; border-radius: 999px; background: var(--muted); color: var(--muted-fg); display: inline-flex; align-items: center; justify-content: center; }
+    @media (max-width: 1199px) { .crm-panel { display: none; } }
+    /* Panel nội dung */
+    .cp-sect { margin-top: 16px; }
+    .cp-sect__h { font-size: 13px; font-weight: 700; color: var(--fg); margin-bottom: 8px; }
+    .cp-appt { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-top: 1px solid var(--border); }
+    .cp-appt__ic { width: 30px; height: 30px; border-radius: var(--radius-s); background: var(--gold-soft); color: var(--gold); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .cp-appt__t { font-size: 13px; font-weight: 600; color: var(--fg); display: block; }
+    .cp-appt__s { font-size: 12px; color: var(--muted-fg); }
+    .cp-tl { position: relative; padding-left: 18px; }
+    .cp-tl__item { position: relative; padding: 0 0 14px 0; }
+    .cp-tl__item::before { content: ''; position: absolute; left: -14px; top: 4px; width: 8px; height: 8px; border-radius: 50%; background: var(--gold); }
+    .cp-tl__item::after { content: ''; position: absolute; left: -11px; top: 12px; bottom: -2px; width: 2px; background: var(--border); }
+    .cp-tl__item:last-child::after { display: none; }
+    .cp-tl__t { font-size: 12px; color: var(--muted-fg); }
+    .cp-tl__m { font-size: 13px; color: var(--fg); }
   </style>
 </head>
 <body>
@@ -67,8 +89,16 @@
         <!-- Chip lọc -->
         <div class="filters" id="filters"></div>
 
-        <!-- Kanban -->
-        <div class="kanban" id="kanban"></div>
+        <!-- 2 cột: Kanban + Panel chi tiết (theo v2) -->
+        <div class="crm-2col">
+          <div class="kanban" id="kanban"></div>
+          <aside class="crm-panel" id="crmPanel">
+            <div class="crm-panel__empty">
+              <span class="crm-panel__empty-ic" id="panelEmptyIc"></span>
+              <div>Chọn một khách để xem chi tiết,<br>lịch hẹn và lịch sử tương tác</div>
+            </div>
+          </aside>
+        </div>
       </div>
     </main>
   </div>
@@ -80,6 +110,12 @@
     var esc = HT.esc;
     document.getElementById('btnSidebar').innerHTML = I('menu', 22);
     document.getElementById('btnAdd').innerHTML = I('plus', 16) + 'Thêm khách';
+    document.getElementById('panelEmptyIc').innerHTML = I('users', 22);
+
+    // Lịch hẹn (để panel chi tiết hiển thị lịch của từng khách)
+    var APPTS = [];
+    fetch('/api/lich-hen').then(function (r) { return r.json(); }).then(function (rows) { APPTS = Array.isArray(rows) ? rows : []; }).catch(function () {});
+    var ST_LH = { xacnhan: 'Đã xác nhận', cho: 'Chờ xác nhận', huy: 'Đã huỷ' };
 
     /* ---- Dữ liệu mẫu ---- */
     // heat: 'hot' | 'warm' | 'cold'  → tự map ra nhãn + màu
@@ -273,11 +309,88 @@
         '<div style="font-size:13px;font-weight:700;color:var(--fg);margin-bottom:2px">Lịch sử tương tác</div>' +
         hist;
     }
+    // ---- Panel chi tiết bên phải (desktop) ----
+    var elPanel = document.getElementById('crmPanel');
+    var panelActive = null;
+    function panelVisible() { return getComputedStyle(elPanel).display !== 'none'; }
+
+    function apptRows(c) {
+      var mine = APPTS.filter(function (a) { return (a.khach || '').trim() === (c.name || '').trim(); });
+      if (!mine.length) return '<div style="font-size:12px;color:var(--muted-fg);padding:6px 0">Chưa có lịch hẹn.</div>';
+      return mine.map(function (a) {
+        return '<div class="cp-appt"><span class="cp-appt__ic">' + I('calendar-days', 15) + '</span>' +
+          '<span><span class="cp-appt__t">' + esc(a.phong || 'Xem phòng') + '</span>' +
+          '<span class="cp-appt__s">' + esc((a.ngay || '') + (a.gio ? ' · ' + a.gio + 'h' : '') + ' · ' + (ST_LH[a.trang_thai] || '')) + '</span></span></div>';
+      }).join('');
+    }
+    function timeline(c) {
+      var items = [
+        { t: c.time, m: 'Khách để lại thông tin qua ' + c.source },
+        { t: 'Gần đây', m: 'NV đã gọi tư vấn · quan tâm phòng ' + c.budget },
+        { t: 'Ghi chú', m: 'Ưu tiên nhắn Zalo trong giờ hành chính' }
+      ];
+      return '<div class="cp-tl">' + items.map(function (x) {
+        return '<div class="cp-tl__item"><div class="cp-tl__t">' + esc(x.t) + '</div><div class="cp-tl__m">' + esc(x.m) + '</div></div>';
+      }).join('') + '</div>';
+    }
+    function fillPanel(c) {
+      panelActive = c;
+      var h = HEAT[c.heat] || HEAT.cold;
+      var tel = 'tel:' + String(c.phone || '').replace(/[^0-9+]/g, '');
+      var idx = STAGES.indexOf(c.col);
+      var nextLabel = (idx >= 0 && idx < STAGES.length - 1) ? ('Chuyển → ' + STAGES[idx + 1]) : 'Đã ở bước cuối';
+      elPanel.innerHTML =
+        '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">' +
+          '<span class="avatar" style="width:44px;height:44px;font-size:15px">' + esc(c.av) + '</span>' +
+          '<div><div style="font-size:16px;font-weight:700;color:var(--fg)">' + esc(c.name) + '</div>' +
+          '<div style="font-size:13px;color:var(--muted-fg)">' + esc(c.phone) + '</div></div></div>' +
+        '<div class="kc__tags" style="margin:0 0 12px">' +
+          '<span class="tag">' + esc(c.type) + '</span>' +
+          '<span class="tag ' + h.cls + '">' + h.label + '</span>' +
+          '<span class="tag">' + esc(c.col) + '</span></div>' +
+        '<div class="kc__meta" style="margin:0 0 14px">' +
+          '<span>Ngân sách <strong>' + esc(c.budget) + '</strong></span><span class="dot"></span>' +
+          '<span>Nguồn: ' + esc(c.source) + '</span></div>' +
+        '<div style="display:flex;gap:8px;margin-bottom:10px">' +
+          '<a class="btn btn--primary btn--sm" href="' + esc(tel) + '" style="flex:1;justify-content:center">Gọi</a>' +
+          '<button class="btn btn--ghost btn--sm" data-p="zalo" style="flex:1;justify-content:center">Zalo</button>' +
+          '<button class="btn btn--ghost btn--sm" data-p="lich" style="flex:1;justify-content:center">Đặt lịch</button></div>' +
+        '<button class="btn btn--primary btn--sm btn--block" data-p="next"' + (nextLabel.indexOf('Chuyển') === 0 ? '' : ' disabled style="opacity:.5"') + '>' + esc(nextLabel) + '</button>' +
+        '<div class="cp-sect"><div class="cp-sect__h">Lịch hẹn</div>' + apptRows(c) + '</div>' +
+        '<div class="cp-sect"><div class="cp-sect__h">Lịch sử tương tác</div>' + timeline(c) + '</div>' +
+        '<div class="cp-sect"><button class="btn btn--sm btn--block" data-p="del" style="background:var(--danger);color:#fff">Xoá khách</button></div>';
+    }
+    elPanel.addEventListener('click', panelClick);
+    function panelClick(e) {
+      var b = e.target.closest('[data-p]'); if (!b || !panelActive) return;
+      var c = panelActive, act = b.getAttribute('data-p');
+      if (act === 'zalo') return HT.toast('Đang mở Zalo tới ' + c.name + '…', 'success');
+      if (act === 'lich') return HT.toast('Đã tạo lịch xem phòng cho ' + c.name, 'success');
+      if (act === 'next') {
+        var idx = STAGES.indexOf(c.col);
+        if (idx < 0 || idx >= STAGES.length - 1) return;
+        moveCard(c, STAGES[idx + 1]);
+        HT.toast('Đã chuyển "' + c.name + '" → ' + STAGES[idx + 1], 'success');
+        c.col = STAGES[idx + 1]; fillPanel(c);
+      }
+      if (act === 'del') {
+        HT.confirm({ title: 'Xoá khách', message: 'Xoá "' + c.name + '"? Không khôi phục được.', danger: true, confirmLabel: 'Xoá', onConfirm: function () {
+          if (!c.dbid) { HT.toast('Khách chưa lưu', 'danger'); return; }
+          fetch('/api/khach', { method: 'DELETE', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id: c.dbid }) })
+            .then(function (r) { return r.json(); }).then(function (res) {
+              if (res && res.ok) { HT.toast('Đã xoá khách', 'success'); elPanel.innerHTML = ''; panelActive = null; loadCustomers(); }
+              else HT.toast((res && res.error) || 'Lỗi xoá', 'danger');
+            }).catch(function () { HT.toast('Lỗi mạng', 'danger'); });
+        } });
+      }
+    }
+
     elKanban.addEventListener('click', function (e) {
       var el = e.target.closest('.kc');
       if (!el) return;
       var c = cardMap[el.getAttribute('data-id')];
       if (!c) return;
+      if (panelVisible()) { fillPanel(c); return; }
       var detailModal = HT.modal({
         title: 'Chi tiết khách', sub: c.name,
         bodyHTML: detailBody(c),
