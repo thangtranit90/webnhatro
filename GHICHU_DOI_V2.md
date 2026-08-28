@@ -109,7 +109,7 @@
 - [ ] **Dashboard Sale** + khu **Sale** riêng (Kho phòng/Deal/Khách của tôi)
 - [ ] **So sánh phòng** (trang riêng, thay modal)
 - [ ] Tài khoản khách chi tiết (Phòng đã lưu/Giao dịch/Lịch xem/Thông báo)
-- [ ] Báo cáo: thêm widget khu vực/pipeline/cảnh báo
+- [x] Báo cáo: thêm Pipeline khách + Cảnh báo (dữ liệu thật) ✅ 28/08
 - [x] ✅ Modal Thêm khách: +Email/Sale phụ trách/Hạn chuyển bước/toggle Zalo (D1 +3 cột). Deploy+test OK (28/08).
 - [x] ✅ Modal Thêm tòa nhà: +Số tầng/Link Maps/Tiện ích chips. Deploy+test OK (28/08).
 
