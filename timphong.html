@@ -588,7 +588,11 @@
       modal.classList.add('is-open');
     }
     function closeModal() { modal.classList.remove('is-open'); }
-    document.getElementById('cmpOpen').addEventListener('click', openModal);
+    document.getElementById('cmpOpen').addEventListener('click', function () {
+      var items = selectedList();
+      if (!items.length) { openModal(); return; }
+      location.href = 'sosanh.html?i=' + items.map(function (e) { return e.i; }).join(',');
+    });
     modal.addEventListener('click', function (e) { if (e.target.closest('[data-close]')) closeModal(); });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeModal(); });
 

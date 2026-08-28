@@ -17,7 +17,7 @@ jobs:
       - name: Gom rieng cac file website (khong dua tai lieu noi bo len web)
         run: |
           mkdir -p site-upload
-          cp index.html detail.html timphong.html \
+          cp index.html detail.html timphong.html sosanh.html \
              vechungtoi.html dieukhoan.html baomat.html 404.html \
              dangky.html taikhoan.html chat.html datlich.html \
              dangnhap-noibo.html quenmatkhau.html nhap-otp.html datmatkhau.html \
