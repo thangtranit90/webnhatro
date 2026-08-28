@@ -105,7 +105,7 @@
 - [ ] Chốt deal: `deal.html` (trang) → **modal**
 ### D. Bổ sung màn/luồng v2 có mà web thiếu:
 - [x] ✅ **Danh sách Deal** (bảng KPI+tabs) + **Chốt deal** (modal) + **Release hoa hồng** (modal). D1 bảng `deal` + `/api/deal`. Deploy+test OK (28/08).
-- [ ] **CRM**: panel chi tiết + timeline bên phải kanban; **Chi tiết khách** (trang)
+- [x] ✅ **CRM**: panel chi tiết + Lịch hẹn + timeline bên phải kanban (desktop 2-pane). Deploy+test OK (28/08). Chi tiết khách = panel (không cần trang riêng).
 - [ ] **Dashboard Sale** + khu **Sale** riêng (Kho phòng/Deal/Khách của tôi)
 - [ ] **So sánh phòng** (trang riêng, thay modal)
 - [ ] Tài khoản khách chi tiết (Phòng đã lưu/Giao dịch/Lịch xem/Thông báo)

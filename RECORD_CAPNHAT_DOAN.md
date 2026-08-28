@@ -59,6 +59,13 @@ Triết lý thiết kế v2: **dùng modal (popup) thay cho mở nguyên trang**
 - Kỹ thuật: bảng D1 `deal` + API `/api/deal` (GET/POST/PATCH/DELETE). Trạng thái: đang cọc → đã chốt → đã release / huỷ.
 - **→ Ý nghĩa báo cáo:** hoàn thiện nghiệp vụ lõi "quản lý deal & hoa hồng" nêu trong đề cương — từ tư vấn → cọc → chốt → release hoa hồng.
 
+### ✅ CRM 2-pane (28/08)
+- Cũ: kanban full-width, bấm thẻ → modal. Mới: **kanban + panel chi tiết cố định bên phải** (desktop) gồm thông tin khách + **Lịch hẹn của khách** + **Lịch sử tương tác** (timeline) + nút Gọi/Zalo/Đặt lịch/Chuyển bước/Xoá. Mobile giữ modal.
+- **→ Ý nghĩa báo cáo:** giao diện CRM chuẩn 2-pane, chăm sóc khách trực quan (xem chi tiết mà không rời danh sách).
+
+### ✅ Báo cáo — widget dữ liệu thật (28/08)
+- Thêm **Pipeline khách hàng** (phễu moi→chốt, đếm thật) + **Cảnh báo & lưu ý** (suy từ deal/khách/toà/lịch hẹn thật).
+
 ## CHƯA LÀM (Giai đoạn 3 còn lại — có thể để "hướng phát triển"):
 - CRM: panel chi tiết + timeline cạnh kanban; trang Chi tiết khách hàng.
 - Dashboard Sale + khu vực Sale riêng (Kho phòng/Deal/Khách của tôi).
