@@ -289,8 +289,19 @@
               '<input type="text" data-f="chu" placeholder="Tên chủ nhà" /></div>' +
             '<div class="mfield"><label class="mfield__label">SĐT chủ</label>' +
               '<input type="tel" data-f="sdt" placeholder="09xx xxx xxx" /></div>' +
-          '</div>';
-        HT.modal({
+          '</div>' +
+          '<div class="mrow" style="margin-top:12px">' +
+            '<div class="mfield"><label class="mfield__label">Số tầng</label>' +
+              '<input type="number" data-f="tang" min="1" placeholder="VD: 5" /></div>' +
+            '<div class="mfield"><label class="mfield__label">Link Google Maps</label>' +
+              '<input type="url" data-f="maps" placeholder="https://maps.google.com/..." /></div>' +
+          '</div>' +
+          '<div class="mfield" style="margin-top:12px"><label class="mfield__label">Tiện ích</label>' +
+            '<div class="rm-chips" id="tnTienich">' +
+              ['Thang máy', 'Camera 24/7', 'Bảo vệ', 'Wifi', 'Chỗ để xe', 'Hồ bơi', 'Gym', 'Máy giặt'].map(function (t) {
+                return '<button type="button" class="rm-chip" data-v="' + t + '">' + t + '</button>';
+              }).join('') + '</div></div>';
+        var tnM = HT.modal({
           title: 'Thêm tòa nhà', sub: 'Nhập thông tin tòa nhà mới vào hệ thống',
           submitLabel: 'Thêm tòa nhà', bodyHTML: body,
           onSubmit: function (bd, close) {
@@ -302,6 +313,8 @@
             }
             var loai = val('loai') || 'Phòng trọ';
             var grp = (loai === 'Chung cư' || loai === 'Nhà nguyên căn') ? 'cc' : 'ptro';
+            var tienich = [];
+            bd.querySelectorAll('#tnTienich .rm-chip.is-on').forEach(function (c) { tienich.push(c.getAttribute('data-v')); });
             var building = {
               bid: 'u_' + Date.now(),
               addr: ten,
@@ -309,9 +322,11 @@
               quan: quan,
               nv: val('chu') || '—',
               chuNhaSdt: val('sdt'),
+              soTang: val('tang'),
+              mapUrl: val('maps'),
               date: 'Hôm nay',
               imgs: ['#c8d8ff,#a0b8f0'],
-              tienich: [],
+              tienich: tienich,
               rooms: []
             };
             fetch('/api/toa-nha', {
@@ -334,6 +349,9 @@
             });
             return false;
           }
+        });
+        tnM.el.querySelector('#tnTienich').addEventListener('click', function (e) {
+          var c = e.target.closest('.rm-chip'); if (c) c.classList.toggle('is-on');
         });
       });
       }); // end HT_loadBuildings

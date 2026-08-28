@@ -8,6 +8,9 @@ CREATE TABLE IF NOT EXISTS khach_hang (
   ngan_sach TEXT DEFAULT '',
   nguon TEXT DEFAULT '',           -- Facebook / TikTok / SEO Google / Referral
   cot TEXT DEFAULT 'moi',          -- moi | tuvan | guiphong | danxem | chot
+  email TEXT DEFAULT '',           -- (v2) email khách
+  sale TEXT DEFAULT '',            -- (v2) sale phụ trách
+  deadline TEXT DEFAULT '',        -- (v2) hạn chuyển bước
   created_at TEXT DEFAULT (datetime('now'))
 );
 

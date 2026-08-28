@@ -19,8 +19,8 @@ export async function onRequestPost({ request, env }) {
     const b = await request.json();
     if (!b.ten || !b.sdt) return json({ error: 'Thiếu tên hoặc số điện thoại' }, 400);
     const r = await env.DB.prepare(
-      'INSERT INTO khach_hang (ten,sdt,loai,nhiet,ngan_sach,nguon,cot) VALUES (?,?,?,?,?,?,?)'
-    ).bind(b.ten, b.sdt, b.loai || '', b.nhiet || 'warm', b.ngan_sach || '', b.nguon || '', b.cot || 'moi').run();
+      'INSERT INTO khach_hang (ten,sdt,loai,nhiet,ngan_sach,nguon,cot,email,sale,deadline) VALUES (?,?,?,?,?,?,?,?,?,?)'
+    ).bind(b.ten, b.sdt, b.loai || '', b.nhiet || 'warm', b.ngan_sach || '', b.nguon || '', b.cot || 'moi', b.email || '', b.sale || '', b.deadline || '').run();
     return json({ ok: true, id: r.meta.last_row_id });
   } catch (e) { return json({ error: String(e) }, 500); }
 }

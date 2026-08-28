@@ -361,7 +361,14 @@
           '<div class="mrow">' +
             '<div class="mfield"><label class="mfield__label">Ngân sách</label><input id="f_budget" placeholder="3-4 tr"></div>' +
             '<div class="mfield"><label class="mfield__label">Nguồn</label><select id="f_source">' + srcOpts + '</select></div>' +
-          '</div>',
+          '</div>' +
+          '<div class="mrow">' +
+            '<div class="mfield"><label class="mfield__label">Email</label><input id="f_email" type="email" placeholder="ten@email.com"></div>' +
+            '<div class="mfield"><label class="mfield__label">Sale phụ trách</label><input id="f_sale" placeholder="Tên nhân viên sale"></div>' +
+          '</div>' +
+          '<div class="mfield"><label class="mfield__label">Hạn chuyển bước</label><input id="f_deadline" type="date"></div>' +
+          '<div class="mfield"><label class="mfield__label" style="display:flex;align-items:center;gap:8px;cursor:pointer">' +
+            '<input id="f_zalo" type="checkbox" style="width:auto">Gửi form đăng ký qua Zalo cho khách</label></div>',
         onSubmit: function (m, close) {
           var ten = (m.querySelector('#f_ten').value || '').trim();
           var sdt = (m.querySelector('#f_sdt').value || '').trim();
@@ -373,8 +380,12 @@
             nhiet: m.querySelector('#f_heat').value,
             ngan_sach: (m.querySelector('#f_budget').value || '').trim(),
             nguon: m.querySelector('#f_source').value,
+            email: (m.querySelector('#f_email').value || '').trim(),
+            sale: (m.querySelector('#f_sale').value || '').trim(),
+            deadline: m.querySelector('#f_deadline').value || '',
             cot: 'moi'
           };
+          if (m.querySelector('#f_zalo').checked) HT.toast('Đã gửi form đăng ký qua Zalo cho khách', 'success');
           fetch('/api/khach', {
             method: 'POST', headers: { 'content-type': 'application/json' },
             body: JSON.stringify(payload)

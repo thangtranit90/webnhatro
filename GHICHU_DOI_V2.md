@@ -101,7 +101,7 @@
 ### A. Thương hiệu (toàn cục) → Troxin
 ### B. Trang chủ: thanh cam kết thay dải số liệu + bỏ đánh giá
 ### C. Modal-hoá các form nặng (v2 dùng modal thay trang):
-- [ ] Thêm phòng: `themphong.html` (trang) → **modal** + bỏ field rườm rà
+- [x] ✅ Thêm phòng: `themphong.html` (trang) → **modal** (`ht-room-modal.js`, `HT.roomModal`) + bỏ field rườm rà. Deploy + test OK (2026-08-28). `themphong.html` giữ lại (không xoá) nhưng không còn link tới.
 - [ ] Chốt deal: `deal.html` (trang) → **modal**
 ### D. Bổ sung màn/luồng v2 có mà web thiếu:
 - [ ] **Danh sách Deal** (bảng) + **Release hoa hồng** (modal)
