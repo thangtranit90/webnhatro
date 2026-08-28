@@ -67,8 +67,6 @@ Triết lý thiết kế v2: **dùng modal (popup) thay cho mở nguyên trang**
 - Thêm **Pipeline khách hàng** (phễu moi→chốt, đếm thật) + **Cảnh báo & lưu ý** (suy từ deal/khách/toà/lịch hẹn thật).
 
 ## CHƯA LÀM (Giai đoạn 3 còn lại — có thể để "hướng phát triển"):
-- CRM: panel chi tiết + timeline cạnh kanban; trang Chi tiết khách hàng.
-- Dashboard Sale + khu vực Sale riêng (Kho phòng/Deal/Khách của tôi).
+- Dashboard Sale + khu vực Sale riêng (Kho phòng/Deal/Khách của tôi) — hệ 2 vai trò, lớn nhất.
 - So sánh phòng (trang riêng); tài khoản khách chi tiết (Phòng đã lưu/Giao dịch/Thông báo).
-- Báo cáo: thêm widget Hiệu suất khu vực / Deal pipeline / Cảnh báo.
 - Mobile Responsive (v2 đã thiết kế sẵn 12 màn 375px).
