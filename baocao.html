@@ -65,6 +65,22 @@
     table.rpt td.area { font-weight: 600; }
     .mini-bar { height: 7px; background: var(--muted); border-radius: 999px; overflow: hidden; min-width: 90px; }
     .mini-bar span { display: block; height: 100%; background: var(--gold); border-radius: 999px; }
+    /* Pipeline phễu */
+    .pipe { display: flex; flex-direction: column; gap: 12px; }
+    .pipe__row { display: flex; align-items: center; gap: 12px; }
+    .pipe__lb { font-size: 13px; font-weight: 600; color: var(--fg); width: 110px; flex-shrink: 0; }
+    .pipe__bar { flex: 1; height: 26px; background: var(--muted); border-radius: var(--radius-s); overflow: hidden; }
+    .pipe__bar span { display: flex; align-items: center; height: 100%; background: var(--primary); color: #fff; font-size: 12px; font-weight: 700; padding-left: 10px; border-radius: var(--radius-s); min-width: 28px; }
+    .pipe__n { font-size: 13px; font-weight: 700; color: var(--fg); width: 34px; text-align: right; flex-shrink: 0; }
+    /* Cảnh báo */
+    .alert-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+    .alert-item:last-child { border-bottom: 0; }
+    .alert-item__ic { width: 34px; height: 34px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .alert-item__t { font-size: 13.5px; font-weight: 600; color: var(--fg); }
+    .alert-item__s { font-size: 12px; color: var(--muted-fg); margin-top: 2px; }
+    .a-warn { background: var(--warning-soft); color: var(--warning); }
+    .a-info { background: var(--info-soft); color: var(--info); }
+    .a-danger { background: var(--danger-soft); color: var(--danger); }
   </style>
 </head>
 <body>
@@ -127,6 +143,26 @@
                 </table>
               </div>
             </div>
+          </section>
+        </div>
+
+        <div class="cols" style="margin-top:20px">
+          <!-- Deal pipeline (dữ liệu thật) -->
+          <section class="card">
+            <div class="card__head">
+              <div><h3>Pipeline khách hàng</h3><div class="sub">Phễu từ khách mới đến chốt (dữ liệu thật)</div></div>
+            </div>
+            <div class="card__body" style="padding-top:8px">
+              <div id="pipeRows"></div>
+            </div>
+          </section>
+
+          <!-- Cảnh báo & lưu ý (dữ liệu thật) -->
+          <section class="card">
+            <div class="card__head">
+              <div><h3>Cảnh báo &amp; lưu ý</h3><div class="sub">Việc cần chú ý</div></div>
+            </div>
+            <div class="card__body" id="alertList" style="padding-top:8px"></div>
           </section>
         </div>
       </div>
@@ -211,6 +247,50 @@
 
       document.getElementById('btnExport').addEventListener('click', function () {
         alert('Đang xuất báo cáo tổng (demo).');
+      });
+
+      // ===== Widget dữ liệu THẬT: Pipeline khách + Cảnh báo =====
+      Promise.all([
+        fetch('/api/khach').then(function (r) { return r.json(); }).catch(function () { return []; }),
+        fetch('/api/deal').then(function (r) { return r.json(); }).catch(function () { return []; }),
+        fetch('/api/toa-nha').then(function (r) { return r.json(); }).catch(function () { return {}; }),
+        fetch('/api/lich-hen').then(function (r) { return r.json(); }).catch(function () { return []; })
+      ]).then(function (a) {
+        var khach = Array.isArray(a[0]) ? a[0] : [];
+        var deals = Array.isArray(a[1]) ? a[1] : [];
+        var blds = [].concat((a[2] && a[2].ptro) || [], (a[2] && a[2].cc) || []);
+        var lich = Array.isArray(a[3]) ? a[3] : [];
+
+        // --- Pipeline: đếm khách theo cột kanban ---
+        var stages = [
+          { k: 'moi', lb: 'Khách mới' }, { k: 'tuvan', lb: 'Đã tư vấn' },
+          { k: 'guiphong', lb: 'Đã gửi phòng' }, { k: 'danxem', lb: 'Đã dẫn xem' }, { k: 'chot', lb: 'Đã chốt' }
+        ];
+        stages.forEach(function (s) { s.n = khach.filter(function (c) { return (c.cot || 'moi') === s.k; }).length; });
+        var maxN = Math.max(1, Math.max.apply(null, stages.map(function (s) { return s.n; })));
+        document.getElementById('pipeRows').innerHTML = '<div class="pipe">' + stages.map(function (s) {
+          var w = Math.round(s.n / maxN * 100);
+          return '<div class="pipe__row"><span class="pipe__lb">' + s.lb + '</span>' +
+            '<span class="pipe__bar"><span style="width:' + Math.max(w, 6) + '%">' + (s.n || '') + '</span></span>' +
+            '<span class="pipe__n">' + s.n + '</span></div>';
+        }).join('') + '</div>';
+
+        // --- Cảnh báo: suy từ dữ liệu thật ---
+        var alerts = [];
+        var choRelease = deals.filter(function (d) { return d.trang_thai === 'chot'; }).length;
+        if (choRelease) alerts.push({ cls: 'a-warn', ic: 'banknote', t: choRelease + ' deal đã chốt đang chờ release hoa hồng', s: 'Vào Deal & Hợp đồng để release' });
+        var danxem = khach.filter(function (c) { return c.cot === 'danxem'; }).length;
+        if (danxem) alerts.push({ cls: 'a-info', ic: 'users', t: danxem + ' khách "Đã dẫn xem" chưa chốt', s: 'Cần chăm sóc để chốt deal' });
+        var trongToa = blds.filter(function (b) { return !(b.rooms && b.rooms.length); });
+        if (trongToa.length) alerts.push({ cls: 'a-warn', ic: 'building', t: trongToa.length + ' toà nhà chưa có phòng nào', s: 'Thêm phòng để đăng tin' });
+        var choXacNhan = lich.filter(function (l) { return l.trang_thai === 'cho'; }).length;
+        if (choXacNhan) alerts.push({ cls: 'a-info', ic: 'calendar-days', t: choXacNhan + ' lịch hẹn chờ xác nhận', s: 'Xem ở Lịch hẹn' });
+        if (!alerts.length) alerts.push({ cls: 'a-info', ic: 'shield-check', t: 'Không có cảnh báo', s: 'Mọi thứ đang ổn định' });
+        document.getElementById('alertList').innerHTML = alerts.map(function (x) {
+          return '<div class="alert-item"><span class="alert-item__ic ' + x.cls + '">' + I(x.ic, 17) + '</span>' +
+            '<span><span class="alert-item__t">' + HT.esc(x.t) + '</span>' +
+            '<span class="alert-item__s">' + HT.esc(x.s) + '</span></span></div>';
+        }).join('');
       });
     })();
   </script>
