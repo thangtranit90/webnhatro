@@ -107,7 +107,7 @@
 - [x] ✅ **Danh sách Deal** (bảng KPI+tabs) + **Chốt deal** (modal) + **Release hoa hồng** (modal). D1 bảng `deal` + `/api/deal`. Deploy+test OK (28/08).
 - [x] ✅ **CRM**: panel chi tiết + Lịch hẹn + timeline bên phải kanban (desktop 2-pane). Deploy+test OK (28/08). Chi tiết khách = panel (không cần trang riêng).
 - [ ] **Dashboard Sale** + khu **Sale** riêng (Kho phòng/Deal/Khách của tôi)
-- [ ] **So sánh phòng** (trang riêng, thay modal)
+- [x] ✅ **So sánh phòng** → trang riêng `sosanh.html` (3+ cột + bảng + CTA). timphong điều hướng sang. Deploy+test OK (28/08).
 - [ ] Tài khoản khách chi tiết (Phòng đã lưu/Giao dịch/Lịch xem/Thông báo)
 - [x] Báo cáo: thêm Pipeline khách + Cảnh báo (dữ liệu thật) ✅ 28/08
 - [x] ✅ Modal Thêm khách: +Email/Sale phụ trách/Hạn chuyển bước/toggle Zalo (D1 +3 cột). Deploy+test OK (28/08).
