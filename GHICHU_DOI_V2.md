@@ -104,7 +104,7 @@
 - [x] ✅ Thêm phòng: `themphong.html` (trang) → **modal** (`ht-room-modal.js`, `HT.roomModal`) + bỏ field rườm rà. Deploy + test OK (2026-08-28). `themphong.html` giữ lại (không xoá) nhưng không còn link tới.
 - [ ] Chốt deal: `deal.html` (trang) → **modal**
 ### D. Bổ sung màn/luồng v2 có mà web thiếu:
-- [ ] **Danh sách Deal** (bảng) + **Release hoa hồng** (modal)
+- [x] ✅ **Danh sách Deal** (bảng KPI+tabs) + **Chốt deal** (modal) + **Release hoa hồng** (modal). D1 bảng `deal` + `/api/deal`. Deploy+test OK (28/08).
 - [ ] **CRM**: panel chi tiết + timeline bên phải kanban; **Chi tiết khách** (trang)
 - [ ] **Dashboard Sale** + khu **Sale** riêng (Kho phòng/Deal/Khách của tôi)
 - [ ] **So sánh phòng** (trang riêng, thay modal)

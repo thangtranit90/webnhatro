@@ -49,8 +49,17 @@ Triết lý thiết kế v2: **dùng modal (popup) thay cho mở nguyên trang**
 
 ---
 
-## CHƯA LÀM (Giai đoạn 3 — nếu mở rộng báo cáo, để phần "hướng phát triển"):
-- Danh sách Deal + Chốt deal (modal) + Release hoa hồng (modal).
+## GIAI ĐOẠN 3 — bổ sung màn/nghiệp vụ v2 (đang làm)
+
+### ✅ Cụm Deal & Hợp đồng (28/08)
+- Cũ: bấm "Deal" mở thẳng **form chốt deal 1 trang** (demo, không lưu). KHÔNG có danh sách.
+- Mới: **Danh sách Deal** (bảng: khách/phòng/toà nhà/sale/giá trị/hoa hồng/trạng thái) + KPI (tổng deal, giá trị, hoa hồng, chờ release) + tabs lọc theo trạng thái.
+- **Chốt deal mới**: modal gọn (khách/sale/toà nhà/phòng/giá trị/HH/trạng thái).
+- **Release hoa hồng**: modal xác nhận → chuyển trạng thái deal sang "đã release".
+- Kỹ thuật: bảng D1 `deal` + API `/api/deal` (GET/POST/PATCH/DELETE). Trạng thái: đang cọc → đã chốt → đã release / huỷ.
+- **→ Ý nghĩa báo cáo:** hoàn thiện nghiệp vụ lõi "quản lý deal & hoa hồng" nêu trong đề cương — từ tư vấn → cọc → chốt → release hoa hồng.
+
+## CHƯA LÀM (Giai đoạn 3 còn lại — có thể để "hướng phát triển"):
 - CRM: panel chi tiết + timeline cạnh kanban; trang Chi tiết khách hàng.
 - Dashboard Sale + khu vực Sale riêng (Kho phòng/Deal/Khách của tôi).
 - So sánh phòng (trang riêng); tài khoản khách chi tiết (Phòng đã lưu/Giao dịch/Thông báo).
