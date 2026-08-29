@@ -66,10 +66,13 @@ Triết lý thiết kế v2: **dùng modal (popup) thay cho mở nguyên trang**
 ### ✅ So sánh phòng — trang riêng (28/08)
 - Cũ: so sánh bằng modal trong Tìm phòng. Mới: **trang riêng `sosanh.html`** — các cột phòng cạnh nhau (ảnh+giá) + bảng so sánh (giá/loại/diện tích/địa chỉ/tiện ích) + nút Xem chi tiết/Đặt lịch. Chọn phòng ở Tìm phòng → "So sánh ngay" điều hướng sang trang.
 
+### ✅ Tài khoản khách chi tiết (29/08)
+- Hoàn thiện 6 tab trang Tài khoản (trước 5 tab "đang cập nhật"): Thông tin cá nhân (form lưu localStorage), Phòng đã lưu, Lịch xem phòng, Giao dịch của tôi, Thông báo, Đổi mật khẩu (có validation).
+
 ### ✅ Báo cáo — widget dữ liệu thật (28/08)
 - Thêm **Pipeline khách hàng** (phễu moi→chốt, đếm thật) + **Cảnh báo & lưu ý** (suy từ deal/khách/toà/lịch hẹn thật).
 
 ## CHƯA LÀM (Giai đoạn 3 còn lại — có thể để "hướng phát triển"):
 - Dashboard Sale + khu vực Sale riêng (Kho phòng/Deal/Khách của tôi) — hệ 2 vai trò, lớn nhất.
-- Tài khoản khách chi tiết (Phòng đã lưu/Giao dịch/Thông báo).
+
 - Mobile Responsive (v2 đã thiết kế sẵn 12 màn 375px).

@@ -108,7 +108,7 @@
 - [x] ✅ **CRM**: panel chi tiết + Lịch hẹn + timeline bên phải kanban (desktop 2-pane). Deploy+test OK (28/08). Chi tiết khách = panel (không cần trang riêng).
 - [ ] **Dashboard Sale** + khu **Sale** riêng (Kho phòng/Deal/Khách của tôi)
 - [x] ✅ **So sánh phòng** → trang riêng `sosanh.html` (3+ cột + bảng + CTA). timphong điều hướng sang. Deploy+test OK (28/08).
-- [ ] Tài khoản khách chi tiết (Phòng đã lưu/Giao dịch/Lịch xem/Thông báo)
+- [x] ✅ Tài khoản khách chi tiết: 6 tab đầy đủ. Deploy+test OK (29/08).
 - [x] Báo cáo: thêm Pipeline khách + Cảnh báo (dữ liệu thật) ✅ 28/08
 - [x] ✅ Modal Thêm khách: +Email/Sale phụ trách/Hạn chuyển bước/toggle Zalo (D1 +3 cột). Deploy+test OK (28/08).
 - [x] ✅ Modal Thêm tòa nhà: +Số tầng/Link Maps/Tiện ích chips. Deploy+test OK (28/08).
