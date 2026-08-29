@@ -89,6 +89,24 @@
     .acc-placeholder { text-align: center; padding: 48px 20px; color: var(--muted-fg); }
     .acc-placeholder__t { font-size: 15px; font-weight: 700; color: var(--fg); margin-bottom: 4px; }
     .is-hidden { display: none; }
+
+    /* Nội dung các tab tài khoản (v2) */
+    .acc-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-l); box-shadow: var(--shadow-card); padding: 20px; }
+    .af-field { margin-bottom: 14px; }
+    .af-field label { display: block; font-size: 13px; font-weight: 600; color: var(--fg); margin-bottom: 6px; }
+    .af-field input { width: 100%; border: 1px solid var(--border); border-radius: var(--radius-m); padding: 11px 13px; font: inherit; font-size: 14px; color: var(--fg); background: var(--card); box-sizing: border-box; }
+    .af-field input:focus { outline: none; border-color: var(--fg); }
+    .acc-item { display: flex; align-items: flex-start; gap: 12px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-m); padding: 14px 16px; margin-bottom: 10px; box-shadow: var(--shadow-card); }
+    .acc-item__ic { width: 38px; height: 38px; border-radius: var(--radius-s); background: var(--gold-soft); color: var(--gold); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .acc-item__t { font-size: 14px; font-weight: 600; color: var(--fg); }
+    .acc-item__s { font-size: 12.5px; color: var(--muted-fg); margin-top: 2px; }
+    .acc-item__amt { margin-left: auto; font-size: 14px; font-weight: 700; white-space: nowrap; }
+    .acc-item__amt.in { color: var(--success); } .acc-item__amt.out { color: var(--danger); }
+    .badge-st { font-size: 11px; font-weight: 700; border-radius: 999px; padding: 3px 10px; white-space: nowrap; margin-left: auto; }
+    .badge-st.ok { background: var(--success-soft); color: var(--success); }
+    .badge-st.wait { background: var(--warning-soft); color: var(--warning); }
+    .badge-st.cancel { background: var(--muted); color: var(--muted-fg); }
+    .acc-empty { text-align: center; padding: 40px 20px; color: var(--muted-fg); font-size: 14px; }
   </style>
 </head>
 <body>
@@ -151,21 +169,35 @@
             </div>
           </div>
 
-          <!-- Các mục khác: khung tĩnh -->
+          <!-- Thông tin cá nhân -->
           <div class="acc-pane is-hidden" data-pane="profile">
-            <div class="acc-placeholder"><div class="acc-placeholder__t">Thông tin cá nhân</div>Tính năng đang cập nhật.</div>
+            <div class="acc-main__head"><div><h2 class="acc-main__title">Thông tin cá nhân</h2>
+              <p class="acc-main__sub">Cập nhật thông tin liên hệ của bạn</p></div></div>
+            <div class="acc-card" id="profileForm"></div>
           </div>
+          <!-- Lịch xem phòng -->
           <div class="acc-pane is-hidden" data-pane="schedule">
-            <div class="acc-placeholder"><div class="acc-placeholder__t">Lịch xem phòng</div>Tính năng đang cập nhật.</div>
+            <div class="acc-main__head"><div><h2 class="acc-main__title">Lịch xem phòng</h2>
+              <p class="acc-main__sub" id="schSub"></p></div></div>
+            <div id="schList"></div>
           </div>
+          <!-- Giao dịch của tôi -->
           <div class="acc-pane is-hidden" data-pane="tx">
-            <div class="acc-placeholder"><div class="acc-placeholder__t">Giao dịch của tôi</div>Tính năng đang cập nhật.</div>
+            <div class="acc-main__head"><div><h2 class="acc-main__title">Giao dịch của tôi</h2>
+              <p class="acc-main__sub">Lịch sử cọc & thanh toán</p></div></div>
+            <div id="txList"></div>
           </div>
+          <!-- Thông báo -->
           <div class="acc-pane is-hidden" data-pane="notif">
-            <div class="acc-placeholder"><div class="acc-placeholder__t">Thông báo</div>Tính năng đang cập nhật.</div>
+            <div class="acc-main__head"><div><h2 class="acc-main__title">Thông báo</h2>
+              <p class="acc-main__sub">Cập nhật mới nhất cho bạn</p></div></div>
+            <div id="notifList"></div>
           </div>
+          <!-- Đổi mật khẩu -->
           <div class="acc-pane is-hidden" data-pane="password">
-            <div class="acc-placeholder"><div class="acc-placeholder__t">Đổi mật khẩu</div>Tính năng đang cập nhật.</div>
+            <div class="acc-main__head"><div><h2 class="acc-main__title">Đổi mật khẩu</h2>
+              <p class="acc-main__sub">Bảo mật tài khoản của bạn</p></div></div>
+            <div class="acc-card" id="pwForm"></div>
           </div>
         </div>
 
@@ -320,6 +352,96 @@
 
     document.getElementById('savedSort').addEventListener('change', renderSaved);
     renderSaved();
+
+    /* ===== Thông tin cá nhân ===== */
+    (function () {
+      var wrap = document.getElementById('profileForm');
+      if (!wrap) return;
+      var email = '', addr = '';
+      try { var u = JSON.parse(localStorage.getItem('ht_user') || '{}'); email = u.email || ''; addr = u.addr || ''; } catch (_) {}
+      wrap.innerHTML =
+        '<div class="af-field"><label>Họ tên</label><input id="pfName" value="' + esc(user.name) + '" placeholder="Nguyễn Văn A"></div>' +
+        '<div class="af-field"><label>Số điện thoại</label><input id="pfPhone" value="' + esc(user.phone) + '" placeholder="09xx xxx xxx"></div>' +
+        '<div class="af-field"><label>Email</label><input id="pfEmail" value="' + esc(email) + '" placeholder="ten@email.com"></div>' +
+        '<div class="af-field"><label>Địa chỉ</label><input id="pfAddr" value="' + esc(addr) + '" placeholder="Địa chỉ liên hệ"></div>' +
+        '<button class="btn btn--primary" id="pfSave">Lưu thay đổi</button>';
+      wrap.querySelector('#pfSave').addEventListener('click', function () {
+        var nm = wrap.querySelector('#pfName').value.trim();
+        if (!nm) { HT.toast('Nhập họ tên', 'danger'); return; }
+        try {
+          localStorage.setItem('ht_user', JSON.stringify({
+            name: nm, phone: wrap.querySelector('#pfPhone').value.trim(),
+            email: wrap.querySelector('#pfEmail').value.trim(), addr: wrap.querySelector('#pfAddr').value.trim()
+          }));
+        } catch (_) {}
+        var g = document.getElementById('greeting'); if (g) g.textContent = 'Xin chào, ' + nm + ' 👋';
+        HT.toast('Đã lưu thông tin', 'success');
+      });
+    })();
+
+    /* ===== Lịch xem phòng (demo) ===== */
+    (function () {
+      var list = document.getElementById('schList'), sub = document.getElementById('schSub');
+      var data = [
+        { room: 'Ký túc xá — Huỳnh Khương An, P.8', when: 'T4 15/07 · 15:00', st: 'ok', stl: 'Đã xác nhận' },
+        { room: 'Phòng trọ — Nguyễn Oanh, P.17', when: 'T6 17/07 · 10:00', st: 'wait', stl: 'Chờ xác nhận' },
+        { room: 'Căn hộ DV — Đinh Tiên Hoàng, P.3', when: 'T2 13/07 · 09:00', st: 'cancel', stl: 'Đã huỷ' }
+      ];
+      sub.textContent = data.length + ' lịch xem phòng';
+      list.innerHTML = data.map(function (x) {
+        return '<div class="acc-item"><span class="acc-item__ic">' + pico('calendar', 18) + '</span>' +
+          '<span><span class="acc-item__t">' + esc(x.room) + '</span><span class="acc-item__s">' + esc(x.when) + '</span></span>' +
+          '<span class="badge-st ' + x.st + '">' + esc(x.stl) + '</span></div>';
+      }).join('');
+    })();
+
+    /* ===== Giao dịch của tôi (demo) ===== */
+    (function () {
+      var list = document.getElementById('txList');
+      var data = [
+        { t: 'Cọc giữ phòng — Nguyễn Oanh, P.17', s: 'Chuyển khoản · 12/07', amt: '−2.800.000đ', dir: 'out' },
+        { t: 'Hoàn cọc — Đinh Tiên Hoàng (đổi phòng)', s: 'Chuyển khoản · 05/07', amt: '+1.500.000đ', dir: 'in' },
+        { t: 'Thanh toán tháng đầu — Huỳnh Khương An', s: 'Tiền mặt · 01/07', amt: '−1.400.000đ', dir: 'out' }
+      ];
+      list.innerHTML = data.map(function (x) {
+        return '<div class="acc-item"><span class="acc-item__ic">' + pico('receipt', 18) + '</span>' +
+          '<span><span class="acc-item__t">' + esc(x.t) + '</span><span class="acc-item__s">' + esc(x.s) + '</span></span>' +
+          '<span class="acc-item__amt ' + x.dir + '">' + esc(x.amt) + '</span></div>';
+      }).join('');
+    })();
+
+    /* ===== Thông báo (demo) ===== */
+    (function () {
+      var list = document.getElementById('notifList');
+      var data = [
+        { t: 'Lịch xem phòng đã được xác nhận', s: 'Ký túc xá Huỳnh Khương An · 2 giờ trước' },
+        { t: 'Có 3 phòng mới ở Gò Vấp phù hợp với bạn', s: 'Gợi ý theo khu vực quan tâm · Hôm qua' },
+        { t: 'Ưu đãi: giảm 500k cho lần thuê đầu tiên', s: 'Áp dụng đến 31/07 · 2 ngày trước' }
+      ];
+      list.innerHTML = data.map(function (x) {
+        return '<div class="acc-item"><span class="acc-item__ic">' + pico('bell', 18) + '</span>' +
+          '<span><span class="acc-item__t">' + esc(x.t) + '</span><span class="acc-item__s">' + esc(x.s) + '</span></span></div>';
+      }).join('');
+    })();
+
+    /* ===== Đổi mật khẩu ===== */
+    (function () {
+      var wrap = document.getElementById('pwForm');
+      if (!wrap) return;
+      wrap.innerHTML =
+        '<div class="af-field"><label>Mật khẩu hiện tại</label><input id="pwOld" type="password" placeholder="••••••"></div>' +
+        '<div class="af-field"><label>Mật khẩu mới</label><input id="pwNew" type="password" placeholder="Tối thiểu 6 ký tự"></div>' +
+        '<div class="af-field"><label>Xác nhận mật khẩu mới</label><input id="pwConf" type="password" placeholder="Nhập lại mật khẩu mới"></div>' +
+        '<button class="btn btn--primary" id="pwSave">Đổi mật khẩu</button>';
+      wrap.querySelector('#pwSave').addEventListener('click', function () {
+        var o = wrap.querySelector('#pwOld').value, n = wrap.querySelector('#pwNew').value, c = wrap.querySelector('#pwConf').value;
+        if (!o) { HT.toast('Nhập mật khẩu hiện tại', 'danger'); return; }
+        if (n.length < 6) { HT.toast('Mật khẩu mới tối thiểu 6 ký tự', 'danger'); return; }
+        if (n !== c) { HT.toast('Xác nhận mật khẩu không khớp', 'danger'); return; }
+        wrap.querySelector('#pwOld').value = wrap.querySelector('#pwNew').value = wrap.querySelector('#pwConf').value = '';
+        HT.toast('Đã đổi mật khẩu', 'success');
+      });
+    })();
   })();
   </script>
 </body>
