@@ -63,6 +63,10 @@ Triết lý thiết kế v2: **dùng modal (popup) thay cho mở nguyên trang**
 - Cũ: kanban full-width, bấm thẻ → modal. Mới: **kanban + panel chi tiết cố định bên phải** (desktop) gồm thông tin khách + **Lịch hẹn của khách** + **Lịch sử tương tác** (timeline) + nút Gọi/Zalo/Đặt lịch/Chuyển bước/Xoá. Mobile giữ modal.
 - **→ Ý nghĩa báo cáo:** giao diện CRM chuẩn 2-pane, chăm sóc khách trực quan (xem chi tiết mà không rời danh sách).
 
+### ✅ Mobile Responsive (29/08)
+- Audit 13 trang chính ở 375px (iPhone SE): 11 trang vừa khít sẵn; sửa 2 trang tràn ngang — topbar nội bộ (Quản lý toà nhà) cho xuống dòng + ô tìm co lại (fix chung internal.css); biểu đồ Báo cáo co lại + grid item min-width:0. Kết quả: TẤT CẢ vừa khít, không tràn ngang.
+- **→ Ý nghĩa báo cáo:** củng cố tuyên bố "responsive/mobile-first" của đề tài — web dùng tốt trên điện thoại, sẵn sàng đóng gói app (Capacitor).
+
 ### ✅ So sánh phòng — trang riêng (28/08)
 - Cũ: so sánh bằng modal trong Tìm phòng. Mới: **trang riêng `sosanh.html`** — các cột phòng cạnh nhau (ảnh+giá) + bảng so sánh (giá/loại/diện tích/địa chỉ/tiện ích) + nút Xem chi tiết/Đặt lịch. Chọn phòng ở Tìm phòng → "So sánh ngay" điều hướng sang trang.
 
@@ -75,4 +79,4 @@ Triết lý thiết kế v2: **dùng modal (popup) thay cho mở nguyên trang**
 ## CHƯA LÀM (Giai đoạn 3 còn lại — có thể để "hướng phát triển"):
 - Dashboard Sale + khu vực Sale riêng (Kho phòng/Deal/Khách của tôi) — hệ 2 vai trò, lớn nhất.
 
-- Mobile Responsive (v2 đã thiết kế sẵn 12 màn 375px).
+
