@@ -81,6 +81,10 @@
     .a-warn { background: var(--warning-soft); color: var(--warning); }
     .a-info { background: var(--info-soft); color: var(--info); }
     .a-danger { background: var(--danger-soft); color: var(--danger); }
+    /* Cho grid item co lại (min-width:0) — nếu không, biểu đồ ép card rộng hơn màn hình */
+    .cols > * { min-width: 0; }
+    .chart { min-width: 0; }
+    .chart__col { min-width: 0; }
     /* Mobile: card head + biểu đồ co lại, hết tràn ngang */
     @media (max-width: 700px) {
       .card__head { flex-wrap: wrap; row-gap: 8px; }
