@@ -21,5 +21,15 @@ Chạy trên site LIVE (hthome.thanghost.io.vn) bằng trình duyệt thật (Pl
 - `sw.js CACHE=hthome-v5`. Live `ht-ui.js?v=5` có `HT.modal` ✓.
 - Cú pháp TẤT CẢ JS (functions/api, functions/img, assets/js) — sạch.
 
+## 5. QA/QC ĐĂNG NHẬP THẬT qua giao diện — ✅ TOÀN BỘ PASS
+Không tiêm localStorage — đăng nhập bằng form như user thật:
+- **Guard:** vào thẳng `crm.html` khi chưa login → ✅ bị đá về trang đăng nhập.
+- **Trang đăng nhập:** có ô SĐT + ô mật khẩu ✓.
+- **Sai mật khẩu** (0900000001 / 000000) → ✅ không cho vào.
+- **Đúng** (Admin 0900000001 / 123456) → ✅ vào Dashboard (sidebar hiện "Quản trị viên · Admin").
+- **Giữ đăng nhập:** click sang CRM / Deal / Báo cáo / Kho phòng → ✅ đều vào OK, không rớt session.
+- **Đăng xuất** → vào lại `crm.html` → ✅ bị chặn (đăng xuất có hiệu lực).
+- Lỗi JS toàn phiên: 0.
+
 ## Kết luận
 **Không phát hiện regression.** 3 giai đoạn đã làm chạy đúng và ổn định trên production. Điểm duy nhất cần biết (không phải lỗi): video TikTok trong seed là ID giả nên preview không load — khi có video thật thì hết.
