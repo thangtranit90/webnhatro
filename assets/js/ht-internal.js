@@ -54,6 +54,16 @@
     { k: 'phanquyen', label: 'Phân quyền', href: 'phanquyen.html', icon: 'shield-check' },
     { k: 'caidat', label: 'Cài đặt', href: 'caidat.html', icon: 'settings' }
   ];
+  // Nav riêng cho SALE (khu "của tôi" — không có mục quản trị)
+  var NAV_SALE = [
+    { k: 'dashboard', label: 'Dashboard', href: 'dashboard.html', icon: 'layout-dashboard' },
+    { k: 'khophong', label: 'Kho phòng', href: 'khophong.html', icon: 'package' },
+    { k: 'toanha', label: 'Tòa nhà', href: 'toanha.html', icon: 'building' },
+    { k: 'crm', label: 'Khách của tôi', href: 'crm.html', icon: 'users' },
+    { k: 'deal', label: 'Deal của tôi', href: 'deal.html', icon: 'file-text' },
+    { k: 'lichhen', label: 'Lịch hẹn', href: 'lichhen.html', icon: 'calendar-days' },
+    { k: 'bangtin', label: 'Bảng tin', href: 'bangtin.html', icon: 'megaphone' }
+  ];
 
   function item(n, active) {
     var badge = n.badge;
@@ -101,7 +111,15 @@
 
   function sidebarHTML(active) {
     var s = staff() || { name: 'Minh Trọ', role: 'Sale cấp 2', initials: 'MT', roleKey: 'sale2' };
-    var roleLabel = (s.roleKey === 'admin' ? '👑 ' : '⭐ ') + s.role;
+    var isAdmin = s.roleKey === 'admin';
+    var roleLabel = (isAdmin ? '👑 ' : '⭐ ') + s.role;
+    // Admin: NAV_MAIN + khu QUẢN TRỊ. Sale: NAV_SALE (không có khu quản trị).
+    var mainNav = isAdmin ? NAV_MAIN : NAV_SALE;
+    var adminSection = isAdmin
+      ? ('<div class="sidebar__divider"></div>' +
+         '<div class="sidebar__cap">QUẢN TRỊ</div>' +
+         '<nav class="sidebar__nav">' + NAV_ADMIN.map(function (n) { return item(n, active); }).join('') + '</nav>')
+      : '';
     return '' +
       '<aside class="sidebar">' +
         '<div class="sidebar__brand">' +
@@ -109,10 +127,8 @@
           '<span class="sidebar__brand-name">HT HOME</span>' + ic('chevrons-up-down', 16) +
         '</div>' +
         '<div class="sidebar__search" id="ht-gsearch" style="cursor:pointer">' + ic('search', 15) + '<span>Tìm kiếm nhanh</span><span class="kbd">⌘K</span></div>' +
-        '<nav class="sidebar__nav">' + NAV_MAIN.map(function (n) { return item(n, active); }).join('') + '</nav>' +
-        '<div class="sidebar__divider"></div>' +
-        '<div class="sidebar__cap">QUẢN TRỊ</div>' +
-        '<nav class="sidebar__nav">' + NAV_ADMIN.map(function (n) { return item(n, active); }).join('') + '</nav>' +
+        '<nav class="sidebar__nav">' + mainNav.map(function (n) { return item(n, active); }).join('') + '</nav>' +
+        adminSection +
         '<div class="sidebar__spacer"></div>' +
         '<div class="sidebar__profile">' +
           '<div class="sidebar__level">' +
@@ -128,12 +144,19 @@
       '</aside>';
   }
 
+  // Trang chỉ Admin được vào (sale bị chặn)
+  var ADMIN_ONLY = ['baocao', 'quy', 'nhanvien', 'phanquyen', 'caidat', 'doanhthu', 'khuvuc'];
+
   function mount() {
     var host = document.getElementById('ht-sidebar');
     if (!host) return;
     // Bắt buộc đăng nhập mới vào được khu nội bộ
-    if (!staff()) { location.replace('dangnhap-noibo.html'); return; }
-    host.innerHTML = sidebarHTML(host.getAttribute('data-active') || '');
+    var s = staff();
+    if (!s) { location.replace('dangnhap-noibo.html'); return; }
+    // Phân quyền: sale không được vào trang admin
+    var active = host.getAttribute('data-active') || '';
+    if (s.roleKey !== 'admin' && ADMIN_ONLY.indexOf(active) >= 0) { location.replace('dashboard.html'); return; }
+    host.innerHTML = sidebarHTML(active);
 
     var lo = document.getElementById('htLogout');
     if (lo) lo.addEventListener('click', function () { try { localStorage.removeItem('ht_staff'); } catch (e) {} });

@@ -104,7 +104,7 @@
   </div>
 
   <script src="assets/js/ht-ui.js?v=5"></script>
-  <script src="assets/js/ht-internal.js?v=4"></script>
+  <script src="assets/js/ht-internal.js?v=6"></script>
   <script>
     var I = HTI.icon;
     var esc = HT.esc;
@@ -157,10 +157,16 @@
       };
     }
 
+    /* Phân quyền: sale chỉ thấy khách của mình */
+    var me = null; try { me = JSON.parse(localStorage.getItem('ht_staff')); } catch (e) {}
+    var isSale = me && me.roleKey !== 'admin';
+    if (isSale) { document.querySelector('.app-topbar__title').textContent = 'Khách của tôi'; }
+
     /* Tải danh sách khách từ D1 và dựng lại kanban */
     function loadCustomers() {
       return fetch('/api/khach').then(function (r) { return r.json(); }).then(function (rows) {
         if (!Array.isArray(rows)) rows = [];
+        if (isSale) rows = rows.filter(function (r) { return (r.sale || '').trim() === (me.name || '').trim(); });
         cardMap = {};
         columns.forEach(function (col) { col.cards = []; });
         rows.forEach(function (r) {

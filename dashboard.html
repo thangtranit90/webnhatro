@@ -123,7 +123,7 @@
 
   <script src="data.js"></script>
   <script src="assets/js/ht-ui.js?v=5"></script>
-  <script src="assets/js/ht-internal.js?v=4"></script>
+  <script src="assets/js/ht-internal.js?v=6"></script>
   <script>
     var I = HTI.icon;
     document.getElementById('btnSidebar').innerHTML = I('menu', 22);
@@ -138,10 +138,43 @@
       { label: 'Phòng còn trống', ic: 'package', val: '247', delta: 'trên 1.024 phòng' },
       { label: 'Khách đang chăm', ic: 'users', val: '28', delta: '2 khách sắp hết khóa' }
     ];
-    document.getElementById('kpiRow').innerHTML = kpis.map(function (k) {
+    // ---- Phân quyền: Dashboard Sale (KPI cá nhân, dữ liệu thật) ----
+    var me = null; try { me = JSON.parse(localStorage.getItem('ht_staff')); } catch (e) {}
+    var isSale = me && me.roleKey !== 'admin';
+    // Lời chào theo user thật
+    var firstName = me ? (String(me.name).trim().split(/\s+/).pop()) : 'bạn';
+    var titleEl = document.querySelector('.app-topbar__title');
+    if (titleEl) titleEl.textContent = 'Chào buổi sáng, ' + firstName + ' 👋';
+    if (isSale) {
+      titleEl.nextElementSibling && (titleEl.nextElementSibling.textContent = 'Hiệu suất cá nhân của bạn hôm nay');
+      Promise.all([
+        fetch('/api/deal').then(function (r) { return r.json(); }).catch(function () { return []; }),
+        fetch('/api/khach').then(function (r) { return r.json(); }).catch(function () { return []; }),
+        fetch('/api/lich-hen').then(function (r) { return r.json(); }).catch(function () { return []; })
+      ]).then(function (a) {
+        var nm = (me.name || '').trim();
+        var myDeals = (a[0] || []).filter(function (d) { return (d.sale || '').trim() === nm; });
+        var myKhach = (a[1] || []).filter(function (c) { return (c.sale || '').trim() === nm; });
+        var myLich = (a[2] || []).length; // demo: tổng lịch tuần
+        var hh = myDeals.reduce(function (s, d) { return s + (Number(d.hh) || 0); }, 0);
+        var chot = myDeals.filter(function (d) { return d.trang_thai === 'chot' || d.trang_thai === 'release'; }).length;
+        function tr(n) { return (Math.round(n / 1e5) / 10) + ' tr'; }
+        kpis = [
+          { label: 'Hoa hồng của tôi', ic: 'wallet', val: tr(hh), delta: 'Tháng này', up: true },
+          { label: 'Deal đã chốt', ic: 'file-text', val: chot, delta: myDeals.length + ' deal tổng' },
+          { label: 'Khách đang chăm', ic: 'users', val: myKhach.length, delta: 'Của bạn' },
+          { label: 'Lịch xem tuần', ic: 'calendar-days', val: myLich, delta: 'Lịch dẫn xem' }
+        ];
+        renderKpis();
+      });
+    }
+    function renderKpis() {
+      document.getElementById('kpiRow').innerHTML = kpis.map(function (k) {
       return '<div class="kpi"><div class="kpi__top"><span>' + k.label + '</span><span class="kpi__ic">' + I(k.ic, 18) + '</span></div>' +
         '<div class="kpi__val">' + k.val + '</div><div class="kpi__delta' + (k.up ? ' up' : '') + '">' + k.delta + '</div></div>';
-    }).join('');
+      }).join('');
+    }
+    renderKpis();
 
     // Leaderboard
     var lb = [

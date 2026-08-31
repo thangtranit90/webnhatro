@@ -87,7 +87,7 @@
   </div>
 
   <script src="assets/js/ht-ui.js?v=5"></script>
-  <script src="assets/js/ht-internal.js?v=4"></script>
+  <script src="assets/js/ht-internal.js?v=6"></script>
   <script>
     (function () {
       'use strict';
@@ -110,10 +110,19 @@
 
       var deals = [];
       var state = { tab: 'all' };
+      // Phân quyền: sale chỉ thấy deal của mình
+      var me = null; try { me = JSON.parse(localStorage.getItem('ht_staff')); } catch (e) {}
+      var isSale = me && me.roleKey !== 'admin';
+      if (isSale) {
+        document.querySelector('.app-topbar__title').textContent = 'Deal của tôi';
+        document.getElementById('dlSub').textContent = 'Deal do bạn phụ trách';
+      }
 
       function loadDeals() {
         return fetch('/api/deal').then(function (r) { return r.json(); }).then(function (rows) {
-          deals = Array.isArray(rows) ? rows : [];
+          rows = Array.isArray(rows) ? rows : [];
+          if (isSale) rows = rows.filter(function (d) { return (d.sale || '').trim() === (me.name || '').trim(); });
+          deals = rows;
           renderAll();
         }).catch(function () { HT.toast('Không tải được danh sách deal', 'danger'); });
       }
