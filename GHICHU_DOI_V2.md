@@ -106,7 +106,7 @@
 ### D. Bổ sung màn/luồng v2 có mà web thiếu:
 - [x] ✅ **Danh sách Deal** (bảng KPI+tabs) + **Chốt deal** (modal) + **Release hoa hồng** (modal). D1 bảng `deal` + `/api/deal`. Deploy+test OK (28/08).
 - [x] ✅ **CRM**: panel chi tiết + Lịch hẹn + timeline bên phải kanban (desktop 2-pane). Deploy+test OK (28/08). Chi tiết khách = panel (không cần trang riêng).
-- [ ] **Dashboard Sale** + khu **Sale** riêng (Kho phòng/Deal/Khách của tôi)
+- [x] ✅ **Dashboard Sale + khu Sale riêng** (hệ 2 vai trò Admin/Sale). Deploy+QA login OK (31/08).
 - [x] ✅ **So sánh phòng** → trang riêng `sosanh.html` (3+ cột + bảng + CTA). timphong điều hướng sang. Deploy+test OK (28/08).
 - [x] ✅ Tài khoản khách chi tiết: 6 tab đầy đủ. Deploy+test OK (29/08).
 - [x] Báo cáo: thêm Pipeline khách + Cảnh báo (dữ liệu thật) ✅ 28/08

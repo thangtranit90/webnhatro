@@ -76,7 +76,14 @@ Triết lý thiết kế v2: **dùng modal (popup) thay cho mở nguyên trang**
 ### ✅ Báo cáo — widget dữ liệu thật (28/08)
 - Thêm **Pipeline khách hàng** (phễu moi→chốt, đếm thật) + **Cảnh báo & lưu ý** (suy từ deal/khách/toà/lịch hẹn thật).
 
-## CHƯA LÀM (Giai đoạn 3 còn lại — có thể để "hướng phát triển"):
-- Dashboard Sale + khu vực Sale riêng (Kho phòng/Deal/Khách của tôi) — hệ 2 vai trò, lớn nhất.
+### ✅ Hệ 2 vai trò Admin/Sale — khu Sale riêng (31/08)
+- Sidebar role-aware: Admin thấy đầy đủ + khu QUẢN TRỊ; Sale thấy nav rút gọn "Khách của tôi / Deal của tôi" (không có khu quản trị).
+- Phân quyền chặn: Sale không vào được trang admin (Báo cáo/Quỹ/Nhân viên/Phân quyền/Cài đặt) — tự đá về Dashboard.
+- Dashboard Sale: lời chào theo tên + KPI cá nhân (Hoa hồng/Deal/Khách/Lịch của tôi, dữ liệu thật).
+- Deal & CRM: Sale chỉ thấy deal/khách do mình phụ trách (lọc theo tên sale).
+- **→ Ý nghĩa báo cáo:** hoàn thiện "phân quyền theo vai trò" nêu trong đề cương — 2 trải nghiệm khác nhau cho Admin và Sale trên cùng hệ thống.
+
+## HOÀN TẤT — không còn mục nào trong Giai đoạn 3.
+_(Trước đây liệt kê chưa làm:)_
 
 
