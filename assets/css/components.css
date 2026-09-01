@@ -15,7 +15,7 @@
 }
 .btn--primary { background: var(--primary); color: var(--primary-fg); font-weight: 700; }
 .btn--primary:hover { background: var(--primary-hover); }
-.btn--gold { background: var(--gold); color: var(--gold-fg); font-weight: 700; }
+.btn--gold { background: var(--gold); color: var(--on-gold); font-weight: 700; }
 .btn--gold:hover { filter: brightness(.96); }
 .btn--ghost { background: var(--card); color: var(--fg); border-color: var(--border); }
 .btn--ghost:hover { border-color: var(--muted-fg); }
@@ -110,7 +110,7 @@
 .mobile-nav.is-open { display: flex; }
 .mobile-nav a { padding: 12px 8px; font-size: 15px; font-weight: 600; color: var(--fg); border-radius: var(--radius-s); }
 .mobile-nav a:hover { background: var(--muted); }
-.mobile-nav a.is-active { color: var(--gold); }
+.mobile-nav a.is-active { color: var(--gold-fg); }
 .mobile-nav__actions { display: flex; gap: 10px; margin-top: 8px; }
 .mobile-nav__actions .btn { flex: 1; }
 @media (min-width: 1024px) { .mobile-nav { display: none !important; } }
@@ -134,7 +134,7 @@
 .footer-col a, .footer-col__row { display: block; font-size: 13px; color: #cfcfcf; margin-bottom: 13px; }
 .footer-col a:hover { color: #fff; }
 .footer-col__row { display: flex; align-items: flex-start; gap: 8px; }
-.footer-col__row .ic { color: var(--gold); margin-top: 1px; }
+.footer-col__row .ic { color: var(--gold-fg); margin-top: 1px; }
 .footer-divider { height: 1px; background: rgba(255,255,255,.29); }
 .footer-bottom {
   display: flex; flex-direction: column; gap: 12px;
@@ -247,9 +247,9 @@
 .rm-chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .rm-chip { border: 1px solid var(--border); background: var(--card); color: var(--muted-fg); font: inherit; font-size: 13px; font-weight: 600; padding: 7px 13px; border-radius: 999px; cursor: pointer; transition: all .15s; }
 .rm-chip:hover { color: var(--fg); border-color: var(--muted-fg); }
-.rm-chip.is-on { background: var(--gold-soft); color: var(--gold-fg); border-color: var(--gold); }
+.rm-chip.is-on { background: var(--gold-soft); color: var(--gold-fg); border-color: var(--gold-fg); }
 .rm-drop { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; text-align: center; border: 1.5px dashed var(--border); border-radius: var(--radius-m); padding: 22px 16px; color: var(--muted-fg); cursor: pointer; background: var(--muted); font-size: 13px; font-weight: 600; }
-.rm-drop:hover, .rm-drop.is-drag { border-color: var(--gold); color: var(--fg); }
+.rm-drop:hover, .rm-drop.is-drag { border-color: var(--gold-fg); color: var(--fg); }
 .rm-drop__s { font-size: 11.5px; font-weight: 400; }
 .rm-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 .rm-thumb { position: relative; width: 72px; height: 72px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }

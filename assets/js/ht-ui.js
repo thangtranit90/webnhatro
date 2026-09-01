@@ -78,8 +78,7 @@
         '<div class="site-header__inner container">' +
           '<div class="site-header__left">' +
             '<a class="brand" href="index.html">' +
-              '<img class="brand__logo" src="ht-home-logo.png" alt="HT HOME"/>' +
-              '<span class="brand__name">HT HOME</span>' +
+              '<img class="brand__logo" src="logo-full-light.png?v=2" alt="HT HOME" style="height:30px;width:auto"/>' +
             '</a>' +
             '<nav class="nav">' + links + '</nav>' +
           '</div>' +
@@ -112,7 +111,7 @@
         '<div class="site-footer__inner container">' +
           '<div class="footer-cols">' +
             '<div class="footer-brand">' +
-              '<img class="footer-brand__logo" src="ht-home-logo.png" alt="HT HOME"/>' +
+              '<img class="footer-brand__logo" src="logo-full-dark.png?v=2" alt="HT HOME" style="height:30px;width:auto"/>' +
               '<p class="footer-brand__desc">Nền tảng tìm thuê phòng trọ, căn hộ dịch vụ &amp; ký túc xá tại TP.HCM. Minh bạch, uy tín, tận tâm.</p>' +
               '<a class="footer-social" href="#">' + icon('facebook', 15) + 'Fanpage HT HOME</a>' +
             '</div>' +
@@ -270,7 +269,7 @@
     }
     // Favicon = logo HT HOME (tránh 404 /favicon.ico + hiện icon ở tab trình duyệt)
     if (!document.querySelector('link[rel="icon"]')) {
-      var fav = document.createElement('link'); fav.rel = 'icon'; fav.type = 'image/png'; fav.href = 'ht-home-logo.png'; document.head.appendChild(fav);
+      var fav = document.createElement('link'); fav.rel = 'icon'; fav.type = 'image/png'; fav.href = 'logo-mark.png?v=2'; document.head.appendChild(fav);
     }
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function () {

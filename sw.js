@@ -1,12 +1,12 @@
 /* Service worker HT HOME — cache đơn giản cho PWA (cài như app + chạy mượt) */
-var CACHE = 'hthome-v7';
+var CACHE = 'hthome-v8';
 var CORE = [
   './',
   './index.html',
-  './assets/css/tokens.css?v=4',
-  './assets/css/base.css?v=4',
-  './assets/css/components.css?v=5',
-  './assets/js/ht-ui.js?v=5',
+  './assets/css/tokens.css?v=7',
+  './assets/css/base.css?v=7',
+  './assets/css/components.css?v=7',
+  './assets/js/ht-ui.js?v=7',
   './data.js',
   './ht-home-logo.png',
   './manifest.json'

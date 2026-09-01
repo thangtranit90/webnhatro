@@ -7,9 +7,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="assets/css/tokens.css?v=4" />
-  <link rel="stylesheet" href="assets/css/base.css?v=4" />
-  <link rel="stylesheet" href="assets/css/components.css?v=5" />
+  <link rel="stylesheet" href="assets/css/tokens.css?v=7" />
+  <link rel="stylesheet" href="assets/css/base.css?v=7" />
+  <link rel="stylesheet" href="assets/css/components.css?v=7" />
   <link rel="stylesheet" href="assets/css/internal.css?v=6" />
   <style>
     /* ===== KPI ===== */
@@ -18,7 +18,7 @@
     @media (min-width: 1200px) { .kpi-row { grid-template-columns: repeat(4, 1fr); } }
     .kpi { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-l); padding: 18px; box-shadow: var(--shadow-card); }
     .kpi__top { display: flex; align-items: center; justify-content: space-between; color: var(--muted-fg); font-size: 13px; font-weight: 500; }
-    .kpi__ic { width: 34px; height: 34px; border-radius: var(--radius-s); background: var(--gold-soft); color: var(--gold); display: inline-flex; align-items: center; justify-content: center; }
+    .kpi__ic { width: 34px; height: 34px; border-radius: var(--radius-s); background: var(--gold-soft); color: var(--gold-fg); display: inline-flex; align-items: center; justify-content: center; }
     .kpi__val { font-size: 26px; font-weight: 800; color: var(--fg); margin-top: 10px; }
     .kpi__delta { font-size: 12px; margin-top: 4px; color: var(--muted-fg); }
     .kpi__delta.up { color: var(--success); }
@@ -31,7 +31,7 @@
     .card__head .sub { font-size: 12px; color: var(--muted-fg); margin-top: 2px; }
     .tb-actions { display: flex; flex-wrap: wrap; gap: 8px; }
     .tb-btn { display: inline-flex; align-items: center; gap: 6px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-m); padding: 8px 12px; font-size: 13px; font-weight: 600; color: var(--fg); cursor: pointer; transition: border-color .15s; }
-    .tb-btn:hover { border-color: var(--gold); }
+    .tb-btn:hover { border-color: var(--gold-fg); }
     .tb-btn .ic { color: var(--muted-fg); }
 
     /* ===== Search ===== */
@@ -48,7 +48,7 @@
     .tn-table th { font-size: 12px; font-weight: 700; color: var(--muted-fg); text-transform: uppercase; letter-spacing: .03em; background: var(--bg); }
     .tn-table tbody tr:hover { background: var(--bg); }
     .tn-name { display: flex; align-items: center; gap: 12px; }
-    .tn-name__ic { width: 38px; height: 38px; border-radius: var(--radius-s); background: var(--gold-soft); color: var(--gold); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .tn-name__ic { width: 38px; height: 38px; border-radius: var(--radius-s); background: var(--gold-soft); color: var(--gold-fg); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .tn-name__t { font-size: 14px; font-weight: 700; color: var(--fg); }
     .tn-name__s { font-size: 12px; color: var(--muted-fg); margin-top: 2px; white-space: normal; max-width: 280px; }
     .tn-badge { display: inline-flex; align-items: center; font-size: 12px; font-weight: 600; border-radius: 999px; padding: 3px 10px; background: var(--muted); color: var(--muted-fg); }
@@ -119,8 +119,8 @@
   </div>
 
   <script src="data.js"></script>
-  <script src="assets/js/ht-ui.js?v=5"></script>
-  <script src="assets/js/ht-internal.js?v=6"></script>
+  <script src="assets/js/ht-ui.js?v=7"></script>
+  <script src="assets/js/ht-internal.js?v=7"></script>
   <script>
     (function () {
       var I = HTI.icon;

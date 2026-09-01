@@ -8,9 +8,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="assets/css/tokens.css?v=4" />
-  <link rel="stylesheet" href="assets/css/base.css?v=4" />
-  <link rel="stylesheet" href="assets/css/components.css?v=5" />
+  <link rel="stylesheet" href="assets/css/tokens.css?v=7" />
+  <link rel="stylesheet" href="assets/css/base.css?v=7" />
+  <link rel="stylesheet" href="assets/css/components.css?v=7" />
   <style>
     /* ===== Trang Tài khoản — style riêng ===== */
 
@@ -54,7 +54,7 @@
     .acc-nav a:hover { background: var(--muted); color: var(--fg); }
     .acc-nav a:hover .ic { color: var(--fg); }
     .acc-nav a.is-active { background: var(--primary); color: #fff; }
-    .acc-nav a.is-active .ic { color: var(--gold); }
+    .acc-nav a.is-active .ic { color: var(--gold-fg); }
 
     .acc-side__logout { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
     .acc-side__logout .btn { width: 100%; }
@@ -97,7 +97,7 @@
     .af-field input { width: 100%; border: 1px solid var(--border); border-radius: var(--radius-m); padding: 11px 13px; font: inherit; font-size: 14px; color: var(--fg); background: var(--card); box-sizing: border-box; }
     .af-field input:focus { outline: none; border-color: var(--fg); }
     .acc-item { display: flex; align-items: flex-start; gap: 12px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-m); padding: 14px 16px; margin-bottom: 10px; box-shadow: var(--shadow-card); }
-    .acc-item__ic { width: 38px; height: 38px; border-radius: var(--radius-s); background: var(--gold-soft); color: var(--gold); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .acc-item__ic { width: 38px; height: 38px; border-radius: var(--radius-s); background: var(--gold-soft); color: var(--gold-fg); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .acc-item__t { font-size: 14px; font-weight: 600; color: var(--fg); }
     .acc-item__s { font-size: 12.5px; color: var(--muted-fg); margin-top: 2px; }
     .acc-item__amt { margin-left: auto; font-size: 14px; font-weight: 700; white-space: nowrap; }
@@ -208,7 +208,7 @@
   <div id="ht-footer"></div>
 
   <script src="data.js"></script>
-  <script src="assets/js/ht-ui.js?v=5"></script>
+  <script src="assets/js/ht-ui.js?v=7"></script>
   <script>
   (function () {
     'use strict';

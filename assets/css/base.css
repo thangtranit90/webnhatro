@@ -49,7 +49,7 @@ input, select, textarea { font-family: inherit; font-size: inherit; }
 
 /* Tiện ích nhỏ */
 .text-muted { color: var(--muted-fg); }
-.text-gold  { color: var(--gold); }
+.text-gold  { color: var(--gold-fg); }
 .sr-only {
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
   overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;

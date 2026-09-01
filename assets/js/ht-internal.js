@@ -123,8 +123,7 @@
     return '' +
       '<aside class="sidebar">' +
         '<div class="sidebar__brand">' +
-          '<span class="sidebar__brand-logo">HT</span>' +
-          '<span class="sidebar__brand-name">HT HOME</span>' + ic('chevrons-up-down', 16) +
+          '<img src="logo-full-dark.png?v=2" alt="HT HOME" style="height:26px;width:auto"/>' + ic('chevrons-up-down', 16) +
         '</div>' +
         '<div class="sidebar__search" id="ht-gsearch" style="cursor:pointer">' + ic('search', 15) + '<span>Tìm kiếm nhanh</span><span class="kbd">⌘K</span></div>' +
         '<nav class="sidebar__nav">' + mainNav.map(function (n) { return item(n, active); }).join('') + '</nav>' +

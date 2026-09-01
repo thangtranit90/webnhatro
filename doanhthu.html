@@ -7,9 +7,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="assets/css/tokens.css?v=4" />
-  <link rel="stylesheet" href="assets/css/base.css?v=4" />
-  <link rel="stylesheet" href="assets/css/components.css?v=5" />
+  <link rel="stylesheet" href="assets/css/tokens.css?v=7" />
+  <link rel="stylesheet" href="assets/css/base.css?v=7" />
+  <link rel="stylesheet" href="assets/css/components.css?v=7" />
   <link rel="stylesheet" href="assets/css/internal.css?v=6" />
   <style>
     /* Nhóm nút chọn kỳ */
@@ -23,7 +23,7 @@
     @media (min-width: 1200px) { .kpi-row { grid-template-columns: repeat(4, 1fr); } }
     .kpi { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-l); padding: 18px; box-shadow: var(--shadow-card); }
     .kpi__top { display: flex; align-items: center; justify-content: space-between; color: var(--muted-fg); font-size: 13px; font-weight: 500; }
-    .kpi__ic { width: 34px; height: 34px; border-radius: var(--radius-s); background: var(--gold-soft); color: var(--gold); display: inline-flex; align-items: center; justify-content: center; }
+    .kpi__ic { width: 34px; height: 34px; border-radius: var(--radius-s); background: var(--gold-soft); color: var(--gold-fg); display: inline-flex; align-items: center; justify-content: center; }
     .kpi__val { font-size: 26px; font-weight: 800; color: var(--fg); margin-top: 10px; }
     .kpi__delta { font-size: 12px; margin-top: 4px; color: var(--muted-fg); }
     .kpi__delta.up { color: var(--success); }
@@ -36,7 +36,7 @@
     .mt20 { margin-top: 20px; }
 
     /* Thẻ level-up */
-    .lvl-pct { font-size: 22px; font-weight: 800; color: var(--gold); }
+    .lvl-pct { font-size: 22px; font-weight: 800; color: var(--gold-fg); }
     .prog { margin-bottom: 16px; }
     .prog:last-child { margin-bottom: 0; }
     .prog__lbl { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px; }
@@ -111,8 +111,8 @@
     </main>
   </div>
 
-  <script src="assets/js/ht-ui.js?v=5"></script>
-  <script src="assets/js/ht-internal.js?v=6"></script>
+  <script src="assets/js/ht-ui.js?v=7"></script>
+  <script src="assets/js/ht-internal.js?v=7"></script>
   <script>
     (function () {
       'use strict';

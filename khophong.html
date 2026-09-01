@@ -7,9 +7,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="assets/css/tokens.css?v=4" />
-  <link rel="stylesheet" href="assets/css/base.css?v=4" />
-  <link rel="stylesheet" href="assets/css/components.css?v=5" />
+  <link rel="stylesheet" href="assets/css/tokens.css?v=7" />
+  <link rel="stylesheet" href="assets/css/base.css?v=7" />
+  <link rel="stylesheet" href="assets/css/components.css?v=7" />
   <link rel="stylesheet" href="assets/css/internal.css?v=6" />
   <style>
     /* ===== Kho phòng — style riêng ===== */
@@ -23,13 +23,13 @@
 
     .kp-selects { display: flex; flex-wrap: wrap; gap: 8px; }
     .kp-select { display: inline-flex; align-items: center; gap: 6px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-m); padding: 9px 12px; font-size: 13px; font-weight: 600; color: var(--fg); cursor: pointer; transition: border-color .15s, background .15s; }
-    .kp-select:hover { border-color: var(--gold); }
+    .kp-select:hover { border-color: var(--gold-fg); }
     .kp-select .ic { color: var(--muted-fg); }
 
     /* Tabs trạng thái */
     .kp-tabs { display: flex; flex-wrap: wrap; gap: 8px; }
     .kp-tab { display: inline-flex; align-items: center; gap: 8px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-pill); padding: 8px 14px; font-size: 13px; font-weight: 600; color: var(--muted-fg); cursor: pointer; transition: all .15s; }
-    .kp-tab:hover { color: var(--fg); border-color: var(--gold); }
+    .kp-tab:hover { color: var(--fg); border-color: var(--gold-fg); }
     .kp-tab.is-active { background: var(--primary); border-color: var(--primary); color: #fff; }
     .kp-tab__cnt { font-size: 12px; font-weight: 700; background: var(--muted); color: var(--muted-fg); border-radius: 999px; padding: 1px 8px; }
     .kp-tab.is-active .kp-tab__cnt { background: rgba(255,255,255,.22); color: #fff; }
@@ -75,8 +75,8 @@
   </div>
 
   <script src="data.js"></script>
-  <script src="assets/js/ht-ui.js?v=5"></script>
-  <script src="assets/js/ht-internal.js?v=6"></script>
+  <script src="assets/js/ht-ui.js?v=7"></script>
+  <script src="assets/js/ht-internal.js?v=7"></script>
   <script src="assets/js/ht-room-modal.js?v=5"></script>
   <script>
     (function () {

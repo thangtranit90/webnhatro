@@ -8,9 +8,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="assets/css/tokens.css?v=4" />
-  <link rel="stylesheet" href="assets/css/base.css?v=4" />
-  <link rel="stylesheet" href="assets/css/components.css?v=5" />
+  <link rel="stylesheet" href="assets/css/tokens.css?v=7" />
+  <link rel="stylesheet" href="assets/css/base.css?v=7" />
+  <link rel="stylesheet" href="assets/css/components.css?v=7" />
   <style>
     /* ===== Trang Tìm phòng — style riêng ===== */
 
@@ -48,7 +48,7 @@
       padding: 11px 16px; font-size: 14px; font-weight: 600; color: var(--fg);
     }
     .filter-toggle:hover { border-color: var(--muted-fg); }
-    .filter-toggle .ic { color: var(--gold); }
+    .filter-toggle .ic { color: var(--gold-fg); }
     @media (min-width: 1024px) { .filter-toggle { display: none; } }
 
     /* --- Sidebar bộ lọc --- */
@@ -129,7 +129,7 @@
       display: inline-flex; align-items: center; justify-content: center; color: #fff; transition: all .15s;
     }
     .cmp-toggle .cmp-box .ic { opacity: 0; }
-    .cmp-toggle input:checked + .cmp-box { background: var(--gold); border-color: var(--gold); color: var(--gold-fg); }
+    .cmp-toggle input:checked + .cmp-box { background: var(--gold); border-color: var(--gold-shade); color: var(--on-gold); }
     .cmp-toggle input:checked + .cmp-box .ic { opacity: 1; }
 
     .empty { grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: var(--muted-fg); }
@@ -157,7 +157,7 @@
     }
     .compare-bar.is-show { transform: translateX(-50%) translateY(0); }
     .compare-bar__text { font-size: 14px; font-weight: 600; white-space: nowrap; }
-    .compare-bar__text b { color: var(--gold); }
+    .compare-bar__text b { color: var(--gold-fg); }
     .compare-bar__x {
       width: 32px; height: 32px; border-radius: 50%; color: #fff;
       display: inline-flex; align-items: center; justify-content: center; background: rgba(255,255,255,.14);
@@ -300,7 +300,7 @@
   </div>
 
   <script src="data.js"></script>
-  <script src="assets/js/ht-ui.js?v=5"></script>
+  <script src="assets/js/ht-ui.js?v=7"></script>
   <script>
   (function () {
     'use strict';
