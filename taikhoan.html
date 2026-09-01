@@ -8,9 +8,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="assets/css/tokens.css?v=7" />
-  <link rel="stylesheet" href="assets/css/base.css?v=7" />
-  <link rel="stylesheet" href="assets/css/components.css?v=7" />
+  <link rel="stylesheet" href="assets/css/tokens.css?v=8" />
+  <link rel="stylesheet" href="assets/css/base.css?v=8" />
+  <link rel="stylesheet" href="assets/css/components.css?v=8" />
   <style>
     /* ===== Trang Tài khoản — style riêng ===== */
 
@@ -208,7 +208,7 @@
   <div id="ht-footer"></div>
 
   <script src="data.js"></script>
-  <script src="assets/js/ht-ui.js?v=7"></script>
+  <script src="assets/js/ht-ui.js?v=8"></script>
   <script>
   (function () {
     'use strict';
@@ -229,12 +229,13 @@
       return '<svg class="ic" width="' + size + '" height="' + size + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (P[name] || '') + '</svg>';
     }
 
-    /* ---- Đọc user ---- */
+    /* ---- Guard: chưa đăng nhập thì về trang đăng nhập ---- */
     var user = { name: '', phone: '' };
     try {
       var raw = localStorage.getItem('ht_user');
       if (raw) { var u = JSON.parse(raw); user.name = (u && u.name) || ''; user.phone = (u && u.phone) || ''; }
     } catch (_) {}
+    if (!user.name && !user.phone) { window.location.replace('dangnhap-khach.html'); return; }
 
     var displayName = user.name || 'bạn';
     document.getElementById('greeting').innerHTML = 'Xin chào, ' + esc(displayName) + ' 👋';

@@ -8,9 +8,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="assets/css/tokens.css?v=7" />
-  <link rel="stylesheet" href="assets/css/base.css?v=7" />
-  <link rel="stylesheet" href="assets/css/components.css?v=7" />
+  <link rel="stylesheet" href="assets/css/tokens.css?v=8" />
+  <link rel="stylesheet" href="assets/css/base.css?v=8" />
+  <link rel="stylesheet" href="assets/css/components.css?v=8" />
   <style>
     /* ===== Trang Đăng ký — style riêng ===== */
     .signup { padding-block: 28px 48px; }
@@ -101,21 +101,21 @@
             </div>
 
             <div class="field">
-              <label class="field__label" for="otp0">Mã OTP (gửi qua SMS)</label>
-              <div class="otp-row" id="otpRow">
-                <input class="otp-box" id="otp0" type="text" inputmode="numeric" maxlength="1" aria-label="Số OTP 1" />
-                <input class="otp-box" type="text" inputmode="numeric" maxlength="1" aria-label="Số OTP 2" />
-                <input class="otp-box" type="text" inputmode="numeric" maxlength="1" aria-label="Số OTP 3" />
-                <input class="otp-box" type="text" inputmode="numeric" maxlength="1" aria-label="Số OTP 4" />
-              </div>
+              <label class="field__label" for="fPass">Mật khẩu</label>
+              <input class="field__input" type="password" id="fPass" name="password" placeholder="Tối thiểu 6 ký tự" autocomplete="new-password" />
+            </div>
+
+            <div class="field">
+              <label class="field__label" for="fPass2">Nhập lại mật khẩu</label>
+              <input class="field__input" type="password" id="fPass2" name="password2" placeholder="Nhập lại mật khẩu" autocomplete="new-password" />
             </div>
 
             <div class="form-panel__error" id="formError" role="alert"></div>
 
-            <button class="btn btn--primary btn--block form-panel__submit" type="submit">Xác nhận &amp; Đăng ký</button>
+            <button class="btn btn--primary btn--block form-panel__submit" type="submit">Đăng ký</button>
           </form>
 
-          <p class="form-panel__foot">Đã có tài khoản? <a href="dashboard.html">Đăng nhập</a></p>
+          <p class="form-panel__foot">Đã có tài khoản? <a href="dangnhap-khach.html">Đăng nhập</a></p>
         </div>
 
         <!-- PANEL PHẢI: LỢI ÍCH -->
@@ -131,7 +131,7 @@
 
   <div id="ht-footer"></div>
 
-  <script src="assets/js/ht-ui.js?v=7"></script>
+  <script src="assets/js/ht-ui.js?v=8"></script>
   <script>
   (function () {
     'use strict';
@@ -168,35 +168,35 @@
       '</div>';
     }).join('');
 
-    /* ---- OTP: tự nhảy ô + chỉ nhận số ---- */
-    var otpBoxes = Array.prototype.slice.call(document.querySelectorAll('.otp-box'));
-    otpBoxes.forEach(function (box, i) {
-      box.addEventListener('input', function () {
-        box.value = box.value.replace(/\D/g, '').slice(0, 1);
-        if (box.value && i < otpBoxes.length - 1) otpBoxes[i + 1].focus();
-      });
-      box.addEventListener('keydown', function (e) {
-        if (e.key === 'Backspace' && !box.value && i > 0) otpBoxes[i - 1].focus();
-      });
-    });
-
-    /* ---- Submit: validate cơ bản → lưu localStorage → sang taikhoan.html ---- */
+    /* ---- Submit: đăng ký thật qua API D1 (SĐT + mật khẩu, không OTP) ---- */
     var form = document.getElementById('signupForm');
     var errEl = document.getElementById('formError');
+    var btn = form.querySelector('button[type="submit"]');
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       var name = document.getElementById('fName').value.trim();
       var phone = document.getElementById('fPhone').value.trim();
+      var pass = document.getElementById('fPass').value;
+      var pass2 = document.getElementById('fPass2').value;
 
       if (!name) { errEl.textContent = 'Vui lòng nhập họ và tên.'; document.getElementById('fName').focus(); return; }
       if (!phone) { errEl.textContent = 'Vui lòng nhập số điện thoại.'; document.getElementById('fPhone').focus(); return; }
+      if (pass.length < 6) { errEl.textContent = 'Mật khẩu tối thiểu 6 ký tự.'; document.getElementById('fPass').focus(); return; }
+      if (pass !== pass2) { errEl.textContent = 'Hai lần nhập mật khẩu không khớp.'; document.getElementById('fPass2').focus(); return; }
       errEl.textContent = '';
+      btn.disabled = true; var oldTxt = btn.textContent; btn.textContent = 'Đang xử lý…';
 
-      try {
-        localStorage.setItem('ht_user', JSON.stringify({ name: name, phone: phone }));
-      } catch (_) { /* localStorage có thể bị chặn — vẫn cho chuyển trang demo */ }
-
-      window.location.href = 'taikhoan.html';
+      fetch('/api/auth-khach', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ action: 'register', ho_ten: name, sdt: phone, mat_khau: pass })
+      }).then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+        .then(function (res) {
+          if (!res.ok) { errEl.textContent = res.d.error || 'Đăng ký thất bại.'; btn.disabled = false; btn.textContent = oldTxt; return; }
+          try { localStorage.setItem('ht_user', JSON.stringify(res.d.user || { name: name, phone: phone })); } catch (_) {}
+          window.location.href = 'taikhoan.html';
+        })
+        .catch(function () { errEl.textContent = 'Lỗi kết nối, vui lòng thử lại.'; btn.disabled = false; btn.textContent = oldTxt; });
     });
   })();
   </script>

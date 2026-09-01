@@ -8,9 +8,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="assets/css/tokens.css?v=7" />
-  <link rel="stylesheet" href="assets/css/base.css?v=7" />
-  <link rel="stylesheet" href="assets/css/components.css?v=7" />
+  <link rel="stylesheet" href="assets/css/tokens.css?v=8" />
+  <link rel="stylesheet" href="assets/css/base.css?v=8" />
+  <link rel="stylesheet" href="assets/css/components.css?v=8" />
   <style>
     /* ===== Layout auth 2 panel — dùng chung 4 trang ===== */
     .auth { min-height: 100vh; display: grid; grid-template-columns: 1fr; }
@@ -64,6 +64,14 @@
     .auth-foot { font-size: 13px; line-height: 1.6; color: var(--muted-fg); margin-top: 20px; text-align: center; }
     .auth-foot a { color: var(--primary); font-weight: 700; }
     .auth-foot a:hover { text-decoration: underline; }
+
+    .reset-box { margin-top: 22px; border: 1px solid var(--border); border-radius: var(--radius-m); overflow: hidden; }
+    .reset-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 16px; border-bottom: 1px solid var(--border); }
+    .reset-row:last-child { border-bottom: 0; }
+    .reset-label { font-size: 13px; font-weight: 600; color: var(--muted-fg); }
+    .reset-value { font-size: 15px; font-weight: 700; color: var(--primary); }
+    .reset-value--plain { color: var(--fg); font-weight: 600; }
+    .reset-value:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -83,38 +91,28 @@
       <div class="auth-card">
         <a class="auth-card__back" href="index.html">← Về trang chủ</a>
         <h2 class="auth-card__h">Quên mật khẩu</h2>
-        <p class="auth-card__sub">Nhập số điện thoại đã đăng ký, chúng tôi sẽ gửi mã OTP.</p>
+        <p class="auth-card__sub">Để đặt lại mật khẩu, vui lòng liên hệ bộ phận hỗ trợ HT HOME. Chúng tôi sẽ xác minh và hỗ trợ bạn tạo mật khẩu mới.</p>
 
-        <form id="forgotForm" novalidate>
-          <div class="field">
-            <label class="field__label" for="fPhone">Số điện thoại</label>
-            <input class="field__input" type="tel" id="fPhone" name="phone" placeholder="09••••••••" autocomplete="tel" inputmode="tel" />
+        <div class="reset-box">
+          <div class="reset-row">
+            <span class="reset-label">Hotline</span>
+            <a class="reset-value" href="tel:0949397595">0949 397 595</a>
           </div>
+          <div class="reset-row">
+            <span class="reset-label">Email</span>
+            <a class="reset-value" href="mailto:hello@hthome.vn">hello@hthome.vn</a>
+          </div>
+          <div class="reset-row">
+            <span class="reset-label">Giờ hỗ trợ</span>
+            <span class="reset-value reset-value--plain">8:00 – 21:00 (T2 – CN)</span>
+          </div>
+        </div>
 
-          <div class="auth-error" id="formError" role="alert"></div>
-
-          <button class="btn btn--primary btn--block auth-submit" type="submit">Gửi mã OTP</button>
-        </form>
-
-        <p class="auth-foot"><a href="dangnhap-noibo.html">← Quay lại đăng nhập</a></p>
+        <p class="auth-foot"><a href="dangnhap-khach.html">← Quay lại đăng nhập</a></p>
       </div>
     </section>
   </main>
 
-  <script src="assets/js/ht-ui.js?v=7"></script>
-  <script>
-  (function () {
-    'use strict';
-    var form = document.getElementById('forgotForm');
-    var errEl = document.getElementById('formError');
-    form.addEventListener('submit', function (e) {
-      e.preventDefault();
-      var phone = document.getElementById('fPhone').value.trim();
-      if (!phone) { errEl.textContent = 'Vui lòng nhập số điện thoại.'; document.getElementById('fPhone').focus(); return; }
-      errEl.textContent = '';
-      window.location.href = 'nhap-otp.html';
-    });
-  })();
-  </script>
+  <script src="assets/js/ht-ui.js?v=8"></script>
 </body>
 </html>
