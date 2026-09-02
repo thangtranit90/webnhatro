@@ -7,9 +7,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="assets/css/tokens.css?v=11" />
-  <link rel="stylesheet" href="assets/css/base.css?v=11" />
-  <link rel="stylesheet" href="assets/css/components.css?v=11" />
+  <link rel="stylesheet" href="assets/css/tokens.css?v=12" />
+  <link rel="stylesheet" href="assets/css/base.css?v=12" />
+  <link rel="stylesheet" href="assets/css/components.css?v=12" />
   <link rel="stylesheet" href="assets/css/internal.css?v=6" />
   <style>
     .kpi-row { display: grid; grid-template-columns: 1fr; gap: 16px; }
@@ -27,26 +27,53 @@
 
     .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-l); box-shadow: var(--shadow-card); margin-top: 16px; }
     .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-    table.dl { width: 100%; border-collapse: collapse; min-width: 860px; }
+    table.dl { width: 100%; border-collapse: collapse; min-width: 900px; }
     table.dl th { text-align: left; font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted-fg); padding: 12px 14px; border-bottom: 1px solid var(--border); white-space: nowrap; }
     table.dl td { font-size: 13.5px; color: var(--fg); padding: 13px 14px; border-bottom: 1px solid var(--border); white-space: nowrap; vertical-align: middle; }
     table.dl tr:last-child td { border-bottom: 0; }
+    table.dl tbody tr { cursor: pointer; }
+    table.dl tbody tr:hover { background: var(--bg); }
     .dl-khach { display: flex; align-items: center; gap: 10px; }
     .dl-khach__n { font-weight: 600; display: block; }
     .dl-khach__s { font-size: 12px; color: var(--muted-fg); }
     .dl-num { font-weight: 700; }
     .dl-hh { color: var(--gold-fg); font-weight: 700; }
-    .badge-st { font-size: 11px; font-weight: 700; border-radius: 999px; padding: 3px 10px; }
-    .st-coc { background: var(--warning-soft); color: var(--warning); }
-    .st-chot { background: var(--info-soft); color: var(--info); }
-    .st-release { background: var(--success-soft); color: var(--success); }
-    .st-huy { background: var(--muted); color: var(--muted-fg); }
+    .badge-st { font-size: 11px; font-weight: 700; border-radius: 999px; padding: 3px 10px; white-space: nowrap; }
+    .st-checkin { background: var(--info-soft); color: var(--info); }
+    .st-coc_du { background: var(--success-soft); color: var(--success); }
+    .st-doi_coc_bu { background: var(--warning-soft); color: var(--warning); }
+    .st-da_nhan_hh { background: var(--gold-soft); color: var(--gold-fg); }
+    .st-bo_coc { background: var(--danger-soft); color: var(--danger); }
+    .st-doi_nhan_hh { background: var(--muted); color: var(--muted-fg); }
+    .hd-badge { font-size: 12px; font-weight: 600; }
+    .hd-badge.has { color: var(--success); }
+    .hd-badge.none { color: var(--muted-fg); }
     .dl-more { border: 0; background: transparent; color: var(--muted-fg); font-size: 20px; line-height: 1; cursor: pointer; padding: 4px 8px; border-radius: var(--radius-s); }
     .dl-more:hover { background: var(--muted); color: var(--fg); }
     .dl-empty { text-align: center; padding: 40px 20px; color: var(--muted-fg); font-size: 14px; }
-    .dl-menu { position: absolute; z-index: 50; min-width: 180px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-m); box-shadow: var(--shadow-card); padding: 6px; }
+    .dl-menu { position: absolute; z-index: 50; min-width: 190px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-m); box-shadow: var(--shadow-card); padding: 6px; }
     .dl-menu button { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; background: transparent; border: 0; border-radius: var(--radius-s); padding: 9px 10px; font: inherit; font-size: 13px; font-weight: 600; color: var(--fg); cursor: pointer; }
     .dl-menu button:hover { background: var(--bg); }
+
+    /* Commission breakdown */
+    .cm-box { border: 1px solid var(--border); border-radius: var(--radius-m); overflow: hidden; margin-top: 6px; }
+    .cm-row { display: flex; align-items: center; justify-content: space-between; padding: 11px 14px; border-bottom: 1px solid var(--border); font-size: 13.5px; }
+    .cm-row:last-child { border-bottom: 0; }
+    .cm-row.cm-goc { background: var(--muted); font-weight: 700; }
+    .cm-row.cm-sub { padding-left: 28px; color: var(--muted-fg); font-size: 13px; }
+    .cm-val { font-weight: 700; color: var(--fg); }
+    .cm-val.gold { color: var(--gold-fg); }
+    .cm-eye { cursor: pointer; color: var(--muted-fg); display: inline-flex; vertical-align: middle; margin-left: 6px; }
+    .rel-warn { background: var(--warning-soft); color: var(--warning); font-size: 13px; font-weight: 600; padding: 10px 14px; border-radius: var(--radius-m); margin-bottom: 12px; display: flex; align-items: flex-start; gap: 8px; }
+    .rel-chip { display: inline-flex; align-items: center; gap: 5px; background: var(--gold-soft); color: var(--gold-fg); font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 999px; }
+    .hd-gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 6px; }
+    .hd-gallery img { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: var(--radius-s); border: 1px solid var(--border); }
+    .hd-up { border: 2px dashed var(--input); border-radius: var(--radius-s); aspect-ratio: 4/3; display: flex; align-items: center; justify-content: center; color: var(--muted-fg); font-size: 12px; cursor: pointer; text-align: center; }
+    .hd-up:hover { border-color: var(--primary); }
+    .dv-row { display: flex; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 13.5px; }
+    .dv-row:last-child { border-bottom: 0; }
+    .dv-row .lbl { color: var(--muted-fg); }
+    .dv-row .val { font-weight: 600; color: var(--fg); }
   </style>
 </head>
 <body>
@@ -58,7 +85,7 @@
           <button class="btn-sidebar" id="btnSidebar" aria-label="Menu"></button>
           <div>
             <div class="app-topbar__title">Deal &amp; Hợp đồng</div>
-            <div class="app-topbar__sub" id="dlSub">Theo dõi giao dịch từ tư vấn đến chốt hợp đồng</div>
+            <div class="app-topbar__sub" id="dlSub">Theo dõi giao dịch từ check-in đến nhận hoa hồng</div>
           </div>
         </div>
         <div class="app-topbar__actions">
@@ -74,8 +101,8 @@
             <table class="dl">
               <thead>
                 <tr>
-                  <th>Khách</th><th>Phòng</th><th>Toà nhà</th><th>Sale</th>
-                  <th>Giá trị</th><th>Hoa hồng</th><th>Trạng thái</th><th></th>
+                  <th>Khách</th><th>Phòng</th><th>Sale</th>
+                  <th>Giá thuê</th><th>Hoa hồng gốc</th><th>HĐ</th><th>Trạng thái</th><th></th>
                 </tr>
               </thead>
               <tbody id="dlRows"></tbody>
@@ -86,37 +113,54 @@
     </main>
   </div>
 
-  <script src="assets/js/ht-ui.js?v=11"></script>
-  <script src="assets/js/ht-internal.js?v=11"></script>
+  <script src="assets/js/ht-ui.js?v=12"></script>
+  <script src="assets/js/ht-internal.js?v=12"></script>
   <script>
     (function () {
       'use strict';
       var I = HTI.icon, esc = HT.esc;
       document.getElementById('btnSidebar').innerHTML = I('menu', 22);
-      document.getElementById('btnAdd').innerHTML = I('plus', 16) + 'Chốt deal mới';
+      document.getElementById('btnAdd').innerHTML = I('plus', 16) + 'Tạo deal mới';
 
       var ST = {
-        coc: { label: 'Đang cọc', cls: 'st-coc' },
-        chot: { label: 'Đã chốt', cls: 'st-chot' },
-        release: { label: 'Đã release', cls: 'st-release' },
-        huy: { label: 'Huỷ', cls: 'st-huy' }
+        checkin: { label: 'Đã checkin', cls: 'st-checkin' },
+        coc_du: { label: 'Đã cọc đủ', cls: 'st-coc_du' },
+        doi_coc_bu: { label: 'Đợi cọc bù', cls: 'st-doi_coc_bu' },
+        da_nhan_hh: { label: 'Đã nhận HH', cls: 'st-da_nhan_hh' },
+        bo_coc: { label: 'Bỏ cọc', cls: 'st-bo_coc' },
+        doi_nhan_hh: { label: 'Đợi nhận HH', cls: 'st-doi_nhan_hh' }
       };
+      var ST_ORDER = ['checkin', 'coc_du', 'doi_coc_bu', 'doi_nhan_hh', 'da_nhan_hh', 'bo_coc'];
       function fmtVN(n) { return Number(n || 0).toLocaleString('vi-VN'); }
       function fmtTr(n) { return (Math.round((n || 0) / 1e5) / 10) + ' tr'; }
       function initials(name) {
         var p = String(name || '').trim().split(/\s+/);
         return (p.length === 1 ? p[0].slice(0, 2) : p[p.length - 2].charAt(0) + p[p.length - 1].charAt(0)).toUpperCase();
       }
+      function parseImgs(s) { try { var a = JSON.parse(s || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
+
+      // ===== Công thức hoa hồng 40/60 =====
+      function tinhHH(d) {
+        var goc = Math.max(0, Math.round((d.gia_tri || 0) * (d.hh_pct || 0) / 100) - (d.offer || 0));
+        var congTy = Math.round(goc * 0.4);
+        var timKhach = Math.round(goc * 0.3);
+        var danTotal = goc - congTy - timKhach; // phần còn lại 30%
+        var danList = String(d.dan_khach || '').split(',').map(function (x) { return x.trim(); }).filter(Boolean);
+        var perDan = danList.length ? Math.round(danTotal / danList.length) : danTotal;
+        return { goc: goc, congTy: congTy, saleTong: goc - congTy, timKhach: timKhach, danTotal: danTotal, danList: danList, perDan: perDan };
+      }
 
       var deals = [];
       var state = { tab: 'all' };
-      // Phân quyền: sale chỉ thấy deal của mình
       var me = null; try { me = JSON.parse(localStorage.getItem('ht_staff')); } catch (e) {}
       var isSale = me && me.roleKey !== 'admin';
+      // Sale che số hoa hồng sau con mắt 👁 (mặc định ẩn)
+      var hideMoney = isSale;
       if (isSale) {
         document.querySelector('.app-topbar__title').textContent = 'Deal của tôi';
         document.getElementById('dlSub').textContent = 'Deal do bạn phụ trách';
       }
+      function money(v) { return hideMoney ? '•••••' : (fmtVN(v) + 'đ'); }
 
       function loadDeals() {
         return fetch('/api/deal').then(function (r) { return r.json(); }).then(function (rows) {
@@ -127,16 +171,17 @@
         }).catch(function () { HT.toast('Không tải được danh sách deal', 'danger'); });
       }
 
-      // ---- KPI ----
+      // ===== KPI =====
       function renderKpi() {
         var giaTri = deals.reduce(function (s, d) { return s + (Number(d.gia_tri) || 0); }, 0);
-        var hh = deals.reduce(function (s, d) { return s + (Number(d.hh) || 0); }, 0);
-        var choRelease = deals.filter(function (d) { return d.trang_thai === 'chot'; }).length;
+        var hhTong = deals.reduce(function (s, d) { return s + tinhHH(d).goc; }, 0);
+        var daNhan = deals.filter(function (d) { return d.released; }).reduce(function (s, d) { return s + tinhHH(d).goc; }, 0);
+        var choNhan = deals.filter(function (d) { return !d.released && d.trang_thai !== 'bo_coc'; }).length;
         var kpis = [
           { label: 'Tổng deal', ic: 'file-text', val: deals.length, delta: 'Tất cả trạng thái' },
-          { label: 'Tổng giá trị', ic: 'wallet', val: fmtTr(giaTri), delta: 'Giá thuê/tháng' },
-          { label: 'Tổng hoa hồng', ic: 'banknote', val: fmtTr(hh), delta: 'Toàn đội' },
-          { label: 'Chờ release', ic: 'shield-check', val: choRelease, delta: 'Deal đã chốt' }
+          { label: 'Tổng giá thuê', ic: 'wallet', val: fmtTr(giaTri), delta: 'Giá thuê/tháng' },
+          { label: 'Hoa hồng gốc', ic: 'banknote', val: hideMoney ? '•••' : fmtTr(hhTong), delta: 'Trước khi chia 40/60' },
+          { label: 'Chờ nhận HH', ic: 'clock', val: choNhan, delta: 'Deal chưa release' }
         ];
         document.getElementById('kpiRow').innerHTML = kpis.map(function (k) {
           return '<div class="kpi"><div class="kpi__top"><span>' + k.label + '</span><span class="kpi__ic">' + I(k.ic, 18) + '</span></div>' +
@@ -144,13 +189,11 @@
         }).join('');
       }
 
-      // ---- Tabs ----
+      // ===== Tabs =====
       function tabDefs() {
         function cnt(k) { return k === 'all' ? deals.length : deals.filter(function (d) { return d.trang_thai === k; }).length; }
-        return [
-          { k: 'all', label: 'Tất cả' }, { k: 'coc', label: 'Đang cọc' },
-          { k: 'chot', label: 'Đã chốt' }, { k: 'release', label: 'Đã release' }, { k: 'huy', label: 'Huỷ' }
-        ].map(function (t) { t.n = cnt(t.k); return t; });
+        var defs = [{ k: 'all', label: 'Tất cả' }].concat(ST_ORDER.map(function (k) { return { k: k, label: ST[k].label }; }));
+        return defs.map(function (t) { t.n = cnt(t.k); return t; });
       }
       function renderTabs() {
         document.getElementById('tabs').innerHTML = tabDefs().map(function (t) {
@@ -158,55 +201,67 @@
         }).join('');
       }
 
-      // ---- Bảng ----
-      function filtered() {
-        return state.tab === 'all' ? deals : deals.filter(function (d) { return d.trang_thai === state.tab; });
-      }
+      // ===== Bảng =====
+      function filtered() { return state.tab === 'all' ? deals : deals.filter(function (d) { return d.trang_thai === state.tab; }); }
       function renderRows() {
         var list = filtered();
         var tb = document.getElementById('dlRows');
         if (!list.length) { tb.innerHTML = '<tr><td colspan="8"><div class="dl-empty">Chưa có deal nào trong mục này.</div></td></tr>'; return; }
         tb.innerHTML = list.map(function (d) {
-          var st = ST[d.trang_thai] || ST.coc;
-          return '<tr>' +
+          var st = ST[d.trang_thai] || ST.checkin;
+          var goc = tinhHH(d).goc;
+          var imgs = parseImgs(d.anh_hd);
+          var hd = imgs.length ? '<span class="hd-badge has">' + imgs.length + ' ảnh</span>' : '<span class="hd-badge none">Chưa có</span>';
+          return '<tr data-id="' + d.id + '">' +
             '<td><div class="dl-khach"><span class="avatar">' + esc(initials(d.khach)) + '</span>' +
               '<span><span class="dl-khach__n">' + esc(d.khach) + '</span>' +
-              '<span class="dl-khach__s">' + esc(d.ngay || '') + '</span></span></div></td>' +
+              '<span class="dl-khach__s">' + esc(d.ngay || '') + (d.released ? ' · <span class="rel-chip">✓ đã release</span>' : '') + '</span></span></div></td>' +
             '<td>' + esc(d.phong || '—') + '</td>' +
-            '<td>' + esc(d.toanha || '—') + '</td>' +
             '<td>' + esc(d.sale || '—') + '</td>' +
             '<td class="dl-num">' + fmtVN(d.gia_tri) + 'đ</td>' +
-            '<td class="dl-hh">' + fmtVN(d.hh) + 'đ</td>' +
+            '<td class="dl-hh">' + money(goc) + '</td>' +
+            '<td>' + hd + '</td>' +
             '<td><span class="badge-st ' + st.cls + '">' + st.label + '</span></td>' +
             '<td style="text-align:right"><button class="dl-more" type="button" data-id="' + d.id + '">⋮</button></td>' +
           '</tr>';
         }).join('');
       }
 
-      function renderAll() { renderKpi(); renderTabs(); renderRows();
-        document.getElementById('dlSub').textContent = deals.length + ' deal · ' +
-          deals.filter(function (d) { return d.trang_thai === 'chot'; }).length + ' chờ release'; }
+      function renderAll() {
+        renderKpi(); renderTabs(); renderRows();
+        var rel = deals.filter(function (d) { return d.released; }).length;
+        document.getElementById('dlSub').textContent = deals.length + ' deal · ' + rel + ' đã nhận HH' + (isSale ? ' · 👁 bấm để hiện/ẩn số' : '');
+      }
 
       document.getElementById('tabs').addEventListener('click', function (e) {
         var b = e.target.closest('.tab'); if (!b) return;
         state.tab = b.getAttribute('data-k'); renderTabs(); renderRows();
       });
+      // Sale bấm phụ đề để bật/tắt che số
+      if (isSale) document.getElementById('dlSub').style.cursor = 'pointer';
+      document.getElementById('dlSub').addEventListener('click', function () { if (!isSale) return; hideMoney = !hideMoney; renderAll(); });
 
-      // ---- Menu ⋮ mỗi deal ----
+      // Bấm dòng → xem chi tiết
+      document.getElementById('dlRows').addEventListener('click', function (e) {
+        if (e.target.closest('.dl-more')) return;
+        var tr = e.target.closest('tr[data-id]'); if (!tr) return;
+        var d = deals.filter(function (x) { return x.id === +tr.getAttribute('data-id'); })[0];
+        if (d) openDetail(d, false);
+      });
+
+      // ===== Menu ⋮ =====
       var openMenu = null;
       function closeMenu() { if (openMenu) { openMenu.remove(); openMenu = null; } }
       document.addEventListener('click', closeMenu);
       document.getElementById('dlRows').addEventListener('click', function (e) {
         var btn = e.target.closest('.dl-more'); if (!btn) return;
         e.stopPropagation(); closeMenu();
-        var id = +btn.getAttribute('data-id');
-        var d = deals.filter(function (x) { return x.id === id; })[0]; if (!d) return;
+        var d = deals.filter(function (x) { return x.id === +btn.getAttribute('data-id'); })[0]; if (!d) return;
         var menu = document.createElement('div'); menu.className = 'dl-menu';
-        var items = '';
-        if (d.trang_thai === 'chot') items += '<button type="button" data-act="release">' + I('banknote', 15) + 'Release hoa hồng</button>';
-        if (d.trang_thai === 'coc') items += '<button type="button" data-act="chot">' + I('shield-check', 15) + 'Đánh dấu đã chốt</button>';
-        items += '<button type="button" data-act="huy">' + I('x', 15) + 'Huỷ deal</button>' +
-                 '<button type="button" data-act="del" style="color:var(--danger)">' + I('x', 15) + 'Xoá</button>';
+        var items = '<button type="button" data-act="view">' + I('file-text', 15) + 'Xem chi tiết</button>' +
+                    '<button type="button" data-act="edit">' + I('settings', 15) + 'Chỉnh sửa deal</button>';
+        if (!d.released && d.trang_thai !== 'bo_coc') items += '<button type="button" data-act="release">' + I('banknote', 15) + 'Release hoa hồng</button>';
+        items += '<button type="button" data-act="del" style="color:var(--danger)">' + I('x', 15) + 'Xoá deal</button>';
         menu.innerHTML = items;
         document.body.appendChild(menu);
         var r = btn.getBoundingClientRect();
@@ -217,20 +272,13 @@
           var mb = ev.target.closest('button'); if (!mb) return;
           ev.stopPropagation(); closeMenu();
           var act = mb.getAttribute('data-act');
+          if (act === 'view') return openDetail(d, false);
+          if (act === 'edit') return openDetail(d, true);
           if (act === 'release') return releaseDeal(d);
-          if (act === 'chot') return patchStatus(d, 'chot', 'Đã đánh dấu chốt');
-          if (act === 'huy') return HT.confirm({ title: 'Huỷ deal', message: 'Huỷ deal của ' + d.khach + '?', danger: true, confirmLabel: 'Huỷ deal', onConfirm: function () { patchStatus(d, 'huy', 'Đã huỷ deal'); } });
           if (act === 'del') return HT.confirm({ title: 'Xoá deal', message: 'Xoá deal của ' + d.khach + '? Không khôi phục được.', danger: true, confirmLabel: 'Xoá', onConfirm: function () { delDeal(d); } });
         });
       });
 
-      function patchStatus(d, st, msg) {
-        fetch('/api/deal', { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id: d.id, trang_thai: st }) })
-          .then(function (r) { return r.json(); }).then(function (res) {
-            if (res.error) { HT.toast(res.error, 'danger'); return; }
-            HT.toast(msg, 'success'); loadDeals();
-          }).catch(function () { HT.toast('Lỗi mạng', 'danger'); });
-      }
       function delDeal(d) {
         fetch('/api/deal', { method: 'DELETE', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id: d.id }) })
           .then(function (r) { return r.json(); }).then(function (res) {
@@ -239,73 +287,214 @@
           }).catch(function () { HT.toast('Lỗi mạng', 'danger'); });
       }
 
-      // ---- Modal Release hoa hồng ----
+      // ===== Release HH (không hoàn tác) =====
       function releaseDeal(d) {
+        var c = tinhHH(d);
         HT.modal({
-          title: 'Release hoa hồng', sub: d.khach + ' · ' + (d.phong || ''),
-          submitLabel: 'Xác nhận release',
+          title: 'Release hoa hồng', sub: d.khach + ' · ' + (d.phong || ''), submitLabel: 'Xác nhận release', danger: true,
           bodyHTML:
-            '<div class="mrow"><div class="mfield"><label class="mfield__label">Giá trị deal</label><div>' + fmtVN(d.gia_tri) + 'đ</div></div>' +
-            '<div class="mfield"><label class="mfield__label">Hoa hồng release</label><div style="color:var(--gold);font-weight:700">' + fmtVN(d.hh) + 'đ</div></div></div>' +
-            '<div class="mfield" style="margin-top:8px;padding:10px 12px;background:var(--warning-soft);border-radius:8px;font-size:13px;color:var(--warning)">Sau khi release, hoa hồng sẽ được ghi nhận vào quỹ và không thể hoàn tác.</div>',
+            '<div class="cm-box">' +
+              '<div class="cm-row cm-goc"><span>Hoa hồng gốc</span><span class="cm-val gold">' + fmtVN(c.goc) + 'đ</span></div>' +
+              '<div class="cm-row"><span>Công ty (40%)</span><span class="cm-val">' + fmtVN(c.congTy) + 'đ</span></div>' +
+              '<div class="cm-row"><span>Sale (60%)</span><span class="cm-val">' + fmtVN(c.saleTong) + 'đ</span></div>' +
+            '</div>' +
+            '<div class="rel-warn" style="margin-top:12px">' + I('shield-check', 15) + '<span>Release là hành động <b>không hoàn tác</b>. Sau khi release, các trường Giá thuê / %HH / Offer sẽ bị khoá.</span></div>',
           onSubmit: function (m, close) {
-            fetch('/api/deal', { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id: d.id, trang_thai: 'release' }) })
+            fetch('/api/deal', { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id: d.id, action: 'release' }) })
               .then(function (r) { return r.json(); }).then(function (res) {
                 if (res.error) { HT.toast(res.error, 'danger'); return; }
-                close(); HT.toast('Đã release hoa hồng ' + fmtVN(d.hh) + 'đ', 'success'); loadDeals();
+                close(); HT.toast('Đã release hoa hồng ' + fmtVN(c.goc) + 'đ', 'success'); loadDeals();
               }).catch(function () { HT.toast('Lỗi mạng', 'danger'); });
             return false;
           }
         });
       }
 
-      // ---- Modal Chốt deal mới ----
+      // ===== Modal Chi tiết / Sửa deal =====
+      function commissionHTML(d) {
+        var c = tinhHH(d);
+        var danSub = c.danList.length
+          ? c.danList.map(function (n) { return '<div class="cm-row cm-sub"><span>' + esc(n) + '</span><span class="cm-val">' + fmtVN(c.perDan) + 'đ</span></div>'; }).join('')
+          : '<div class="cm-row cm-sub"><span>(chưa gán người dẫn)</span><span class="cm-val">' + fmtVN(c.danTotal) + 'đ</span></div>';
+        return '<div class="cm-box">' +
+          '<div class="cm-row cm-goc"><span>Hoa hồng gốc = ' + fmtVN(d.gia_tri) + ' × ' + (d.hh_pct || 0) + '% − ' + fmtVN(d.offer) + ' offer</span><span class="cm-val gold">' + fmtVN(c.goc) + 'đ</span></div>' +
+          '<div class="cm-row"><span>🏢 Công ty (40%)</span><span class="cm-val">' + fmtVN(c.congTy) + 'đ</span></div>' +
+          '<div class="cm-row"><span>👤 Tìm khách 30% · ' + esc(d.tim_khach || '—') + '</span><span class="cm-val">' + fmtVN(c.timKhach) + 'đ</span></div>' +
+          '<div class="cm-row"><span>🚶 Dẫn khách 30% (chia đều)</span><span class="cm-val">' + fmtVN(c.danTotal) + 'đ</span></div>' +
+          danSub +
+        '</div>';
+      }
+
+      function openDetail(d, editMode) {
+        if (editMode) return openEdit(d);
+        var imgs = parseImgs(d.anh_hd);
+        var gallery = imgs.length
+          ? '<div class="hd-gallery">' + imgs.map(function (u) { return '<img src="' + esc(u) + '" alt="Ảnh HĐ">'; }).join('') + '</div>'
+          : '<div style="color:var(--muted-fg);font-size:13px">Chưa có ảnh hợp đồng.</div>';
+        HT.modal({
+          title: 'Chi tiết deal', sub: d.khach + ' · ' + (ST[d.trang_thai] || {}).label, wide: true,
+          submitLabel: 'Chỉnh sửa deal', cancelLabel: 'Đóng',
+          bodyHTML:
+            (d.released ? '<div class="rel-warn">' + I('shield-check', 15) + '<span>Hoa hồng đã <b>release</b> — các trường tài chính đang bị khoá.</span></div>' : '') +
+            '<div class="dv-row"><span class="lbl">Khách</span><span class="val">' + esc(d.khach) + '</span></div>' +
+            '<div class="dv-row"><span class="lbl">Phòng · Toà nhà</span><span class="val">' + esc(d.phong || '—') + ' · ' + esc(d.toanha || '—') + '</span></div>' +
+            '<div class="dv-row"><span class="lbl">Sale phụ trách</span><span class="val">' + esc(d.sale || '—') + '</span></div>' +
+            '<div class="dv-row"><span class="lbl">Số tháng HĐ</span><span class="val">' + (d.so_thang || 0) + ' tháng</span></div>' +
+            '<div class="dv-row"><span class="lbl">Trạng thái</span><span class="val">' + (ST[d.trang_thai] || {}).label + '</span></div>' +
+            '<div style="font-weight:700;margin:16px 0 6px;color:var(--fg)">Phân chia hoa hồng (40/60)</div>' +
+            commissionHTML(d) +
+            '<div style="font-weight:700;margin:16px 0 6px;color:var(--fg)">Ảnh hợp đồng</div>' + gallery,
+          onSubmit: function (m, close) { close(); openEdit(d); return false; }
+        });
+      }
+
+      function openEdit(d) {
+        var locked = !!d.released;
+        var stOpts = ST_ORDER.map(function (k) { return '<option value="' + k + '"' + (d.trang_thai === k ? ' selected' : '') + '>' + ST[k].label + '</option>'; }).join('');
+        var lockAttr = locked ? ' disabled' : '';
+        var imgs = parseImgs(d.anh_hd);
+        var curImgs = imgs.slice();
+        HT.modal({
+          title: 'Sửa deal', sub: d.khach, wide: true, submitLabel: 'Lưu thay đổi', cancelLabel: 'Huỷ',
+          bodyHTML:
+            (locked ? '<div class="rel-warn">' + I('shield-check', 15) + '<span>Hoa hồng đã release. Giá thuê / %HH / Offer bị khoá. Muốn sửa số tiền, hãy <b>huỷ release</b> trước.</span></div>' : '') +
+            '<div class="mrow">' +
+              '<div class="mfield"><label class="mfield__label">Khách *</label><input id="eK" value="' + esc(d.khach) + '"></div>' +
+              '<div class="mfield"><label class="mfield__label">Sale phụ trách</label><input id="eSale" value="' + esc(d.sale || '') + '"></div>' +
+            '</div>' +
+            '<div class="mrow">' +
+              '<div class="mfield"><label class="mfield__label">Toà nhà</label><input id="eB" value="' + esc(d.toanha || '') + '"></div>' +
+              '<div class="mfield"><label class="mfield__label">Phòng</label><input id="eP" value="' + esc(d.phong || '') + '"></div>' +
+            '</div>' +
+            '<div class="mrow">' +
+              '<div class="mfield"><label class="mfield__label">Giá thuê (đ/tháng) *</label><input id="eG" type="number" value="' + (d.gia_tri || 0) + '"' + lockAttr + '></div>' +
+              '<div class="mfield"><label class="mfield__label">%HH chủ nhà</label><input id="eHp" type="number" step="0.1" value="' + (d.hh_pct || 0) + '"' + lockAttr + '></div>' +
+            '</div>' +
+            '<div class="mrow">' +
+              '<div class="mfield"><label class="mfield__label">Offer (đ)</label><input id="eOf" type="number" value="' + (d.offer || 0) + '"' + lockAttr + '></div>' +
+              '<div class="mfield"><label class="mfield__label">Số tháng HĐ</label><input id="eMo" type="number" value="' + (d.so_thang || 0) + '"></div>' +
+            '</div>' +
+            '<div class="mrow">' +
+              '<div class="mfield"><label class="mfield__label">Người tìm khách (30%)</label><input id="eTk" value="' + esc(d.tim_khach || '') + '"></div>' +
+              '<div class="mfield"><label class="mfield__label">Người dẫn khách (phẩy, chia đều 30%)</label><input id="eDk" value="' + esc(d.dan_khach || '') + '"></div>' +
+            '</div>' +
+            '<div class="mfield"><label class="mfield__label">Trạng thái</label><select id="eSt">' + stOpts + '</select></div>' +
+            '<div class="mfield"><label class="mfield__label">Ảnh hợp đồng</label>' +
+              '<div class="hd-gallery" id="eImgs">' + imgs.map(function (u) { return '<img src="' + esc(u) + '" alt="">'; }).join('') +
+              '<div class="hd-up" id="eUp">+ Thêm ảnh</div></div></div>' +
+            '<div class="cm-box" id="ePreview" style="margin-top:12px"></div>',
+          onSubmit: function (m, close) {
+            var khach = (m.querySelector('#eK').value || '').trim();
+            if (!khach) { HT.toast('Nhập tên khách', 'danger'); return false; }
+            var payload = {
+              id: d.id, khach: khach, sale: m.querySelector('#eSale').value.trim(),
+              toanha: m.querySelector('#eB').value.trim(), phong: m.querySelector('#eP').value.trim(),
+              so_thang: parseInt(m.querySelector('#eMo').value, 10) || 0,
+              tim_khach: m.querySelector('#eTk').value.trim(), dan_khach: m.querySelector('#eDk').value.trim(),
+              trang_thai: m.querySelector('#eSt').value, anh_hd: JSON.stringify(curImgs)
+            };
+            if (!locked) {
+              payload.gia_tri = parseInt(m.querySelector('#eG').value, 10) || 0;
+              payload.hh_pct = parseFloat(m.querySelector('#eHp').value) || 0;
+              payload.offer = parseInt(m.querySelector('#eOf').value, 10) || 0;
+            }
+            fetch('/api/deal', { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) })
+              .then(function (r) { return r.json(); }).then(function (res) {
+                if (res.error) { HT.toast(res.error, 'danger'); return; }
+                close(); HT.toast('Đã lưu thay đổi', 'success'); loadDeals();
+              }).catch(function () { HT.toast('Lỗi mạng', 'danger'); });
+            return false;
+          }
+        });
+
+        // Sau khi modal render: live preview hoa hồng + upload ảnh
+        setTimeout(function () {
+          var _bd = document.querySelectorAll('.modal-backdrop'); var m = _bd[_bd.length-1] || document;
+          function preview() {
+            var tmp = { gia_tri: +(m.querySelector('#eG') || {}).value || d.gia_tri, hh_pct: +(m.querySelector('#eHp') || {}).value || d.hh_pct, offer: +(m.querySelector('#eOf') || {}).value || d.offer, tim_khach: (m.querySelector('#eTk') || {}).value, dan_khach: (m.querySelector('#eDk') || {}).value };
+            var el = m.querySelector('#ePreview'); if (el) el.outerHTML = '<div id="ePreview" style="margin-top:12px">' + commissionHTML(tmp) + '</div>';
+          }
+          ['#eG', '#eHp', '#eOf', '#eTk', '#eDk'].forEach(function (sel) { var el = m.querySelector(sel); if (el) el.addEventListener('input', preview); });
+          preview();
+          var up = m.querySelector('#eUp');
+          if (up) up.addEventListener('click', function () {
+            var inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*';
+            inp.onchange = function () {
+              var f = inp.files[0]; if (!f) return;
+              up.textContent = 'Đang tải…';
+              fetch('/api/upload', { method: 'POST', headers: { 'content-type': f.type }, body: f })
+                .then(function (r) { return r.json(); }).then(function (res) {
+                  up.textContent = '+ Thêm ảnh';
+                  if (res.url) { curImgs.push(res.url); var img = document.createElement('img'); img.src = res.url; up.parentNode.insertBefore(img, up); }
+                  else HT.toast(res.error || 'Lỗi tải ảnh', 'danger');
+                }).catch(function () { up.textContent = '+ Thêm ảnh'; HT.toast('Lỗi tải ảnh', 'danger'); });
+            };
+            inp.click();
+          });
+        }, 60);
+      }
+
+      // ===== Modal Tạo deal mới =====
       document.getElementById('btnAdd').addEventListener('click', function () {
-        // nạp toà nhà + sale cho gợi ý (không bắt buộc)
-        Promise.all([
-          fetch('/api/toa-nha').then(function (r) { return r.json(); }).catch(function () { return {}; }),
-          fetch('/api/nhan-vien').then(function (r) { return r.json(); }).catch(function () { return []; })
-        ]).then(function (arr) {
-          var blds = [].concat((arr[0] && arr[0].ptro) || [], (arr[0] && arr[0].cc) || []);
-          var bopts = '<option value="">— Chọn toà nhà —</option>' + blds.map(function (b) { return '<option>' + (b.addr || b.bid) + '</option>'; }).join('');
-          var sopts = '<option value="">— Chọn sale —</option>' + (Array.isArray(arr[1]) ? arr[1] : []).map(function (s) { return '<option>' + s.name + '</option>'; }).join('');
+        fetch('/api/nhan-vien').then(function (r) { return r.json(); }).catch(function () { return []; }).then(function (nv) {
+          var sopts = '<option value="">— Chọn sale —</option>' + (Array.isArray(nv) ? nv : []).map(function (s) { return '<option>' + esc(s.name) + '</option>'; }).join('');
           HT.modal({
-            title: 'Chốt deal mới', sub: 'Ghi nhận giao dịch chốt phòng', submitLabel: 'Chốt deal', wide: true,
+            title: 'Tạo deal mới', sub: 'Ghi nhận giao dịch + hoa hồng', submitLabel: 'Tạo deal', wide: true,
             bodyHTML:
               '<div class="mrow">' +
                 '<div class="mfield"><label class="mfield__label">Khách *</label><input id="dK" placeholder="Tên khách"></div>' +
                 '<div class="mfield"><label class="mfield__label">Sale phụ trách</label><select id="dS">' + sopts + '</select></div>' +
               '</div>' +
               '<div class="mrow">' +
-                '<div class="mfield"><label class="mfield__label">Toà nhà</label><select id="dB">' + bopts + '</select></div>' +
+                '<div class="mfield"><label class="mfield__label">Toà nhà</label><input id="dB" placeholder="VD: HT Nguyễn Oanh"></div>' +
                 '<div class="mfield"><label class="mfield__label">Phòng</label><input id="dP" placeholder="VD: P.303"></div>' +
               '</div>' +
               '<div class="mrow">' +
-                '<div class="mfield"><label class="mfield__label">Giá trị (đ/tháng) *</label><input id="dG" type="number" placeholder="5000000"></div>' +
-                '<div class="mfield"><label class="mfield__label">Hoa hồng (đ)</label><input id="dH" type="number" placeholder="1000000"></div>' +
+                '<div class="mfield"><label class="mfield__label">Giá thuê (đ/tháng) *</label><input id="dG" type="number" placeholder="5000000"></div>' +
+                '<div class="mfield"><label class="mfield__label">%HH chủ nhà</label><input id="dHp" type="number" step="0.1" value="50"></div>' +
               '</div>' +
-              '<div class="mfield"><label class="mfield__label">Trạng thái</label>' +
-                '<select id="dT"><option value="coc">Đang cọc</option><option value="chot">Đã chốt (ký HĐ)</option></select></div>',
+              '<div class="mrow">' +
+                '<div class="mfield"><label class="mfield__label">Offer (đ)</label><input id="dOf" type="number" value="0"></div>' +
+                '<div class="mfield"><label class="mfield__label">Số tháng HĐ</label><input id="dMo" type="number" value="6"></div>' +
+              '</div>' +
+              '<div class="mrow">' +
+                '<div class="mfield"><label class="mfield__label">Người tìm khách (30%)</label><input id="dTk" placeholder="1 người"></div>' +
+                '<div class="mfield"><label class="mfield__label">Người dẫn khách (phẩy)</label><input id="dDk" placeholder="chia đều 30%"></div>' +
+              '</div>' +
+              '<div class="mfield"><label class="mfield__label">Trạng thái</label><select id="dT">' +
+                ST_ORDER.map(function (k) { return '<option value="' + k + '">' + ST[k].label + '</option>'; }).join('') + '</select></div>' +
+              '<div class="cm-box" id="dPreview" style="margin-top:6px"></div>',
             onSubmit: function (m, close) {
               var khach = (m.querySelector('#dK').value || '').trim();
               var gia = parseInt(m.querySelector('#dG').value, 10);
               if (!khach) { HT.toast('Nhập tên khách', 'danger'); return false; }
-              if (!gia || gia <= 0) { HT.toast('Nhập giá trị hợp lệ', 'danger'); return false; }
+              if (!gia || gia <= 0) { HT.toast('Nhập giá thuê hợp lệ', 'danger'); return false; }
+              var sale = m.querySelector('#dS').value;
               var payload = {
-                khach: khach, sale: m.querySelector('#dS').value, toanha: m.querySelector('#dB').value,
-                phong: (m.querySelector('#dP').value || '').trim(), gia_tri: gia,
-                hh: parseInt(m.querySelector('#dH').value, 10) || 0,
-                trang_thai: m.querySelector('#dT').value,
-                ngay: new Date().toLocaleDateString('vi-VN')
+                khach: khach, sale: sale, toanha: m.querySelector('#dB').value.trim(), phong: m.querySelector('#dP').value.trim(),
+                gia_tri: gia, hh_pct: parseFloat(m.querySelector('#dHp').value) || 0, offer: parseInt(m.querySelector('#dOf').value, 10) || 0,
+                so_thang: parseInt(m.querySelector('#dMo').value, 10) || 0,
+                tim_khach: m.querySelector('#dTk').value.trim() || sale, dan_khach: m.querySelector('#dDk').value.trim() || sale,
+                trang_thai: m.querySelector('#dT').value, ngay: new Date().toLocaleDateString('vi-VN')
               };
               fetch('/api/deal', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) })
                 .then(function (r) { return r.json(); }).then(function (res) {
                   if (res.error) { HT.toast(res.error, 'danger'); return; }
-                  close(); HT.toast('Đã chốt deal', 'success'); loadDeals();
+                  close(); HT.toast('Đã tạo deal', 'success'); loadDeals();
                 }).catch(function () { HT.toast('Lỗi mạng, chưa lưu được', 'danger'); });
               return false;
             }
           });
+          // live preview
+          setTimeout(function () {
+            var _bd = document.querySelectorAll('.modal-backdrop'); var m = _bd[_bd.length-1] || document;
+            function prev() {
+              var tmp = { gia_tri: +m.querySelector('#dG').value || 0, hh_pct: +m.querySelector('#dHp').value || 0, offer: +m.querySelector('#dOf').value || 0, tim_khach: m.querySelector('#dTk').value, dan_khach: m.querySelector('#dDk').value };
+              var el = m.querySelector('#dPreview'); if (el) el.outerHTML = '<div id="dPreview" style="margin-top:6px">' + commissionHTML(tmp) + '</div>';
+            }
+            ['#dG', '#dHp', '#dOf', '#dTk', '#dDk'].forEach(function (sel) { var el = m.querySelector(sel); if (el) el.addEventListener('input', prev); });
+            prev();
+          }, 60);
         });
       });
 
