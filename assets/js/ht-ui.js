@@ -59,11 +59,10 @@
 
   /* ---- Danh sách menu ---- */
   var NAV = [
+    { k: 'about', label: 'Giới thiệu', href: 'vechungtoi.html' },
     { k: 'home', label: 'Trang chủ', href: 'index.html' },
     { k: 'search', label: 'Tìm phòng', href: 'timphong.html' },
-    { k: 'area', label: 'Khu vực', href: 'index.html#khu-vuc' },
-    { k: 'offer', label: 'Ưu đãi', href: 'index.html#uu-dai' },
-    { k: 'contact', label: 'Liên hệ', href: 'index.html#lien-he' }
+    { k: 'news', label: 'Tin tức', href: 'tintuc.html' }
   ];
 
   /* ---- Trạng thái đăng nhập khách ---- */

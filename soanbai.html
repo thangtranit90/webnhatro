@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Soạn bài viết — HT HOME Nội bộ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/tokens.css?v=10" />
+  <link rel="stylesheet" href="assets/css/base.css?v=10" />
+  <link rel="stylesheet" href="assets/css/components.css?v=10" />
+  <link rel="stylesheet" href="assets/css/internal.css?v=6" />
+  <style>
+    .comp { display: grid; grid-template-columns: 1fr; gap: 20px; }
+    @media (min-width: 1080px) { .comp { grid-template-columns: 1fr 320px; align-items: start; } }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-l); box-shadow: var(--shadow-card); padding: 18px 20px; }
+    .card + .card { margin-top: 16px; }
+    .card__t { font-size: 14px; font-weight: 700; color: var(--fg); margin-bottom: 12px; }
+    .fld { margin-bottom: 14px; }
+    .fld label { display: block; font-size: 12.5px; font-weight: 600; color: var(--fg); margin-bottom: 6px; }
+    .fld input, .fld select, .fld textarea { width: 100%; border: 1px solid var(--input); border-radius: var(--radius-s); padding: 10px 12px; font: inherit; font-size: 14px; color: var(--fg); background: var(--card); box-sizing: border-box; }
+    .fld textarea { resize: vertical; min-height: 66px; }
+    .title-in { font-size: 22px !important; font-weight: 800 !important; border: 0 !important; padding: 6px 0 !important; }
+    .title-in:focus { outline: none; }
+
+    /* Toolbar editor */
+    .etool { display: flex; flex-wrap: wrap; gap: 4px; padding: 8px; border: 1px solid var(--border); border-bottom: 0; border-radius: var(--radius-s) var(--radius-s) 0 0; background: var(--muted); }
+    .etool button { border: 0; background: transparent; width: 34px; height: 30px; border-radius: var(--radius-s); cursor: pointer; font-size: 14px; font-weight: 700; color: var(--fg); display: inline-flex; align-items: center; justify-content: center; }
+    .etool button:hover { background: var(--card); }
+    .editor { border: 1px solid var(--input); border-radius: 0 0 var(--radius-s) var(--radius-s); padding: 16px; min-height: 320px; font-size: 15px; line-height: 1.7; color: var(--fg); background: var(--card); outline: none; }
+    .editor:focus { border-color: var(--primary); }
+    .editor h2 { font-size: 20px; font-weight: 800; margin: 18px 0 8px; }
+    .editor p { margin-bottom: 12px; }
+    .editor img { max-width: 100%; border-radius: var(--radius-s); margin: 10px 0; }
+    .editor blockquote { border-left: 4px solid var(--gold); background: var(--muted); padding: 10px 14px; border-radius: var(--radius-s); margin: 10px 0; font-style: italic; }
+    .editor:empty:before { content: attr(data-ph); color: var(--muted-fg); }
+
+    .cover-drop { border: 2px dashed var(--input); border-radius: var(--radius-m); aspect-ratio: 16/9; display: flex; align-items: center; justify-content: center; text-align: center; color: var(--muted-fg); font-size: 13px; cursor: pointer; background-size: cover; background-position: center; overflow: hidden; }
+    .cover-drop:hover { border-color: var(--primary); }
+    .comp-side .btn { width: 100%; }
+    .comp-side .btn + .btn { margin-top: 8px; }
+    .save-hint { font-size: 12px; color: var(--muted-fg); margin-top: 10px; text-align: center; min-height: 16px; }
+    .pin-row { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--fg); }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="app-sidebar" id="ht-sidebar" data-active="tintuc"></div>
+    <main class="app-main">
+      <header class="app-topbar">
+        <div style="display:flex;align-items:center;gap:12px">
+          <button class="btn-sidebar" id="btnSidebar" aria-label="Menu"></button>
+          <div>
+            <div class="app-topbar__title" id="pageTitle">Viết bài mới</div>
+            <div class="app-topbar__sub"><a href="tintuc-noibo.html" style="color:var(--muted-fg)">← Về danh sách bài viết</a></div>
+          </div>
+        </div>
+      </header>
+
+      <div class="app-content">
+        <div class="comp">
+          <!-- Cột trái: nội dung -->
+          <div>
+            <div class="card">
+              <div class="fld"><input class="title-in" id="fTitle" type="text" placeholder="Tiêu đề bài viết…" /></div>
+              <div class="fld"><label>Sapo (mô tả ngắn)</label><textarea id="fSapo" placeholder="Tóm tắt 1–2 câu hiển thị ở danh sách…"></textarea></div>
+            </div>
+            <div class="card">
+              <div class="card__t">Nội dung</div>
+              <div class="etool" id="etool">
+                <button type="button" data-cmd="bold" title="Đậm">B</button>
+                <button type="button" data-cmd="italic" title="Nghiêng" style="font-style:italic">I</button>
+                <button type="button" data-cmd="h2" title="Tiêu đề mục">H2</button>
+                <button type="button" data-cmd="ul" title="Danh sách">•</button>
+                <button type="button" data-cmd="quote" title="Trích dẫn">❝</button>
+                <button type="button" data-cmd="link" title="Chèn liên kết">🔗</button>
+                <button type="button" data-cmd="image" title="Chèn ảnh">🖼</button>
+              </div>
+              <div class="editor" id="editor" contenteditable="true" data-ph="Bắt đầu viết nội dung bài viết ở đây…"></div>
+            </div>
+          </div>
+
+          <!-- Cột phải: xuất bản -->
+          <div class="comp-side">
+            <div class="card">
+              <div class="card__t">Xuất bản</div>
+              <div class="fld"><label>Trạng thái</label><select id="fStatus">
+                <option value="draft">Nháp</option><option value="published">Đã đăng</option><option value="hidden">Đã ẩn</option>
+              </select></div>
+              <div class="fld"><label>Tác giả</label><input id="fAuthor" type="text" placeholder="HT HOME" /></div>
+              <label class="pin-row"><input type="checkbox" id="fPin" /> Ghim làm bài nổi bật</label>
+              <div style="margin-top:14px">
+                <button class="btn btn--ghost" id="btnDraft" type="button">Lưu nháp</button>
+                <button class="btn btn--primary" id="btnPublish" type="button">Xuất bản</button>
+              </div>
+              <div class="save-hint" id="saveHint"></div>
+            </div>
+            <div class="card">
+              <div class="card__t">Chuyên mục</div>
+              <div class="fld"><select id="fCat">
+                <option value="kinhnghiem">Kinh nghiệm</option><option value="thitruong">Thị trường</option>
+                <option value="huongdan">Hướng dẫn</option><option value="tincongty">Tin công ty</option>
+              </select></div>
+            </div>
+            <div class="card">
+              <div class="card__t">Ảnh bìa (16:9)</div>
+              <div class="cover-drop" id="coverDrop"><span id="coverHint">Bấm để tải ảnh bìa lên</span></div>
+              <input type="file" id="coverFile" accept="image/*" style="display:none" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="assets/js/ht-ui.js?v=10"></script>
+  <script src="assets/js/ht-internal.js?v=10"></script>
+  <script>
+    (function () {
+      'use strict';
+      var I = HTI.icon;
+      document.getElementById('btnSidebar').innerHTML = I('menu', 22);
+
+      var editor = document.getElementById('editor');
+      var coverUrl = '';
+      var editId = new URLSearchParams(location.search).get('id');
+
+      function two(n) { return (n < 10 ? '0' : '') + n; }
+      function nowHM() { var d = new Date(); return two(d.getHours()) + ':' + two(d.getMinutes()); }
+      function hint(msg) { document.getElementById('saveHint').textContent = msg; }
+
+      // ===== Toolbar =====
+      document.getElementById('etool').addEventListener('click', function (e) {
+        var b = e.target.closest ? e.target.closest('[data-cmd]') : null;
+        if (!b) return;
+        var cmd = b.getAttribute('data-cmd');
+        editor.focus();
+        if (cmd === 'bold') document.execCommand('bold');
+        else if (cmd === 'italic') document.execCommand('italic');
+        else if (cmd === 'h2') document.execCommand('formatBlock', false, 'h2');
+        else if (cmd === 'ul') document.execCommand('insertUnorderedList');
+        else if (cmd === 'quote') document.execCommand('formatBlock', false, 'blockquote');
+        else if (cmd === 'link') { var u = prompt('Nhập URL liên kết:'); if (u) document.execCommand('createLink', false, u); }
+        else if (cmd === 'image') insertImage();
+      });
+
+      function insertImage() {
+        var inp = document.createElement('input');
+        inp.type = 'file'; inp.accept = 'image/*';
+        inp.onchange = function () {
+          var f = inp.files[0]; if (!f) return;
+          hint('Đang tải ảnh…');
+          fetch('/api/upload', { method: 'POST', headers: { 'content-type': f.type }, body: f })
+            .then(function (r) { return r.json(); }).then(function (res) {
+              if (res.url) { editor.focus(); document.execCommand('insertHTML', false, '<img src="' + res.url + '" alt="">'); hint(''); }
+              else HT.toast(res.error || 'Lỗi tải ảnh', 'danger');
+            }).catch(function () { HT.toast('Lỗi tải ảnh', 'danger'); hint(''); });
+        };
+        inp.click();
+      }
+
+      // ===== Ảnh bìa =====
+      var coverDrop = document.getElementById('coverDrop');
+      var coverFile = document.getElementById('coverFile');
+      coverDrop.addEventListener('click', function () { coverFile.click(); });
+      coverFile.addEventListener('change', function () {
+        var f = coverFile.files[0]; if (!f) return;
+        document.getElementById('coverHint').textContent = 'Đang tải…';
+        fetch('/api/upload', { method: 'POST', headers: { 'content-type': f.type }, body: f })
+          .then(function (r) { return r.json(); }).then(function (res) {
+            if (res.url) { coverUrl = res.url; coverDrop.style.backgroundImage = 'url(\'' + res.url + '\')'; document.getElementById('coverHint').textContent = ''; }
+            else { HT.toast(res.error || 'Lỗi tải ảnh', 'danger'); document.getElementById('coverHint').textContent = 'Bấm để tải ảnh bìa lên'; }
+          }).catch(function () { HT.toast('Lỗi tải ảnh', 'danger'); });
+      });
+
+      // ===== Prefill khi sửa =====
+      if (editId) {
+        document.getElementById('pageTitle').textContent = 'Sửa bài viết';
+        fetch('/api/tin-tuc?id=' + encodeURIComponent(editId)).then(function (r) { return r.json(); }).then(function (a) {
+          if (a.error) { HT.toast(a.error, 'danger'); return; }
+          document.getElementById('fTitle').value = a.tieu_de || '';
+          document.getElementById('fSapo').value = a.sapo || '';
+          editor.innerHTML = a.noi_dung || '';
+          document.getElementById('fStatus').value = a.trang_thai || 'draft';
+          document.getElementById('fAuthor').value = a.tac_gia || '';
+          document.getElementById('fCat').value = a.chuyen_muc || 'kinhnghiem';
+          document.getElementById('fPin').checked = !!a.ghim;
+          if (a.anh_bia) { coverUrl = a.anh_bia; coverDrop.style.backgroundImage = 'url(\'' + a.anh_bia + '\')'; document.getElementById('coverHint').textContent = ''; }
+        }).catch(function () { HT.toast('Không tải được bài viết', 'danger'); });
+      }
+
+      // ===== Lưu =====
+      function collect(status) {
+        return {
+          tieu_de: document.getElementById('fTitle').value.trim(),
+          sapo: document.getElementById('fSapo').value.trim(),
+          noi_dung: editor.innerHTML.trim(),
+          chuyen_muc: document.getElementById('fCat').value,
+          tac_gia: document.getElementById('fAuthor').value.trim() || 'HT HOME',
+          anh_bia: coverUrl,
+          trang_thai: status,
+          ghim: document.getElementById('fPin').checked ? 1 : 0
+        };
+      }
+
+      function save(status, btn) {
+        var data = collect(status);
+        if (!data.tieu_de) { HT.toast('Vui lòng nhập tiêu đề', 'danger'); return; }
+        var oldTxt = btn.textContent; btn.disabled = true; btn.textContent = 'Đang lưu…';
+        var method = editId ? 'PATCH' : 'POST';
+        if (editId) data.id = Number(editId);
+        fetch('/api/tin-tuc', { method: method, headers: { 'content-type': 'application/json' }, body: JSON.stringify(data) })
+          .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+          .then(function (res) {
+            btn.disabled = false; btn.textContent = oldTxt;
+            if (!res.ok) { HT.toast(res.d.error || 'Lưu thất bại', 'danger'); return; }
+            if (!editId && res.d.id) { editId = res.d.id; history.replaceState(null, '', 'soanbai.html?id=' + editId); document.getElementById('pageTitle').textContent = 'Sửa bài viết'; document.getElementById('fStatus').value = status; }
+            HT.toast(status === 'published' ? 'Đã xuất bản bài viết' : 'Đã lưu', 'success');
+            hint('Đã tự lưu lúc ' + nowHM());
+          })
+          .catch(function () { btn.disabled = false; btn.textContent = oldTxt; HT.toast('Lỗi kết nối', 'danger'); });
+      }
+
+      document.getElementById('btnDraft').addEventListener('click', function () { save('draft', this); });
+      document.getElementById('btnPublish').addEventListener('click', function () { save('published', this); });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tin tức — HT HOME</title>
+  <meta name="description" content="Kinh nghiệm thuê phòng, tin thị trường bất động sản cho thuê TP.HCM và hướng dẫn sử dụng HT HOME." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/tokens.css?v=10" />
+  <link rel="stylesheet" href="assets/css/base.css?v=10" />
+  <link rel="stylesheet" href="assets/css/components.css?v=10" />
+  <style>
+    .news-hero { background: var(--primary); }
+    .news-hero__inner { padding-block: 44px; text-align: center; }
+    @media (min-width: 1024px) { .news-hero__inner { padding-block: 64px; } }
+    .news-hero__eyebrow { display: inline-flex; align-items: center; gap: 7px; background: rgba(255,222,89,.16); color: var(--gold); padding: 7px 14px; border-radius: var(--radius-pill); font-size: 13px; font-weight: 600; }
+    .news-hero__title { color: #fff; font-size: 30px; font-weight: 800; line-height: 1.15; margin-top: 14px; }
+    @media (min-width: 768px) { .news-hero__title { font-size: 40px; } }
+    .news-hero__sub { color: rgba(255,255,255,.82); font-size: 15px; line-height: 1.6; max-width: 620px; margin: 12px auto 0; }
+
+    .news-body { padding-block: 28px 56px; }
+    .cat-bar { display: flex; gap: 8px; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 4px; margin-bottom: 24px; }
+    .cat-chip { flex-shrink: 0; border: 1px solid var(--border); background: var(--card); color: var(--muted-fg); font-family: inherit; font-size: 13.5px; font-weight: 600; padding: 8px 16px; border-radius: 999px; cursor: pointer; white-space: nowrap; }
+    .cat-chip.is-active { background: var(--fg); color: var(--card); border-color: var(--fg); }
+
+    /* Bài nổi bật */
+    .feat { display: grid; grid-template-columns: 1fr; gap: 0; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-l); overflow: hidden; margin-bottom: 28px; text-decoration: none; }
+    @media (min-width: 860px) { .feat { grid-template-columns: 1.1fr 1fr; } }
+    .feat__img { aspect-ratio: 16/10; background: linear-gradient(135deg, var(--gold-soft), var(--muted)); background-size: cover; background-position: center; }
+    .feat__body { padding: 26px 24px; display: flex; flex-direction: column; justify-content: center; }
+    @media (min-width: 860px) { .feat__body { padding: 34px 32px; } }
+    .feat__badge { align-self: flex-start; background: var(--gold); color: var(--on-gold); font-size: 11px; font-weight: 700; padding: 4px 11px; border-radius: 999px; text-transform: uppercase; letter-spacing: .03em; }
+    .feat__cat { font-size: 12.5px; font-weight: 700; color: var(--gold-fg); margin-top: 14px; }
+    .feat__title { font-size: 24px; font-weight: 800; color: var(--fg); line-height: 1.22; margin-top: 6px; }
+    @media (min-width: 768px) { .feat__title { font-size: 28px; } }
+    .feat__sapo { font-size: 14.5px; line-height: 1.6; color: var(--muted-fg); margin-top: 10px; }
+    .feat__meta { font-size: 13px; color: var(--muted-fg); margin-top: 16px; }
+
+    /* Lưới bài */
+    .news-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+    @media (min-width: 620px) { .news-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 1000px) { .news-grid { grid-template-columns: repeat(3, 1fr); } }
+    .ncard { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-l); overflow: hidden; text-decoration: none; display: flex; flex-direction: column; transition: box-shadow .15s, transform .15s; }
+    .ncard:hover { box-shadow: var(--shadow-card-hover, 0 8px 24px rgba(0,0,0,.08)); transform: translateY(-2px); }
+    .ncard__img { aspect-ratio: 16/9; background: linear-gradient(135deg, var(--gold-soft), var(--muted)); background-size: cover; background-position: center; }
+    .ncard__body { padding: 16px 18px 18px; display: flex; flex-direction: column; flex: 1; }
+    .ncard__cat { font-size: 12px; font-weight: 700; color: var(--gold-fg); }
+    .ncard__title { font-size: 16px; font-weight: 700; color: var(--fg); line-height: 1.3; margin-top: 6px; }
+    .ncard__sapo { font-size: 13px; line-height: 1.55; color: var(--muted-fg); margin-top: 8px; flex: 1; }
+    .ncard__meta { font-size: 12px; color: var(--muted-fg); margin-top: 14px; display: flex; gap: 10px; }
+
+    .news-empty { text-align: center; padding: 48px 20px; color: var(--muted-fg); }
+    .sk { background: var(--muted); border-radius: var(--radius-l); height: 300px; animation: pulse 1.4s ease-in-out infinite; }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .55; } }
+  </style>
+</head>
+<body>
+  <div id="ht-header" data-active="news"></div>
+
+  <main>
+    <section class="news-hero">
+      <div class="container news-hero__inner">
+        <span class="news-hero__eyebrow" id="newsEyebrow">Blog HT HOME</span>
+        <h1 class="news-hero__title">Tin tức &amp; Kinh nghiệm thuê phòng</h1>
+        <p class="news-hero__sub">Cập nhật thị trường, mẹo thuê phòng an toàn và hướng dẫn sử dụng HT HOME.</p>
+      </div>
+    </section>
+
+    <section class="news-body">
+      <div class="container">
+        <div class="cat-bar" id="catBar"></div>
+        <div id="featWrap"></div>
+        <div class="news-grid" id="grid">
+          <div class="sk"></div><div class="sk"></div><div class="sk"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="ht-footer"></div>
+
+  <script src="assets/js/ht-ui.js?v=10"></script>
+  <script>
+  (function () {
+    'use strict';
+    var esc = (window.HT && HT.esc) || function (s) { return String(s == null ? '' : s); };
+    document.getElementById('newsEyebrow').innerHTML = (HT.icon ? HT.icon('megaphone', 14) : '') + ' Blog HT HOME';
+
+    var CATS = { kinhnghiem: 'Kinh nghiệm', thitruong: 'Thị trường', huongdan: 'Hướng dẫn', tincongty: 'Tin công ty' };
+    var state = { cat: 'all', all: [] };
+
+    function catLabel(c) { return CATS[c] || 'Khác'; }
+    function fmtDate(s) { if (!s) return ''; var p = String(s).slice(0, 10).split('-'); return p.length === 3 ? (p[2] + '/' + p[1] + '/' + p[0]) : s; }
+    function bg(url) { return url ? ' style="background-image:url(\'' + esc(url) + '\')"' : ''; }
+
+    function renderCats() {
+      var chips = [['all', 'Tất cả']].concat(Object.keys(CATS).map(function (k) { return [k, CATS[k]]; }));
+      document.getElementById('catBar').innerHTML = chips.map(function (c) {
+        return '<button class="cat-chip' + (c[0] === state.cat ? ' is-active' : '') + '" data-cat="' + c[0] + '">' + c[1] + '</button>';
+      }).join('');
+      Array.prototype.forEach.call(document.querySelectorAll('.cat-chip'), function (b) {
+        b.addEventListener('click', function () { state.cat = b.getAttribute('data-cat'); renderCats(); renderList(); });
+      });
+    }
+
+    function ncard(a) {
+      return '<a class="ncard" href="bai-viet.html?slug=' + encodeURIComponent(a.slug) + '">' +
+        '<div class="ncard__img"' + bg(a.anh_bia) + '></div>' +
+        '<div class="ncard__body">' +
+          '<span class="ncard__cat">' + catLabel(a.chuyen_muc) + '</span>' +
+          '<div class="ncard__title">' + esc(a.tieu_de) + '</div>' +
+          '<div class="ncard__sapo">' + esc(a.sapo || '') + '</div>' +
+          '<div class="ncard__meta"><span>' + esc(a.tac_gia || 'HT HOME') + '</span><span>·</span><span>' + fmtDate(a.published_at) + '</span></div>' +
+        '</div></a>';
+    }
+
+    function renderList() {
+      var list = state.all.filter(function (a) { return state.cat === 'all' || a.chuyen_muc === state.cat; });
+      var featWrap = document.getElementById('featWrap');
+      var grid = document.getElementById('grid');
+
+      // Bài nổi bật: bài ghim (nếu đang xem Tất cả) hoặc bài đầu tiên
+      var feat = null;
+      if (state.cat === 'all') { feat = list.filter(function (a) { return a.ghim; })[0] || list[0]; }
+      var rest = list.filter(function (a) { return a !== feat; });
+
+      if (feat) {
+        featWrap.innerHTML = '<a class="feat" href="bai-viet.html?slug=' + encodeURIComponent(feat.slug) + '">' +
+          '<div class="feat__img"' + bg(feat.anh_bia) + '></div>' +
+          '<div class="feat__body">' +
+            '<span class="feat__badge">Nổi bật</span>' +
+            '<span class="feat__cat">' + catLabel(feat.chuyen_muc) + '</span>' +
+            '<div class="feat__title">' + esc(feat.tieu_de) + '</div>' +
+            '<div class="feat__sapo">' + esc(feat.sapo || '') + '</div>' +
+            '<div class="feat__meta">' + esc(feat.tac_gia || 'HT HOME') + ' · ' + fmtDate(feat.published_at) + ' · ' + (feat.luot_xem || 0) + ' lượt xem</div>' +
+          '</div></a>';
+      } else { featWrap.innerHTML = ''; }
+
+      if (!list.length) {
+        grid.innerHTML = '<div class="news-empty" style="grid-column:1/-1">Chưa có bài viết nào trong chuyên mục này.</div>';
+        return;
+      }
+      grid.innerHTML = rest.map(ncard).join('') || '<div class="news-empty" style="grid-column:1/-1">Chỉ có 1 bài nổi bật ở chuyên mục này.</div>';
+    }
+
+    renderCats();
+    fetch('/api/tin-tuc').then(function (r) { return r.json(); }).then(function (rows) {
+      state.all = Array.isArray(rows) ? rows : [];
+      renderList();
+    }).catch(function () {
+      document.getElementById('grid').innerHTML = '<div class="news-empty" style="grid-column:1/-1">Không tải được tin tức. Vui lòng thử lại.</div>';
+    });
+  })();
+  </script>
+</body>
+</html>

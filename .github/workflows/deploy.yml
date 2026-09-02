@@ -18,6 +18,7 @@ jobs:
         run: |
           mkdir -p site-upload
           cp index.html detail.html timphong.html sosanh.html \
+             tintuc.html bai-viet.html tintuc-noibo.html soanbai.html \
              vechungtoi.html dieukhoan.html baomat.html 404.html \
              dangky.html dangnhap-khach.html taikhoan.html chat.html datlich.html \
              dangnhap-noibo.html quenmatkhau.html nhap-otp.html datmatkhau.html \

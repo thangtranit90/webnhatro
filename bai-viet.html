@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bài viết — HT HOME</title>
+  <meta name="description" content="Bài viết trên blog HT HOME." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/tokens.css?v=10" />
+  <link rel="stylesheet" href="assets/css/base.css?v=10" />
+  <link rel="stylesheet" href="assets/css/components.css?v=10" />
+  <style>
+    .art { padding-block: 22px 56px; }
+    .art__wrap { max-width: 760px; margin-inline: auto; }
+    .breadcrumb { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 13px; color: var(--muted-fg); margin-bottom: 20px; }
+    .breadcrumb a:hover { color: var(--fg); }
+    .breadcrumb .sep { color: var(--input); }
+    .breadcrumb .cur { color: var(--fg); font-weight: 600; }
+    .art__cat { font-size: 13px; font-weight: 700; color: var(--gold-fg); }
+    .art__title { font-size: 28px; font-weight: 800; color: var(--fg); line-height: 1.2; margin-top: 8px; }
+    @media (min-width: 768px) { .art__title { font-size: 36px; } }
+    .art__meta { font-size: 13.5px; color: var(--muted-fg); margin-top: 14px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    .art__cover { width: 100%; aspect-ratio: 16/9; background: linear-gradient(135deg, var(--gold-soft), var(--muted)); background-size: cover; background-position: center; border-radius: var(--radius-l); margin: 22px 0; }
+    .art__sapo { font-size: 17px; line-height: 1.6; color: var(--fg); font-weight: 500; padding: 16px 20px; background: var(--gold-soft); border-left: 4px solid var(--gold); border-radius: var(--radius-m); margin-bottom: 24px; }
+    .art__content { font-size: 16px; line-height: 1.8; color: var(--fg); }
+    .art__content h2 { font-size: 22px; font-weight: 800; margin: 30px 0 10px; color: var(--fg); }
+    .art__content h3 { font-size: 18px; font-weight: 700; margin: 24px 0 8px; }
+    .art__content p { margin-bottom: 16px; }
+    .art__content ul, .art__content ol { margin: 0 0 16px 22px; }
+    .art__content li { margin-bottom: 6px; }
+    .art__content img { max-width: 100%; border-radius: var(--radius-m); margin: 16px 0; }
+    .art__content blockquote { border-left: 4px solid var(--gold); background: var(--muted); padding: 14px 18px; border-radius: var(--radius-m); font-style: italic; margin: 16px 0; }
+    .art__content a { color: var(--primary); font-weight: 600; text-decoration: underline; }
+
+    .art__cta { margin: 40px 0 8px; padding: 28px 24px; background: var(--primary); border-radius: var(--radius-l); text-align: center; }
+    .art__cta h3 { color: #fff; font-size: 20px; font-weight: 800; }
+    .art__cta p { color: rgba(255,255,255,.8); font-size: 14px; margin: 8px 0 18px; }
+
+    .related { max-width: 1080px; margin: 48px auto 0; }
+    .related__h { font-size: 20px; font-weight: 800; color: var(--fg); margin-bottom: 18px; }
+    .related__grid { display: grid; grid-template-columns: 1fr; gap: 18px; }
+    @media (min-width: 700px) { .related__grid { grid-template-columns: repeat(3, 1fr); } }
+    .rcard { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-l); overflow: hidden; text-decoration: none; display: flex; flex-direction: column; }
+    .rcard__img { aspect-ratio: 16/9; background: linear-gradient(135deg, var(--gold-soft), var(--muted)); background-size: cover; background-position: center; }
+    .rcard__body { padding: 14px 16px 16px; }
+    .rcard__cat { font-size: 11.5px; font-weight: 700; color: var(--gold-fg); }
+    .rcard__title { font-size: 15px; font-weight: 700; color: var(--fg); line-height: 1.3; margin-top: 5px; }
+    .art__load { text-align: center; padding: 60px 20px; color: var(--muted-fg); }
+  </style>
+</head>
+<body>
+  <div id="ht-header" data-active="news"></div>
+
+  <main>
+    <article class="art">
+      <div class="container">
+        <div id="artBox" class="art__wrap">
+          <div class="art__load">Đang tải bài viết…</div>
+        </div>
+        <div id="relatedBox"></div>
+      </div>
+    </article>
+  </main>
+
+  <div id="ht-footer"></div>
+
+  <script src="assets/js/ht-ui.js?v=10"></script>
+  <script>
+  (function () {
+    'use strict';
+    var esc = (window.HT && HT.esc) || function (s) { return String(s == null ? '' : s); };
+    var CATS = { kinhnghiem: 'Kinh nghiệm', thitruong: 'Thị trường', huongdan: 'Hướng dẫn', tincongty: 'Tin công ty' };
+    function catLabel(c) { return CATS[c] || 'Khác'; }
+    function fmtDate(s) { if (!s) return ''; var p = String(s).slice(0, 10).split('-'); return p.length === 3 ? (p[2] + '/' + p[1] + '/' + p[0]) : s; }
+    function bg(url) { return url ? ' style="background-image:url(\'' + esc(url) + '\')"' : ''; }
+
+    var params = new URLSearchParams(location.search);
+    var slug = params.get('slug');
+    var box = document.getElementById('artBox');
+
+    if (!slug) { box.innerHTML = '<div class="art__load">Không tìm thấy bài viết.</div>'; return; }
+
+    fetch('/api/tin-tuc?slug=' + encodeURIComponent(slug) + '&view=1')
+      .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+      .then(function (res) {
+        if (!res.ok) { box.innerHTML = '<div class="art__load">' + esc(res.d.error || 'Không tìm thấy bài viết.') + '</div>'; return; }
+        var a = res.d;
+        document.title = a.tieu_de + ' — HT HOME';
+        box.innerHTML =
+          '<nav class="breadcrumb"><a href="index.html">Trang chủ</a><span class="sep">/</span>' +
+          '<a href="tintuc.html">Tin tức</a><span class="sep">/</span>' +
+          '<span class="cur">' + esc(catLabel(a.chuyen_muc)) + '</span></nav>' +
+          '<div class="art__cat">' + esc(catLabel(a.chuyen_muc)) + '</div>' +
+          '<h1 class="art__title">' + esc(a.tieu_de) + '</h1>' +
+          '<div class="art__meta"><span>✍ ' + esc(a.tac_gia || 'HT HOME') + '</span><span>·</span><span>' + fmtDate(a.published_at) + '</span><span>·</span><span>' + (a.luot_xem || 0) + ' lượt xem</span></div>' +
+          '<div class="art__cover"' + bg(a.anh_bia) + '></div>' +
+          (a.sapo ? '<div class="art__sapo">' + esc(a.sapo) + '</div>' : '') +
+          '<div class="art__content">' + (a.noi_dung || '<p>Nội dung đang được cập nhật.</p>') + '</div>' +
+          '<div class="art__cta"><h3>Đang tìm phòng trọ?</h3><p>Hàng nghìn phòng thật, giá minh bạch trên HT HOME.</p>' +
+          '<a class="btn btn--gold" href="timphong.html">Xem phòng ngay</a></div>';
+        loadRelated(a);
+      })
+      .catch(function () { box.innerHTML = '<div class="art__load">Lỗi kết nối. Vui lòng thử lại.</div>'; });
+
+    function loadRelated(cur) {
+      fetch('/api/tin-tuc').then(function (r) { return r.json(); }).then(function (rows) {
+        if (!Array.isArray(rows)) return;
+        var rel = rows.filter(function (x) { return x.slug !== cur.slug; });
+        var same = rel.filter(function (x) { return x.chuyen_muc === cur.chuyen_muc; });
+        var pick = same.concat(rel.filter(function (x) { return x.chuyen_muc !== cur.chuyen_muc; })).slice(0, 3);
+        if (!pick.length) return;
+        document.getElementById('relatedBox').innerHTML =
+          '<div class="related"><div class="related__h">Bài viết liên quan</div><div class="related__grid">' +
+          pick.map(function (a) {
+            return '<a class="rcard" href="bai-viet.html?slug=' + encodeURIComponent(a.slug) + '">' +
+              '<div class="rcard__img"' + bg(a.anh_bia) + '></div>' +
+              '<div class="rcard__body"><span class="rcard__cat">' + catLabel(a.chuyen_muc) + '</span>' +
+              '<div class="rcard__title">' + esc(a.tieu_de) + '</div></div></a>';
+          }).join('') + '</div></div>';
+      }).catch(function () {});
+    }
+  })();
+  </script>
+</body>
+</html>
