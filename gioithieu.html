@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Giới thiệu — HT HOME</title>
+  <meta name="description" content="HT HOME — nền tảng tìm thuê phòng trọ, căn hộ dịch vụ và KTX minh bạch tại TP.HCM. Phòng thật, giá thật, có Sale dẫn xem tận nơi." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/tokens.css?v=11" />
+  <link rel="stylesheet" href="assets/css/base.css?v=11" />
+  <link rel="stylesheet" href="assets/css/components.css?v=11" />
+  <style>
+    /* HERO */
+    .lp-hero { background: var(--primary); position: relative; overflow: hidden; }
+    .lp-hero__inner { padding-block: 56px 60px; text-align: center; position: relative; z-index: 1; }
+    @media (min-width: 1024px) { .lp-hero__inner { padding-block: 88px 92px; } }
+    .lp-hero__eyebrow { display: inline-flex; align-items: center; gap: 7px; background: rgba(255,222,89,.16); color: var(--gold); padding: 8px 15px; border-radius: var(--radius-pill); font-size: 13px; font-weight: 600; }
+    .lp-hero__title { color: #fff; font-size: 32px; font-weight: 800; line-height: 1.12; letter-spacing: -.02em; max-width: 800px; margin: 18px auto 0; }
+    @media (min-width: 768px) { .lp-hero__title { font-size: 48px; } }
+    .lp-hero__title .hl { color: var(--gold); }
+    .lp-hero__sub { color: rgba(255,255,255,.84); font-size: 16px; line-height: 1.65; max-width: 620px; margin: 18px auto 0; }
+    .lp-hero__btns { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 30px; }
+    .btn--ghost-light { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,.5); }
+    .btn--ghost-light:hover { background: rgba(255,255,255,.1); border-color: #fff; }
+
+    /* STATS */
+    .lp-stats { background: var(--card); border-bottom: 1px solid var(--border); }
+    .lp-stats__row { display: grid; grid-template-columns: repeat(2, 1fr); }
+    @media (min-width: 900px) { .lp-stats__row { grid-template-columns: repeat(4, 1fr); } }
+    .lp-stat { text-align: center; padding: 26px 12px; border-top: 1px solid var(--border); border-left: 1px solid var(--border); }
+    .lp-stats__row .lp-stat:nth-child(-n+2) { border-top: 0; }
+    .lp-stats__row .lp-stat:nth-child(odd) { border-left: 0; }
+    @media (min-width: 900px) { .lp-stats__row .lp-stat { border-top: 0; } .lp-stats__row .lp-stat:first-child { border-left: 0; } .lp-stats__row .lp-stat:nth-child(odd) { border-left: 1px solid var(--border); } }
+    .lp-stat__n { font-size: 30px; font-weight: 800; color: var(--fg); }
+    .lp-stat__l { font-size: 13px; color: var(--muted-fg); margin-top: 4px; }
+
+    .sec { padding-block: 48px; }
+    @media (min-width: 1024px) { .sec { padding-block: 68px; } }
+    .sec__head { text-align: center; max-width: 620px; margin: 0 auto 34px; }
+    .sec__eyebrow { font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--gold-fg); }
+    .sec__h { font-size: 26px; font-weight: 800; color: var(--fg); line-height: 1.2; margin-top: 8px; }
+    @media (min-width: 768px) { .sec__h { font-size: 34px; } }
+    .sec__sub { font-size: 15px; line-height: 1.6; color: var(--muted-fg); margin-top: 10px; }
+
+    /* WHY cards */
+    .why-grid { display: grid; grid-template-columns: 1fr; gap: 18px; }
+    @media (min-width: 640px) { .why-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 1000px) { .why-grid { grid-template-columns: repeat(4, 1fr); } }
+    .why-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-l); padding: 24px 22px; }
+    .why-card__ic { width: 46px; height: 46px; border-radius: var(--radius-m); background: var(--gold-soft); color: var(--gold-fg); display: inline-flex; align-items: center; justify-content: center; }
+    .why-card__t { font-size: 16px; font-weight: 700; color: var(--fg); margin-top: 14px; }
+    .why-card__d { font-size: 13.5px; line-height: 1.6; color: var(--muted-fg); margin-top: 6px; }
+
+    /* HOW steps */
+    .how { background: var(--card); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .how-grid { display: grid; grid-template-columns: 1fr; gap: 20px; counter-reset: step; }
+    @media (min-width: 768px) { .how-grid { grid-template-columns: repeat(4, 1fr); } }
+    .how-step { position: relative; padding-top: 8px; }
+    .how-step__n { width: 40px; height: 40px; border-radius: 50%; background: var(--gold); color: var(--on-gold); font-weight: 800; font-size: 17px; display: inline-flex; align-items: center; justify-content: center; }
+    .how-step__t { font-size: 16px; font-weight: 700; color: var(--fg); margin-top: 12px; }
+    .how-step__d { font-size: 13.5px; line-height: 1.6; color: var(--muted-fg); margin-top: 6px; }
+
+    /* TYPES */
+    .type-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    @media (min-width: 768px) { .type-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (min-width: 1024px) { .type-grid { grid-template-columns: repeat(6, 1fr); } }
+    .type-chip { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 20px 10px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-l); text-decoration: none; transition: border-color .15s, transform .15s; }
+    .type-chip:hover { border-color: var(--gold); transform: translateY(-2px); }
+    .type-chip__ic { color: var(--gold-fg); }
+    .type-chip__t { font-size: 14px; font-weight: 700; color: var(--fg); }
+
+    /* NEWS preview */
+    .np-grid { display: grid; grid-template-columns: 1fr; gap: 18px; }
+    @media (min-width: 700px) { .np-grid { grid-template-columns: repeat(3, 1fr); } }
+    .np-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-l); overflow: hidden; text-decoration: none; display: flex; flex-direction: column; }
+    .np-card__img { aspect-ratio: 16/9; background: linear-gradient(135deg, var(--gold-soft), var(--muted)); background-size: cover; background-position: center; }
+    .np-card__body { padding: 14px 16px 16px; }
+    .np-card__cat { font-size: 11.5px; font-weight: 700; color: var(--gold-fg); }
+    .np-card__t { font-size: 15px; font-weight: 700; color: var(--fg); line-height: 1.3; margin-top: 5px; }
+
+    /* CTA */
+    .lp-cta { background: var(--primary); border-radius: var(--radius-xl); padding: 40px 24px; text-align: center; }
+    @media (min-width: 768px) { .lp-cta { padding: 56px 44px; } }
+    .lp-cta__h { color: #fff; font-size: 26px; font-weight: 800; line-height: 1.2; }
+    @media (min-width: 768px) { .lp-cta__h { font-size: 32px; } }
+    .lp-cta__s { color: rgba(255,255,255,.8); font-size: 15px; margin-top: 10px; max-width: 520px; margin-inline: auto; }
+    .lp-cta__btns { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 26px; }
+  </style>
+</head>
+<body>
+  <div id="ht-header" data-active="about"></div>
+
+  <main>
+    <!-- HERO -->
+    <section class="lp-hero">
+      <div class="container lp-hero__inner">
+        <span class="lp-hero__eyebrow" id="lpEyebrow">Nền tảng thuê phòng minh bạch</span>
+        <h1 class="lp-hero__title">Tìm phòng trọ <span class="hl">không lo lừa đảo</span>, có Sale dẫn xem tận nơi.</h1>
+        <p class="lp-hero__sub">HT HOME kết nối bạn với hàng nghìn phòng trọ, căn hộ dịch vụ và KTX tại TP.HCM — phòng thật, giá thật, hình thật. Đội ngũ Sale cam kết bằng danh dự.</p>
+        <div class="lp-hero__btns">
+          <a class="btn btn--gold" href="timphong.html">Tìm phòng ngay</a>
+          <a class="btn btn--ghost-light" href="#cach-hoat-dong">Cách hoạt động</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- STATS -->
+    <section class="lp-stats">
+      <div class="container lp-stats__row">
+        <div class="lp-stat"><div class="lp-stat__n">500+</div><div class="lp-stat__l">Tòa nhà quản lý</div></div>
+        <div class="lp-stat"><div class="lp-stat__n">1.024</div><div class="lp-stat__l">Phòng cho thuê</div></div>
+        <div class="lp-stat"><div class="lp-stat__n">3.240+</div><div class="lp-stat__l">Khách đã tin tưởng</div></div>
+        <div class="lp-stat"><div class="lp-stat__n">4.9/5</div><div class="lp-stat__l">Đánh giá trung bình</div></div>
+      </div>
+    </section>
+
+    <!-- WHY -->
+    <section class="sec">
+      <div class="container">
+        <div class="sec__head">
+          <span class="sec__eyebrow">Vì sao chọn HT HOME</span>
+          <h2 class="sec__h">Thuê phòng an tâm từ A đến Z</h2>
+          <p class="sec__sub">Chúng tôi loại bỏ mọi mập mờ trong hành trình tìm chỗ ở của bạn.</p>
+        </div>
+        <div class="why-grid" id="whyGrid"></div>
+      </div>
+    </section>
+
+    <!-- HOW -->
+    <section class="how sec" id="cach-hoat-dong">
+      <div class="container">
+        <div class="sec__head">
+          <span class="sec__eyebrow">Cách hoạt động</span>
+          <h2 class="sec__h">4 bước để có phòng ưng ý</h2>
+        </div>
+        <div class="how-grid" id="howGrid"></div>
+      </div>
+    </section>
+
+    <!-- TYPES -->
+    <section class="sec">
+      <div class="container">
+        <div class="sec__head">
+          <span class="sec__eyebrow">Đa dạng lựa chọn</span>
+          <h2 class="sec__h">Loại phòng phù hợp mọi nhu cầu</h2>
+        </div>
+        <div class="type-grid" id="typeGrid"></div>
+      </div>
+    </section>
+
+    <!-- NEWS -->
+    <section class="how sec">
+      <div class="container">
+        <div class="sec__head">
+          <span class="sec__eyebrow">Blog HT HOME</span>
+          <h2 class="sec__h">Kinh nghiệm &amp; tin tức mới nhất</h2>
+        </div>
+        <div class="np-grid" id="newsGrid"></div>
+        <div style="text-align:center;margin-top:26px"><a class="btn btn--ghost" href="tintuc.html">Xem tất cả tin tức</a></div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="container" style="padding-block:8px 56px">
+      <div class="lp-cta">
+        <h2 class="lp-cta__h">Sẵn sàng tìm tổ ấm của bạn?</h2>
+        <p class="lp-cta__s">Hàng nghìn phòng đang chờ. Đặt lịch xem phòng chỉ trong 1 phút.</p>
+        <div class="lp-cta__btns">
+          <a class="btn btn--gold" href="timphong.html">Xem phòng ngay</a>
+          <a class="btn btn--ghost-light" href="vechungtoi.html">Về chúng tôi</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="ht-footer"></div>
+
+  <script src="assets/js/ht-ui.js?v=11"></script>
+  <script>
+  (function () {
+    'use strict';
+    var esc = (window.HT && HT.esc) || function (s) { return String(s == null ? '' : s); };
+    var ic = (window.HT && HT.icon) ? HT.icon : function () { return ''; };
+    document.getElementById('lpEyebrow').innerHTML = ic('shield-check', 14) + ' Nền tảng thuê phòng minh bạch';
+
+    // Vì sao
+    var WHY = [
+      { ic: 'shield-check', t: 'Minh bạch tuyệt đối', d: 'Giá thuê, tiền cọc, phí phụ thu công khai. Không phí ẩn, không đổi giá phút chót.' },
+      { ic: 'play', t: 'Phòng thật 100%', d: 'Ảnh và video thật của từng phòng. Đúng phòng khi bạn đến xem tận nơi.' },
+      { ic: 'star', t: 'Sale được đào tạo', d: 'Đội ngũ Sale toàn thời gian, am hiểu pháp lý và tận tâm tư vấn.' },
+      { ic: 'heart', t: 'Bảo vệ khách thuê', d: 'Hỗ trợ hoàn cọc nếu phòng sai mô tả. Chủ nhà được xác minh rõ ràng.' }
+    ];
+    document.getElementById('whyGrid').innerHTML = WHY.map(function (w) {
+      return '<div class="why-card"><span class="why-card__ic">' + ic(w.ic, 22) + '</span>' +
+        '<div class="why-card__t">' + w.t + '</div><div class="why-card__d">' + w.d + '</div></div>';
+    }).join('');
+
+    // Cách hoạt động
+    var HOW = [
+      { t: 'Tìm phòng', d: 'Lọc theo khu vực, giá, loại phòng. Xem ảnh & video thật.' },
+      { t: 'Đặt lịch xem', d: 'Chọn phòng ưng ý, đặt lịch qua SĐT + OTP trong 1 phút.' },
+      { t: 'Sale dẫn xem', d: 'Nhân viên HT HOME dẫn bạn xem phòng thực tế tận nơi.' },
+      { t: 'Chốt & dọn vào', d: 'Ký hợp đồng minh bạch, được bảo vệ quyền lợi 2 bên.' }
+    ];
+    document.getElementById('howGrid').innerHTML = HOW.map(function (s, i) {
+      return '<div class="how-step"><span class="how-step__n">' + (i + 1) + '</span>' +
+        '<div class="how-step__t">' + s.t + '</div><div class="how-step__d">' + s.d + '</div></div>';
+    }).join('');
+
+    // Loại phòng
+    var TYPES = [
+      { t: 'Studio', ic: 'bed', q: 'Studio' }, { t: '1PN', ic: 'bed', q: '1PN' },
+      { t: '2PN', ic: 'bed', q: '2PN' }, { t: '3PN', ic: 'bed', q: '3PN' },
+      { t: 'Duplex', ic: 'building-2', q: 'Duplex' }, { t: 'KTX', ic: 'graduation-cap', q: 'KTX' }
+    ];
+    document.getElementById('typeGrid').innerHTML = TYPES.map(function (t) {
+      return '<a class="type-chip" href="timphong.html?loai=' + encodeURIComponent(t.q) + '">' +
+        '<span class="type-chip__ic">' + ic(t.ic, 26) + '</span><span class="type-chip__t">' + t.t + '</span></a>';
+    }).join('');
+
+    // Tin tức mới
+    var CATS = { kinhnghiem: 'Kinh nghiệm', thitruong: 'Thị trường', huongdan: 'Hướng dẫn', tincongty: 'Tin công ty' };
+    function bg(url) { return url ? ' style="background-image:url(\'' + esc(url) + '\')"' : ''; }
+    var ng = document.getElementById('newsGrid');
+    fetch('/api/tin-tuc').then(function (r) { return r.json(); }).then(function (rows) {
+      if (!Array.isArray(rows) || !rows.length) { ng.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--muted-fg)">Chưa có bài viết.</div>'; return; }
+      ng.innerHTML = rows.slice(0, 3).map(function (a) {
+        return '<a class="np-card" href="bai-viet.html?slug=' + encodeURIComponent(a.slug) + '">' +
+          '<div class="np-card__img"' + bg(a.anh_bia) + '></div>' +
+          '<div class="np-card__body"><span class="np-card__cat">' + (CATS[a.chuyen_muc] || '') + '</span>' +
+          '<div class="np-card__t">' + esc(a.tieu_de) + '</div></div></a>';
+      }).join('');
+    }).catch(function () { ng.innerHTML = ''; });
+  })();
+  </script>
+</body>
+</html>

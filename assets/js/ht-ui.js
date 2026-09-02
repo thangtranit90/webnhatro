@@ -59,7 +59,7 @@
 
   /* ---- Danh sách menu ---- */
   var NAV = [
-    { k: 'about', label: 'Giới thiệu', href: 'vechungtoi.html' },
+    { k: 'about', label: 'Giới thiệu', href: 'gioithieu.html' },
     { k: 'home', label: 'Trang chủ', href: 'index.html' },
     { k: 'search', label: 'Tìm phòng', href: 'timphong.html' },
     { k: 'news', label: 'Tin tức', href: 'tintuc.html' }
