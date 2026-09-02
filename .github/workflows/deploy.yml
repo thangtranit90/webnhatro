@@ -25,7 +25,7 @@ jobs:
              dangnhap-noibo.html quenmatkhau.html nhap-otp.html datmatkhau.html \
              dashboard.html khophong.html crm.html deal.html doanhthu.html \
              toanha.html toanha-chitiet.html lichhen.html themphong.html phong-noibo.html \
-             baocao.html quynoibo.html nhanvien.html phanquyen.html caidat.html bangtin.html khuvuc.html \
+             baocao.html quynoibo.html thongbao.html nhanvien.html phanquyen.html caidat.html bangtin.html khuvuc.html \
              chon-loai.html them-tin.html \
              data.js footer.js login.js ht-home-logo.png logo-full-light.png logo-full-dark.png logo-mark.png \
              manifest.json sw.js _headers _redirects \

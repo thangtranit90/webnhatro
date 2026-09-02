@@ -24,6 +24,8 @@
     settings: '<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>',
     'shield-check': '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C10.5 3.8 13 5 15 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/>',
     'chevrons-up-down': '<path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/>',
+    'chevrons-left-right': '<path d="m9 7-5 5 5 5"/><path d="m15 7 5 5-5 5"/>',
+    'bell': '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
     'log-out': '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/>',
     search: '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
     bell: '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
@@ -68,7 +70,7 @@
   function item(n, active) {
     var badge = n.badge;
     if (n.k === 'khophong' && window.ROOMS) badge = String(window.ROOMS.length); // đồng bộ số phòng thật
-    return '<a class="sidebar__item' + (n.k === active ? ' is-active' : '') + '" href="' + n.href + '">' +
+    return '<a class="sidebar__item' + (n.k === active ? ' is-active' : '') + '" href="' + n.href + '" data-tip="' + n.label + '">' +
       ic(n.icon, 18) + '<span class="sidebar__item-label">' + n.label + '</span>' +
       (badge ? '<span class="sidebar__badge">' + badge + '</span>' : '') + '</a>';
   }
@@ -123,7 +125,9 @@
     return '' +
       '<aside class="sidebar">' +
         '<div class="sidebar__brand">' +
-          '<img src="logo-full-dark.png?v=2" alt="HT HOME" style="height:26px;width:auto"/>' + ic('chevrons-up-down', 16) +
+          '<img class="sidebar__logo-full" src="logo-full-dark.png?v=2" alt="HT HOME" style="height:26px;width:auto"/>' +
+          '<img class="sidebar__logo-mark" src="logo-mark.png?v=2" alt="HT HOME"/>' +
+          '<button class="sidebar__collapse" id="htCollapse" type="button" aria-label="Thu gọn/mở rộng menu">' + ic('chevrons-left-right', 18) + '</button>' +
         '</div>' +
         '<div class="sidebar__search" id="ht-gsearch" style="cursor:pointer">' + ic('search', 15) + '<span>Tìm kiếm nhanh</span><span class="kbd">⌘K</span></div>' +
         '<nav class="sidebar__nav">' + mainNav.map(function (n) { return item(n, active); }).join('') + '</nav>' +
@@ -157,6 +161,25 @@
 
     var lo = document.getElementById('htLogout');
     if (lo) lo.addEventListener('click', function () { try { localStorage.removeItem('ht_staff'); } catch (e) {} });
+
+    // ---- Sidebar thu gọn 264 ↔ 72px ----
+    var appEl = host.closest('.app') || document.querySelector('.app');
+    function prefCollapsed() { try { return localStorage.getItem('sidebar-collapsed') === '1'; } catch (e) { return false; } }
+    function applyCollapse() {
+      if (!appEl) return;
+      var w = window.innerWidth;
+      // <1024: drawer (không thu gọn). 1024–1279: bắt buộc thu gọn. ≥1280: theo lựa chọn đã lưu.
+      var collapsed = w < 1024 ? false : (w < 1280 ? true : prefCollapsed());
+      appEl.classList.toggle('is-collapsed', collapsed);
+    }
+    var col = document.getElementById('htCollapse');
+    if (col) col.addEventListener('click', function () {
+      var now = !prefCollapsed();
+      try { localStorage.setItem('sidebar-collapsed', now ? '1' : '0'); } catch (e) {}
+      applyCollapse();
+    });
+    applyCollapse();
+    window.addEventListener('resize', applyCollapse);
 
     // Tìm kiếm nhanh: bấm ô hoặc ⌘K / Ctrl+K
     var gs = document.getElementById('ht-gsearch');

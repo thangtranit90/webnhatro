@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trung tâm thông báo — HT HOME Nội bộ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/tokens.css?v=13" />
+  <link rel="stylesheet" href="assets/css/base.css?v=13" />
+  <link rel="stylesheet" href="assets/css/components.css?v=13" />
+  <link rel="stylesheet" href="assets/css/internal.css?v=7" />
+  <style>
+    .tabs { display: flex; flex-wrap: wrap; gap: 6px; overflow-x: auto; padding-bottom: 2px; margin-top: 4px; }
+    .tab { flex-shrink: 0; border: 1px solid var(--border); background: var(--card); color: var(--muted-fg); font: inherit; font-size: 13px; font-weight: 600; padding: 8px 14px; border-radius: 999px; cursor: pointer; white-space: nowrap; }
+    .tab.is-active { background: var(--fg); color: var(--card); border-color: var(--fg); }
+    .nt-list { margin-top: 16px; display: flex; flex-direction: column; gap: 10px; }
+    .nt-item { display: flex; align-items: flex-start; gap: 13px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-l); padding: 15px 16px; box-shadow: var(--shadow-card); cursor: pointer; transition: border-color .15s; }
+    .nt-item:hover { border-color: var(--muted-fg); }
+    .nt-item.unread { border-left: 3px solid var(--gold); }
+    .nt-ic { width: 40px; height: 40px; border-radius: var(--radius-m); flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; }
+    .nt-ic.lichhen { background: var(--info-soft); color: var(--info); }
+    .nt-ic.deal { background: var(--gold-soft); color: var(--gold-fg); }
+    .nt-ic.khach { background: var(--success-soft); color: var(--success); }
+    .nt-ic.hethong { background: var(--muted); color: var(--muted-fg); }
+    .nt-body { flex: 1; min-width: 0; }
+    .nt-t { font-size: 14px; font-weight: 700; color: var(--fg); }
+    .nt-s { font-size: 13px; color: var(--muted-fg); margin-top: 3px; line-height: 1.5; }
+    .nt-time { font-size: 12px; color: var(--muted-fg); margin-top: 6px; }
+    .nt-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--gold); flex-shrink: 0; margin-top: 6px; }
+    .nt-empty { text-align: center; padding: 56px 20px; color: var(--muted-fg); }
+    .nt-empty__ic { color: var(--input); margin-bottom: 10px; }
+    .nt-skel { height: 72px; background: var(--muted); border-radius: var(--radius-l); animation: pulse 1.4s ease-in-out infinite; }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .55; } }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="app-sidebar" id="ht-sidebar" data-active="thongbao"></div>
+    <main class="app-main">
+      <header class="app-topbar">
+        <div style="display:flex;align-items:center;gap:12px">
+          <button class="btn-sidebar" id="btnSidebar" aria-label="Menu"></button>
+          <div>
+            <div class="app-topbar__title">Trung tâm thông báo</div>
+            <div class="app-topbar__sub" id="ntSub">Tất cả cập nhật &amp; việc cần xử lý</div>
+          </div>
+        </div>
+        <div class="app-topbar__actions">
+          <button class="btn btn--ghost btn--sm" id="btnReadAll" type="button">Đánh dấu tất cả đã đọc</button>
+        </div>
+      </header>
+
+      <div class="app-content">
+        <div class="tabs" id="tabs"></div>
+        <div class="nt-list" id="ntList">
+          <div class="nt-skel"></div><div class="nt-skel"></div><div class="nt-skel"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="assets/js/ht-ui.js?v=13"></script>
+  <script src="assets/js/ht-internal.js?v=13"></script>
+  <script>
+    (function () {
+      'use strict';
+      var I = HTI.icon, esc = HT.esc;
+      document.getElementById('btnSidebar').innerHTML = I('menu', 22);
+
+      var me = null; try { me = JSON.parse(localStorage.getItem('ht_staff')); } catch (e) {}
+      var isSale = me && me.roleKey !== 'admin';
+
+      // Trạng thái đã đọc (localStorage)
+      function readSet() { try { return JSON.parse(localStorage.getItem('ht_notif_read') || '[]'); } catch (e) { return []; } }
+      function saveRead(arr) { try { localStorage.setItem('ht_notif_read', JSON.stringify(arr)); } catch (e) {} }
+      var read = readSet();
+      function isRead(id) { return read.indexOf(id) >= 0; }
+      function markRead(id) { if (!isRead(id)) { read.push(id); saveRead(read); } }
+
+      var TYPE = {
+        lichhen: { ic: 'calendar-days', label: 'Lịch hẹn' },
+        deal: { ic: 'file-text', label: 'Deal' },
+        khach: { ic: 'users', label: 'Khách hàng' },
+        hethong: { ic: 'bell', label: 'Hệ thống' }
+      };
+      var notifs = [], state = { tab: 'all' };
+
+      function fmtDate(s) { if (!s) return ''; var p = String(s).slice(0, 10).split('-'); return p.length === 3 ? (p[2] + '/' + p[1] + '/' + p[0]) : s; }
+
+      // Dựng thông báo từ dữ liệu thật + hệ thống
+      function build(lichhen, deals, khach) {
+        var out = [];
+        // Lịch hẹn sắp tới (trạng thái chờ/xác nhận)
+        (Array.isArray(lichhen) ? lichhen : []).slice(0, 6).forEach(function (l) {
+          if (isSale && me && (l.sale || '') && (l.sale || '').trim() !== (me.name || '').trim()) return;
+          var st = l.trang_thai === 'huy' ? 'đã huỷ' : (l.trang_thai === 'xacnhan' ? 'đã xác nhận' : 'chờ xác nhận');
+          out.push({ id: 'lh' + l.id, type: 'lichhen', t: 'Lịch xem phòng: ' + (l.khach || 'Khách'), s: (l.phong || 'Phòng') + ' · ' + (l.gio || '') + ' ' + fmtDate(l.ngay) + ' · ' + st, time: fmtDate(l.ngay) });
+        });
+        // Deal chưa release / chưa có ảnh HĐ
+        (Array.isArray(deals) ? deals : []).forEach(function (d) {
+          if (isSale && me && (d.sale || '').trim() !== (me.name || '').trim()) return;
+          var imgs = 0; try { imgs = (JSON.parse(d.anh_hd || '[]') || []).length; } catch (e) {}
+          if (!d.released && d.trang_thai !== 'bo_coc' && imgs === 0) {
+            out.push({ id: 'dl' + d.id, type: 'deal', t: 'Deal chưa có ảnh hợp đồng', s: (d.khach || '') + ' · ' + (d.phong || '') + ' — cần upload ảnh HĐ', time: d.ngay || '' });
+          }
+        });
+        // Khách mới (nhiệt hot)
+        (Array.isArray(khach) ? khach : []).filter(function (k) { return k.nhiet === 'hot'; }).slice(0, 4).forEach(function (k) {
+          if (isSale && me && (k.sale || '') && (k.sale || '').trim() !== (me.name || '').trim()) return;
+          out.push({ id: 'kh' + k.id, type: 'khach', t: 'Khách tiềm năng (hot): ' + (k.ten || ''), s: (k.nguon || 'Nguồn khác') + ' · ngân sách ' + (k.ngan_sach || '—'), time: '' });
+        });
+        // Hệ thống (demo cố định)
+        out.push({ id: 'sys1', type: 'hethong', t: 'Chào mừng đến HT HOME Nội bộ', s: 'Trung tâm thông báo tổng hợp lịch hẹn, deal và khách cần xử lý.', time: '' });
+        return out;
+      }
+
+      function unreadCount() { return notifs.filter(function (n) { return !isRead(n.id); }).length; }
+
+      function renderTabs() {
+        function cnt(k) {
+          if (k === 'all') return notifs.length;
+          if (k === 'unread') return unreadCount();
+          return notifs.filter(function (n) { return n.type === k; }).length;
+        }
+        var defs = [
+          { k: 'all', label: 'Tất cả' }, { k: 'unread', label: 'Chưa đọc' },
+          { k: 'lichhen', label: 'Lịch hẹn' }, { k: 'deal', label: 'Deal' }, { k: 'khach', label: 'Khách hàng' }, { k: 'hethong', label: 'Hệ thống' }
+        ];
+        document.getElementById('tabs').innerHTML = defs.map(function (t) {
+          return '<button class="tab' + (t.k === state.tab ? ' is-active' : '') + '" data-k="' + t.k + '">' + t.label + ' (' + cnt(t.k) + ')</button>';
+        }).join('');
+      }
+
+      function filtered() {
+        if (state.tab === 'all') return notifs;
+        if (state.tab === 'unread') return notifs.filter(function (n) { return !isRead(n.id); });
+        return notifs.filter(function (n) { return n.type === state.tab; });
+      }
+
+      function render() {
+        renderTabs();
+        var list = filtered();
+        var el = document.getElementById('ntList');
+        document.getElementById('ntSub').textContent = notifs.length + ' thông báo · ' + unreadCount() + ' chưa đọc';
+        if (!list.length) {
+          el.innerHTML = '<div class="nt-empty"><div class="nt-empty__ic">' + I('bell', 40) + '</div>Không có thông báo nào ở mục này.</div>';
+          return;
+        }
+        el.innerHTML = list.map(function (n) {
+          var ty = TYPE[n.type] || TYPE.hethong;
+          var unread = !isRead(n.id);
+          return '<div class="nt-item' + (unread ? ' unread' : '') + '" data-id="' + esc(n.id) + '">' +
+            '<span class="nt-ic ' + n.type + '">' + I(ty.ic, 19) + '</span>' +
+            '<div class="nt-body"><div class="nt-t">' + esc(n.t) + '</div>' +
+            '<div class="nt-s">' + esc(n.s) + '</div>' +
+            (n.time ? '<div class="nt-time">' + esc(n.time) + '</div>' : '') + '</div>' +
+            (unread ? '<span class="nt-dot"></span>' : '') + '</div>';
+        }).join('');
+      }
+
+      document.getElementById('tabs').addEventListener('click', function (e) {
+        var b = e.target.closest('.tab'); if (!b) return;
+        state.tab = b.getAttribute('data-k'); render();
+      });
+      document.getElementById('ntList').addEventListener('click', function (e) {
+        var it = e.target.closest('.nt-item'); if (!it) return;
+        markRead(it.getAttribute('data-id')); render();
+      });
+      document.getElementById('btnReadAll').addEventListener('click', function () {
+        notifs.forEach(function (n) { markRead(n.id); });
+        HT.toast('Đã đánh dấu tất cả đã đọc', 'success'); render();
+      });
+
+      Promise.all([
+        fetch('/api/lich-hen').then(function (r) { return r.json(); }).catch(function () { return []; }),
+        fetch('/api/deal').then(function (r) { return r.json(); }).catch(function () { return []; }),
+        fetch('/api/khach').then(function (r) { return r.json(); }).catch(function () { return []; })
+      ]).then(function (a) {
+        notifs = build(a[0], a[1], a[2]);
+        render();
+      }).catch(function () {
+        notifs = build([], [], []); render();
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -84,3 +84,39 @@
   .app-sidebar.is-open { transform: translateX(0); }
   .sidebar-backdrop.is-open { display: block; }
 }
+
+/* ---------- Sidebar thu gọn (264px ↔ 72px) ---------- */
+.sidebar__brand { justify-content: space-between; }
+.sidebar__logo-mark { display: none; height: 26px; width: auto; }
+.sidebar__collapse { flex-shrink: 0; border: 0; background: transparent; color: var(--sidebar-icon); cursor: pointer; padding: 4px; border-radius: 6px; display: inline-flex; }
+.sidebar__collapse:hover { background: var(--sidebar-active); color: #fff; }
+
+.app.is-collapsed .app-sidebar,
+.app.is-collapsed .sidebar { width: 72px; }
+.app.is-collapsed .sidebar__brand { justify-content: center; padding: 16px 8px; }
+.app.is-collapsed .sidebar__logo-full,
+.app.is-collapsed .sidebar__collapse { display: none; }
+.app.is-collapsed .sidebar__logo-mark { display: block; }
+.app.is-collapsed .sidebar__search { justify-content: center; padding: 9px; margin: 0 12px 8px; }
+.app.is-collapsed .sidebar__search span:not(.kbd),
+.app.is-collapsed .sidebar__search .kbd { display: none; }
+.app.is-collapsed .sidebar__nav { padding: 4px 10px; }
+.app.is-collapsed .sidebar__item { justify-content: center; padding-left: 10px; padding-right: 10px; }
+.app.is-collapsed .sidebar__item-label,
+.app.is-collapsed .sidebar__badge,
+.app.is-collapsed .sidebar__cap { display: none; }
+.app.is-collapsed .sidebar__divider { margin: 8px 12px; }
+.app.is-collapsed .sidebar__profile { padding: 12px 8px; }
+.app.is-collapsed .sidebar__level { padding: 8px; }
+.app.is-collapsed .sidebar__level-top { justify-content: center; }
+.app.is-collapsed .sidebar__level-top > span:last-child,
+.app.is-collapsed .sidebar__logout span { display: none; }
+.app.is-collapsed .sidebar__logout { padding: 10px 0; }
+/* Tooltip khi rút gọn */
+.app.is-collapsed .sidebar__item { position: relative; }
+.app.is-collapsed .sidebar__item::after {
+  content: attr(data-tip); position: absolute; left: calc(100% + 8px); top: 50%; transform: translateY(-50%);
+  background: #17171A; color: #fff; font-size: 12px; font-weight: 600; padding: 5px 9px; border-radius: 6px;
+  white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity .12s; z-index: 70;
+}
+.app.is-collapsed .sidebar__item:hover::after { opacity: 1; }
