@@ -93,9 +93,8 @@
 
 .app.is-collapsed .app-sidebar,
 .app.is-collapsed .sidebar { width: 72px; }
-.app.is-collapsed .sidebar__brand { justify-content: center; padding: 16px 8px; }
-.app.is-collapsed .sidebar__logo-full,
-.app.is-collapsed .sidebar__collapse { display: none; }
+.app.is-collapsed .sidebar__brand { flex-direction: column; justify-content: center; gap: 10px; padding: 16px 8px; }
+.app.is-collapsed .sidebar__logo-full { display: none; }
 .app.is-collapsed .sidebar__logo-mark { display: block; }
 .app.is-collapsed .sidebar__search { justify-content: center; padding: 9px; margin: 0 12px 8px; }
 .app.is-collapsed .sidebar__search span:not(.kbd),
