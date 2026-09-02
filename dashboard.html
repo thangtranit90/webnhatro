@@ -7,9 +7,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="assets/css/tokens.css?v=8" />
-  <link rel="stylesheet" href="assets/css/base.css?v=8" />
-  <link rel="stylesheet" href="assets/css/components.css?v=8" />
+  <link rel="stylesheet" href="assets/css/tokens.css?v=9" />
+  <link rel="stylesheet" href="assets/css/base.css?v=9" />
+  <link rel="stylesheet" href="assets/css/components.css?v=9" />
   <link rel="stylesheet" href="assets/css/internal.css?v=6" />
   <style>
     .kpi-row { display: grid; grid-template-columns: 1fr; gap: 16px; }
@@ -122,8 +122,8 @@
   </div>
 
   <script src="data.js"></script>
-  <script src="assets/js/ht-ui.js?v=8"></script>
-  <script src="assets/js/ht-internal.js?v=8"></script>
+  <script src="assets/js/ht-ui.js?v=9"></script>
+  <script src="assets/js/ht-internal.js?v=9"></script>
   <script>
     var I = HTI.icon;
     document.getElementById('btnSidebar').innerHTML = I('menu', 22);
@@ -178,11 +178,11 @@
 
     // Leaderboard
     var lb = [
-      { av: 'TH', nm: 'Thu Hà', role: 'Sale cấp 1 · 18 deal', rev: '48,2 tr' },
-      { av: 'MT', nm: 'Minh Trọ', role: 'Sale cấp 2 · 12 deal', rev: '32,4 tr' },
-      { av: 'QB', nm: 'Quốc Bảo', role: 'Sale cấp 2 · 10 deal', rev: '27,1 tr' },
-      { av: 'LA', nm: 'Lan Anh', role: 'Sale cấp 2 · 7 deal', rev: '19,5 tr' },
-      { av: 'ĐH', nm: 'Đức Huy', role: 'Sale cấp 2 · 5 deal', rev: '13,2 tr' }
+      { av: 'TH', nm: 'Thu Hà', role: 'Sale · 18 deal', rev: '48,2 tr' },
+      { av: 'MT', nm: 'Minh Trọ', role: 'Sale · 12 deal', rev: '32,4 tr' },
+      { av: 'QB', nm: 'Quốc Bảo', role: 'Sale · 10 deal', rev: '27,1 tr' },
+      { av: 'LA', nm: 'Lan Anh', role: 'Sale · 7 deal', rev: '19,5 tr' },
+      { av: 'ĐH', nm: 'Đức Huy', role: 'Sale · 5 deal', rev: '13,2 tr' }
     ];
     document.getElementById('leaderboard').innerHTML = lb.map(function (r, i) {
       return '<div class="lb-row"><span class="lb-rank">' + (i + 1) + '</span><span class="avatar" style="width:36px;height:36px;font-size:13px">' + r.av + '</span>' +
@@ -218,7 +218,7 @@
       { av: 'TH', t: 'Thu Hà chốt deal 12tr tại HT Nguyễn Oanh', time: '5 phút trước' },
       { av: 'AD', t: 'Admin thêm 5 phòng mới tại HT Lê Đức Thọ', time: '1 giờ trước' },
       { av: 'QB', t: "Quốc Bảo đưa khách sang bước 'Đã dẫn xem'", time: '2 giờ trước' },
-      { av: 'MT', t: 'Bạn vừa đủ điều kiện thăng cấp Sale 1 🎉', time: 'Hôm qua' },
+      { av: 'MT', t: 'Bạn vừa chốt deal 8,5tr tại HT Phạm Văn Đồng 🎉', time: 'Hôm qua' },
       { av: 'LA', t: 'Lan Anh có khách mới từ Facebook Ads', time: 'Hôm qua' }
     ];
     document.getElementById('activity').innerHTML = acts.map(function (a) {

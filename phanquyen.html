@@ -7,9 +7,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="assets/css/tokens.css?v=8" />
-  <link rel="stylesheet" href="assets/css/base.css?v=8" />
-  <link rel="stylesheet" href="assets/css/components.css?v=8" />
+  <link rel="stylesheet" href="assets/css/tokens.css?v=9" />
+  <link rel="stylesheet" href="assets/css/base.css?v=9" />
+  <link rel="stylesheet" href="assets/css/components.css?v=9" />
   <link rel="stylesheet" href="assets/css/internal.css?v=6" />
   <style>
     .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-l); box-shadow: var(--shadow-card); }
@@ -42,7 +42,7 @@
           <button class="btn-sidebar" id="btnSidebar" aria-label="Menu"></button>
           <div>
             <div class="app-topbar__title">Phân quyền vai trò</div>
-            <div class="app-topbar__sub">4 vai trò · 18 chức năng · Áp dụng cho toàn hệ thống</div>
+            <div class="app-topbar__sub">2 vai trò · 16 chức năng · Áp dụng cho toàn hệ thống</div>
           </div>
         </div>
         <div class="app-topbar__actions">
@@ -63,10 +63,8 @@
               <thead>
                 <tr>
                   <th class="fn">Chức năng</th>
-                  <th>Sale cấp 1<span class="pq-role-cnt">4 người</span></th>
-                  <th>Sale cấp 2<span class="pq-role-cnt">8 người</span></th>
-                  <th>Manager<span class="pq-role-cnt">1 người</span></th>
-                  <th>Admin<span class="pq-role-cnt">1 người</span></th>
+                  <th>Sale<span class="pq-role-cnt">Nhân viên kinh doanh</span></th>
+                  <th>Admin<span class="pq-role-cnt">Quản trị viên</span></th>
                 </tr>
               </thead>
               <tbody id="pqBody"></tbody>
@@ -77,43 +75,43 @@
     </main>
   </div>
 
-  <script src="assets/js/ht-ui.js?v=8"></script>
-  <script src="assets/js/ht-internal.js?v=8"></script>
+  <script src="assets/js/ht-ui.js?v=9"></script>
+  <script src="assets/js/ht-internal.js?v=9"></script>
   <script>
     (function () {
       'use strict';
       var I = HTI.icon;
       document.getElementById('btnSidebar').innerHTML = I('menu', 22);
 
-      // Ma trận: mỗi hàng [tên chức năng, sale1, sale2, manager, admin]
-      // Admin luôn đủ tất cả. Sale1 quyền cơ bản, Sale2 nhiều hơn, Manager gần đủ.
+      // Ma trận: mỗi hàng [tên chức năng, sale, admin]. Chỉ còn 2 vai trò (v3.6).
+      // Admin luôn đủ tất cả. Sale làm nghiệp vụ kinh doanh, không đụng quản trị.
       var groups = [
         { name: 'Phòng & tòa nhà', rows: [
-          ['Xem giỏ hàng phòng',      1, 1, 1, 1],
-          ['Thêm/sửa phòng',          0, 1, 1, 1],
-          ['Xoá phòng',               0, 0, 1, 1],
-          ['Xem thông tin chủ nhà',   0, 1, 1, 1],
-          ['Sửa ma trận hoa hồng',    0, 0, 1, 1]
+          ['Xem giỏ hàng phòng',      1, 1],
+          ['Thêm/sửa phòng',          0, 1],
+          ['Xoá phòng',               0, 1],
+          ['Xem thông tin chủ nhà',   1, 1],
+          ['Sửa ma trận hoa hồng',    0, 1]
         ] },
         { name: 'Khách hàng & deal', rows: [
-          ['Xem CRM',                 1, 1, 1, 1],
-          ['Thêm/sửa khách',          1, 1, 1, 1],
-          ['Chốt deal',               1, 1, 1, 1],
-          ['Xem hoa hồng deal',       1, 1, 1, 1],
-          ['Duyệt release HH',        0, 0, 1, 1]
+          ['Xem CRM',                 1, 1],
+          ['Thêm/sửa khách',          1, 1],
+          ['Chốt deal',               1, 1],
+          ['Xem hoa hồng deal',       1, 1],
+          ['Duyệt release HH',        0, 1]
         ] },
         { name: 'Báo cáo & quản trị', rows: [
-          ['Xem báo cáo cá nhân',     1, 1, 1, 1],
-          ['Xem báo cáo tổng',        0, 0, 1, 1],
-          ['Quản lý nhân viên',       0, 0, 1, 1],
-          ['Phân quyền',              0, 0, 0, 1],
-          ['Quản lý quỹ',            0, 0, 1, 1],
-          ['Cài đặt hệ thống',        0, 0, 0, 1]
+          ['Xem báo cáo cá nhân',     1, 1],
+          ['Xem báo cáo tổng',        0, 1],
+          ['Quản lý nhân viên',       0, 1],
+          ['Phân quyền',              0, 1],
+          ['Quản lý quỹ',            0, 1],
+          ['Cài đặt hệ thống',        0, 1]
         ] }
       ];
 
       var esc = (window.HT && HT.esc) ? HT.esc : function (s) { return String(s == null ? '' : s); };
-      var ROLE_KEYS = ['sale1', 'sale2', 'manager', 'admin']; // cột 0..3
+      var ROLE_KEYS = ['sale', 'admin']; // cột 0..1
 
       // Nạp map đã lưu (nếu có)
       function loadPerms() {
@@ -130,12 +128,11 @@
 
       var html = '';
       groups.forEach(function (g) {
-        html += '<tr class="pq-group"><td colspan="5">' + esc(g.name) + '</td></tr>';
+        html += '<tr class="pq-group"><td colspan="3">' + esc(g.name) + '</td></tr>';
         g.rows.forEach(function (r) {
           var func = r[0];
           html += '<tr><td class="fn">' + esc(func) + '</td>' +
-            cell(func, ROLE_KEYS[0], r[1]) + cell(func, ROLE_KEYS[1], r[2]) +
-            cell(func, ROLE_KEYS[2], r[3]) + cell(func, ROLE_KEYS[3], r[4]) + '</tr>';
+            cell(func, ROLE_KEYS[0], r[1]) + cell(func, ROLE_KEYS[1], r[2]) + '</tr>';
         });
       });
       document.getElementById('pqBody').innerHTML = html;

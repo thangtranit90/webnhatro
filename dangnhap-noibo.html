@@ -8,9 +8,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="assets/css/tokens.css?v=8" />
-  <link rel="stylesheet" href="assets/css/base.css?v=8" />
-  <link rel="stylesheet" href="assets/css/components.css?v=8" />
+  <link rel="stylesheet" href="assets/css/tokens.css?v=9" />
+  <link rel="stylesheet" href="assets/css/base.css?v=9" />
+  <link rel="stylesheet" href="assets/css/components.css?v=9" />
   <style>
     /* ===== Layout auth 2 panel — dùng chung 4 trang ===== */
     .auth { min-height: 100vh; display: grid; grid-template-columns: 1fr; }
@@ -126,8 +126,8 @@
 
         <form id="loginForm" novalidate>
           <div class="field">
-            <label class="field__label" for="fPhone">Số điện thoại</label>
-            <input class="field__input" type="tel" id="fPhone" name="phone" placeholder="09••••••••" autocomplete="tel" inputmode="tel" />
+            <label class="field__label" for="fEmail">Email</label>
+            <input class="field__input" type="email" id="fEmail" name="email" placeholder="ten@hthome.vn" autocomplete="username" inputmode="email" />
           </div>
 
           <div class="field">
@@ -152,15 +152,15 @@
 
         <div style="margin-top:18px;padding:14px;background:var(--muted);border-radius:var(--radius-m)">
           <div style="font-weight:700;color:var(--fg);font-size:12px;margin-bottom:8px">Tài khoản demo — bấm để điền (mật khẩu: <b>123456</b>)</div>
-          <button type="button" class="demo-acc" data-phone="0900000001" data-pass="123456" style="display:block;width:100%;text-align:left;border:1px solid var(--border);background:var(--card);border-radius:var(--radius-s);padding:9px 11px;margin-top:6px;font-size:13px;color:var(--fg);cursor:pointer">👑 <b>Admin</b> · 0900 000 001</button>
-          <button type="button" class="demo-acc" data-phone="0900000002" data-pass="123456" style="display:block;width:100%;text-align:left;border:1px solid var(--border);background:var(--card);border-radius:var(--radius-s);padding:9px 11px;margin-top:6px;font-size:13px;color:var(--fg);cursor:pointer">⭐ <b>Sale cấp 2</b> · 0900 000 002 · Minh Trọ</button>
-          <button type="button" class="demo-acc" data-phone="0900000003" data-pass="123456" style="display:block;width:100%;text-align:left;border:1px solid var(--border);background:var(--card);border-radius:var(--radius-s);padding:9px 11px;margin-top:6px;font-size:13px;color:var(--fg);cursor:pointer">🌟 <b>Sale cấp 1</b> · 0900 000 003 · Thu Hà</button>
+          <button type="button" class="demo-acc" data-email="admin@hthome.vn" data-pass="123456" style="display:block;width:100%;text-align:left;border:1px solid var(--border);background:var(--card);border-radius:var(--radius-s);padding:9px 11px;margin-top:6px;font-size:13px;color:var(--fg);cursor:pointer">👑 <b>Admin</b> · admin@hthome.vn</button>
+          <button type="button" class="demo-acc" data-email="minhtro@hthome.vn" data-pass="123456" style="display:block;width:100%;text-align:left;border:1px solid var(--border);background:var(--card);border-radius:var(--radius-s);padding:9px 11px;margin-top:6px;font-size:13px;color:var(--fg);cursor:pointer">⭐ <b>Sale</b> · minhtro@hthome.vn · Minh Trọ</button>
+          <button type="button" class="demo-acc" data-email="thuha@hthome.vn" data-pass="123456" style="display:block;width:100%;text-align:left;border:1px solid var(--border);background:var(--card);border-radius:var(--radius-s);padding:9px 11px;margin-top:6px;font-size:13px;color:var(--fg);cursor:pointer">⭐ <b>Sale</b> · thuha@hthome.vn · Thu Hà</button>
         </div>
       </div>
     </section>
   </main>
 
-  <script src="assets/js/ht-ui.js?v=8"></script>
+  <script src="assets/js/ht-ui.js?v=9"></script>
   <script>
   (function () {
     'use strict';
@@ -180,35 +180,35 @@
       toggle.setAttribute('aria-label', show ? 'Ẩn mật khẩu' : 'Hiện mật khẩu');
     });
 
-    /* Tài khoản demo (không backend) — mật khẩu: 123456 */
-    var ACCOUNTS = [
-      { phone: '0900000001', pass: '123456', name: 'Quản trị viên', role: 'Admin', initials: 'QT', roleKey: 'admin' },
-      { phone: '0900000002', pass: '123456', name: 'Minh Trọ', role: 'Sale cấp 2', initials: 'MT', roleKey: 'sale2' },
-      { phone: '0900000003', pass: '123456', name: 'Thu Hà', role: 'Sale cấp 1', initials: 'TH', roleKey: 'sale1' }
-    ];
-    function normPhone(s) { return (s || '').replace(/\D/g, ''); }
-
+    /* Đăng nhập nội bộ THẬT qua API D1 (email + mật khẩu) */
     var form = document.getElementById('loginForm');
     var errEl = document.getElementById('formError');
-    var fPhone = document.getElementById('fPhone');
+    var fEmail = document.getElementById('fEmail');
+    var btn = form.querySelector('button[type="submit"]');
     form.addEventListener('submit', function (e) {
       e.preventDefault();
-      var phone = normPhone(fPhone.value);
-      var pass = pw.value.trim();
-      if (!phone) { errEl.textContent = 'Vui lòng nhập số điện thoại.'; fPhone.focus(); return; }
+      var email = (fEmail.value || '').trim();
+      var pass = pw.value;
+      if (!email) { errEl.textContent = 'Vui lòng nhập email.'; fEmail.focus(); return; }
       if (!pass) { errEl.textContent = 'Vui lòng nhập mật khẩu.'; pw.focus(); return; }
-      var acc = ACCOUNTS.filter(function (a) { return a.phone === phone; })[0];
-      if (!acc) { errEl.textContent = 'Số điện thoại này chưa được cấp tài khoản nội bộ.'; return; }
-      if (acc.pass !== pass) { errEl.textContent = 'Mật khẩu không đúng (demo: 123456).'; pw.focus(); return; }
       errEl.textContent = '';
-      try { localStorage.setItem('ht_staff', JSON.stringify({ name: acc.name, role: acc.role, initials: acc.initials, roleKey: acc.roleKey })); } catch (e2) {}
-      window.location.href = 'dashboard.html';
+      btn.disabled = true; var oldTxt = btn.textContent; btn.textContent = 'Đang đăng nhập…';
+      fetch('/api/auth-noibo', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ action: 'login', email: email, mat_khau: pass })
+      }).then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+        .then(function (res) {
+          if (!res.ok) { errEl.textContent = res.d.error || 'Đăng nhập thất bại.'; btn.disabled = false; btn.textContent = oldTxt; return; }
+          try { localStorage.setItem('ht_staff', JSON.stringify(res.d.user)); } catch (e2) {}
+          window.location.href = 'dashboard.html';
+        })
+        .catch(function () { errEl.textContent = 'Lỗi kết nối, vui lòng thử lại.'; btn.disabled = false; btn.textContent = oldTxt; });
     });
 
     /* Bấm tài khoản mẫu để điền nhanh */
     Array.prototype.forEach.call(document.querySelectorAll('.demo-acc'), function (el) {
       el.addEventListener('click', function () {
-        fPhone.value = el.getAttribute('data-phone');
+        fEmail.value = el.getAttribute('data-email');
         pw.value = el.getAttribute('data-pass');
         errEl.textContent = '';
       });

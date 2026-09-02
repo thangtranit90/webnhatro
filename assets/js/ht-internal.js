@@ -54,15 +54,14 @@
     { k: 'phanquyen', label: 'Phân quyền', href: 'phanquyen.html', icon: 'shield-check' },
     { k: 'caidat', label: 'Cài đặt', href: 'caidat.html', icon: 'settings' }
   ];
-  // Nav riêng cho SALE (khu "của tôi" — không có mục quản trị)
+  // Nav riêng cho SALE (khu "của tôi" — không có mục quản trị). Theo v3.6.
   var NAV_SALE = [
     { k: 'dashboard', label: 'Dashboard', href: 'dashboard.html', icon: 'layout-dashboard' },
     { k: 'khophong', label: 'Kho phòng', href: 'khophong.html', icon: 'package' },
-    { k: 'toanha', label: 'Tòa nhà', href: 'toanha.html', icon: 'building' },
     { k: 'crm', label: 'Khách của tôi', href: 'crm.html', icon: 'users' },
     { k: 'deal', label: 'Deal của tôi', href: 'deal.html', icon: 'file-text' },
     { k: 'lichhen', label: 'Lịch hẹn', href: 'lichhen.html', icon: 'calendar-days' },
-    { k: 'bangtin', label: 'Bảng tin', href: 'bangtin.html', icon: 'megaphone' }
+    { k: 'doanhthu', label: 'Doanh thu của tôi', href: 'doanhthu.html', icon: 'wallet' }
   ];
 
   function item(n, active) {
@@ -110,7 +109,7 @@
   }
 
   function sidebarHTML(active) {
-    var s = staff() || { name: 'Minh Trọ', role: 'Sale cấp 2', initials: 'MT', roleKey: 'sale2' };
+    var s = staff() || { name: 'Minh Trọ', role: 'Sale', initials: 'MT', roleKey: 'sale' };
     var isAdmin = s.roleKey === 'admin';
     var roleLabel = (isAdmin ? '👑 ' : '⭐ ') + s.role;
     // Admin: NAV_MAIN + khu QUẢN TRỊ. Sale: NAV_SALE (không có khu quản trị).
@@ -135,16 +134,14 @@
               '<span class="avatar">' + s.initials + '</span>' +
               '<span style="flex:1"><span class="sidebar__level-name" style="display:block">' + s.name + '</span><span class="sidebar__level-role">' + roleLabel + '</span></span>' +
             '</div>' +
-            '<div class="sidebar__bar-label"><span>Tiến độ lên Sale 1</span><span>68%</span></div>' +
-            '<div class="sidebar__bar"><span class="sidebar__bar-fill" style="width:68%"></span></div>' +
             '<a class="sidebar__logout" id="htLogout" href="dangnhap-noibo.html">' + ic('log-out', 15) + 'Đăng xuất</a>' +
           '</div>' +
         '</div>' +
       '</aside>';
   }
 
-  // Trang chỉ Admin được vào (sale bị chặn)
-  var ADMIN_ONLY = ['baocao', 'quy', 'nhanvien', 'phanquyen', 'caidat', 'doanhthu', 'khuvuc'];
+  // Trang chỉ Admin được vào (sale bị chặn). doanhthu KHÔNG chặn — sale xem "Doanh thu của tôi".
+  var ADMIN_ONLY = ['baocao', 'quy', 'nhanvien', 'phanquyen', 'caidat', 'khuvuc'];
 
   function mount() {
     var host = document.getElementById('ht-sidebar');
