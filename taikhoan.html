@@ -434,13 +434,25 @@
         '<div class="af-field"><label>Mật khẩu mới</label><input id="pwNew" type="password" placeholder="Tối thiểu 6 ký tự"></div>' +
         '<div class="af-field"><label>Xác nhận mật khẩu mới</label><input id="pwConf" type="password" placeholder="Nhập lại mật khẩu mới"></div>' +
         '<button class="btn btn--primary" id="pwSave">Đổi mật khẩu</button>';
-      wrap.querySelector('#pwSave').addEventListener('click', function () {
+      var pwBtn = wrap.querySelector('#pwSave');
+      pwBtn.addEventListener('click', function () {
         var o = wrap.querySelector('#pwOld').value, n = wrap.querySelector('#pwNew').value, c = wrap.querySelector('#pwConf').value;
         if (!o) { HT.toast('Nhập mật khẩu hiện tại', 'danger'); return; }
         if (n.length < 6) { HT.toast('Mật khẩu mới tối thiểu 6 ký tự', 'danger'); return; }
         if (n !== c) { HT.toast('Xác nhận mật khẩu không khớp', 'danger'); return; }
-        wrap.querySelector('#pwOld').value = wrap.querySelector('#pwNew').value = wrap.querySelector('#pwConf').value = '';
-        HT.toast('Đã đổi mật khẩu', 'success');
+        if (!user.phone) { HT.toast('Không xác định được tài khoản', 'danger'); return; }
+        pwBtn.disabled = true; var old = pwBtn.textContent; pwBtn.textContent = 'Đang đổi…';
+        fetch('/api/auth-khach', {
+          method: 'POST', headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ action: 'change-password', sdt: user.phone, mat_khau: o, mat_khau_moi: n })
+        }).then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+          .then(function (res) {
+            pwBtn.disabled = false; pwBtn.textContent = old;
+            if (!res.ok) { HT.toast(res.d.error || 'Đổi mật khẩu thất bại', 'danger'); return; }
+            wrap.querySelector('#pwOld').value = wrap.querySelector('#pwNew').value = wrap.querySelector('#pwConf').value = '';
+            HT.toast('Đã đổi mật khẩu', 'success');
+          })
+          .catch(function () { pwBtn.disabled = false; pwBtn.textContent = old; HT.toast('Lỗi kết nối, vui lòng thử lại', 'danger'); });
       });
     })();
   })();
