@@ -1,1 +1,35 @@
+# ===== Tooling / build artifacts =====
+.wrangler/
+.playwright-mcp/
+node_modules/
+dist/
+site-upload/
+
+# ===== OS / editor =====
+.DS_Store
+*~
+~$*
+
+# ===== Backups =====
 .vibecode-backup*/
+
+# ===== File HTML rác (KHÔNG deploy) =====
+index_v2.html
+_preview-components.html
+_legacy/
+
+# ===== Nguồn thiết kế / bàn giao (không cần trong repo code) =====
+*.pen
+desktop-handoff/
+
+# ===== Tài liệu cá nhân / đồ án (Word, Excel, ghi chú) =====
+*.docx
+*.xlsx
+note*.txt
+DeCuong_HTHOME.md
+DeCuong_MonHoc_HTHOME.md
+
+# ===== Ảnh chụp màn hình tạm (KHÔNG phải asset của web) =====
+crm-modal-test.png
+ht-preview-desktop.png
+ht-preview-mobile.png
