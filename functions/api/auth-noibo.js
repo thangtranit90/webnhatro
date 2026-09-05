@@ -4,11 +4,24 @@
 //   { action:'change-password', email, mat_khau, mat_khau_moi }
 // Tài khoản do Admin cấp (lưu ở bảng nhan_vien, cột mat_khau + role_key).
 
-function json(data, status) {
-  return new Response(JSON.stringify(data), {
-    status: status || 200,
-    headers: { 'content-type': 'application/json; charset=utf-8' }
-  });
+function json(data, status, extraHeaders) {
+  const h = { 'content-type': 'application/json; charset=utf-8' };
+  if (extraHeaders) for (const k in extraHeaders) h[k] = extraHeaders[k];
+  return new Response(JSON.stringify(data), { status: status || 200, headers: h });
+}
+
+// Phiên đăng nhập: cookie httpOnly ht_sess (24h). Token lưu ở bảng phien_dang_nhap.
+const SESSION_HOURS = 24;
+function cookieFromReq(request, name) {
+  const c = request.headers.get('Cookie') || '';
+  const m = c.match(new RegExp('(?:^|;\\s*)' + name + '=([^;]+)'));
+  return m ? m[1] : '';
+}
+function setCookie(token) {
+  return 'ht_sess=' + token + '; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=' + (SESSION_HOURS * 3600);
+}
+function clearCookie() {
+  return 'ht_sess=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0';
 }
 
 const PBKDF2_ITER = 100000;
@@ -80,6 +93,14 @@ export async function onRequestPost({ request, env }) {
 
   try {
     const action = b.action;
+
+    // ---------- ĐĂNG XUẤT (không cần email/mật khẩu) ----------
+    if (action === 'logout') {
+      const tk = cookieFromReq(request, 'ht_sess');
+      if (tk) { try { await env.DB.prepare('DELETE FROM phien_dang_nhap WHERE token=?').bind(tk).run(); } catch (_) {} }
+      return json({ ok: true }, 200, { 'Set-Cookie': clearCookie() });
+    }
+
     const email = normEmail(b.email);
     const mat_khau = String(b.mat_khau || '');
 
@@ -93,7 +114,12 @@ export async function onRequestPost({ request, env }) {
       const ok = await verifyPassword(mat_khau, (row && row.mat_khau) ? row.mat_khau : DUMMY_HASH);
       // Tài khoản chưa được cấp mật khẩu (mat_khau rỗng) cũng coi như đăng nhập sai
       if (!row || !row.mat_khau || !ok) return json({ error: 'Email hoặc mật khẩu không đúng.' }, 401);
-      return json({ ok: true, user: userPayload(row) });
+      // Cấp phiên đăng nhập: token ngẫu nhiên + cookie httpOnly
+      const token = crypto.randomUUID() + crypto.randomUUID().replace(/-/g, '');
+      const hetHan = new Date(Date.now() + SESSION_HOURS * 3600 * 1000).toISOString();
+      await env.DB.prepare('INSERT INTO phien_dang_nhap (token,nhan_vien_id,email,ho_ten,role_key,het_han,created_at) VALUES (?,?,?,?,?,?,?)')
+        .bind(token, row.id, row.email, row.name, row.role_key || 'sale', hetHan, new Date().toISOString()).run();
+      return json({ ok: true, user: userPayload(row) }, 200, { 'Set-Cookie': setCookie(token) });
     }
 
     // ---------- ĐỔI MẬT KHẨU ----------

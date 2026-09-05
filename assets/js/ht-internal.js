@@ -160,7 +160,13 @@
     host.innerHTML = sidebarHTML(active);
 
     var lo = document.getElementById('htLogout');
-    if (lo) lo.addEventListener('click', function () { try { localStorage.removeItem('ht_staff'); } catch (e) {} });
+    if (lo) lo.addEventListener('click', function (e) {
+      e.preventDefault();
+      // Xoá phiên phía server (cookie httpOnly) trước, rồi xoá hiển thị localStorage
+      fetch('/api/auth-noibo', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'logout' }) })
+        .catch(function () {})
+        .then(function () { try { localStorage.removeItem('ht_staff'); } catch (_) {} location.href = 'dangnhap-noibo.html'; });
+    });
 
     // ---- Sidebar thu gọn 264 ↔ 72px ----
     var appEl = host.closest('.app') || document.querySelector('.app');
