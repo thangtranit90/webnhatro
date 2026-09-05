@@ -22,9 +22,26 @@
     .kp-search input::placeholder { color: var(--muted-fg); }
 
     .kp-selects { display: flex; flex-wrap: wrap; gap: 8px; }
-    .kp-select { display: inline-flex; align-items: center; gap: 6px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-m); padding: 9px 12px; font-size: 13px; font-weight: 600; color: var(--fg); cursor: pointer; transition: border-color .15s, background .15s; }
+    .kp-select { position: relative; display: inline-flex; align-items: center; gap: 6px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-m); padding: 9px 12px; font-size: 13px; font-weight: 600; color: var(--fg); cursor: pointer; transition: border-color .15s, background .15s; }
     .kp-select:hover { border-color: var(--gold-fg); }
+    .kp-select.is-active { border-color: var(--gold-fg); background: var(--gold-soft); color: var(--gold-fg); }
     .kp-select .ic { color: var(--muted-fg); }
+    .kp-select.is-active .ic { color: var(--gold-fg); }
+    .kp-select__cnt { background: var(--gold); color: var(--on-gold); font-size: 11px; font-weight: 700; border-radius: 999px; padding: 0 6px; min-width: 16px; text-align: center; }
+    /* Dropdown panel */
+    .kp-selwrap { position: relative; display: inline-block; }
+    .kp-dd { position: absolute; z-index: 60; top: calc(100% + 6px); left: 0; min-width: 210px; max-height: 320px; overflow-y: auto; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-m); box-shadow: var(--shadow-card); padding: 6px; }
+    .kp-dd__opt { display: flex; align-items: center; gap: 9px; padding: 8px 10px; border-radius: var(--radius-s); font-size: 13.5px; color: var(--fg); cursor: pointer; }
+    .kp-dd__opt:hover { background: var(--bg); }
+    .kp-dd__opt input { width: 16px; height: 16px; accent-color: var(--gold-fg); cursor: pointer; }
+    .kp-dd__foot { display: flex; justify-content: space-between; gap: 8px; padding: 8px 6px 4px; border-top: 1px solid var(--border); margin-top: 4px; }
+    .kp-dd__foot button { border: 0; background: transparent; font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; padding: 4px 8px; border-radius: var(--radius-s); }
+    .kp-dd__clear { color: var(--muted-fg); }
+    .kp-dd__clear:hover { color: var(--fg); }
+    .kp-dd__apply { color: var(--gold-fg); }
+    .kp-filter-bar { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+    .kp-filter-reset { border: 0; background: transparent; color: var(--danger); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; padding: 6px 8px; }
+    .kp-filter-reset:hover { text-decoration: underline; }
 
     /* Tabs trạng thái */
     .kp-tabs { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -90,18 +107,128 @@
       });
       document.getElementById('icSearch').innerHTML = HT.icon('search', 18);
 
-      // ---- Dropdown lọc (giả lập) ----
-      var selects = [
-        { ic: 'map', label: 'Quận / Khu vực' },
-        { ic: 'building', label: 'Loại phòng' },
-        { ic: 'wallet', label: 'Khoảng giá' },
-        { ic: 'package', label: 'Nội thất' },
-        { ic: 'shield-check', label: 'Tiện ích' }
+      // ---- Bộ lọc dropdown THẬT (lọc lưới phòng theo Quận/Loại/Giá/Nội thất/Tiện ích) ----
+      // Trạng thái lọc: mỗi khoá = tập giá trị đang chọn
+      var filterState = { quan: [], loai: [], gia: [], noithat: [], tienich: [] };
+      var applyGrid = function () {}; // gán = renderGrid sau khi ROOMS nạp xong (renderGrid ở scope trong)
+      var openDD = null;
+      function closeDD() { if (openDD) { openDD.remove(); openDD = null; } }
+      document.addEventListener('click', function (e) {
+        if (openDD && !e.target.closest('.kp-selwrap')) closeDD();
+      });
+
+      // Khoảng giá cố định (parse "1,4 triệu" → số triệu)
+      var GIA_RANGES = [
+        { key: 'lt2', label: 'Dưới 2 triệu', test: function (v) { return v < 2; } },
+        { key: '2-4', label: '2 – 4 triệu', test: function (v) { return v >= 2 && v < 4; } },
+        { key: '4-6', label: '4 – 6 triệu', test: function (v) { return v >= 4 && v < 6; } },
+        { key: '6-8', label: '6 – 8 triệu', test: function (v) { return v >= 6 && v < 8; } },
+        { key: 'gt8', label: 'Trên 8 triệu', test: function (v) { return v >= 8; } }
       ];
-      document.getElementById('kpSelects').innerHTML = selects.map(function (s) {
-        return '<button class="kp-select" type="button">' + I(s.ic, 15) +
-          '<span>' + HT.esc(s.label) + '</span>' + I('chevrons-up-down', 14) + '</button>';
-      }).join('');
+      var LOAI_LIST = ['Studio', '1PN', '2PN', '3PN', 'Duplex', 'KTX'];
+      function priceTrieu(r) {
+        var m = String(r.p || '').replace(',', '.').match(/([\d.]+)/);
+        return m ? parseFloat(m[1]) : 0;
+      }
+      function loaiOf(r) {
+        var hay = ((r.tags || []).join(' ') + ' ' + (r.t || '') + ' ' + (r.cat || '')).toLowerCase();
+        if (/studio/.test(hay)) return 'Studio';
+        if (/duplex/.test(hay)) return 'Duplex';
+        if (/ký túc|ktx/.test(hay)) return 'KTX';
+        var mm = hay.match(/(\d)\s*pn/); if (mm) return mm[1] + 'PN';
+        return '';
+      }
+      // Tách nội thất vs tiện ích từ tags (tags gộp cả 2 + thiết kế). Dùng danh sách chuẩn để phân loại.
+      var TIENICH_SET = ['Thang máy', 'Camera 24/7', 'Camera', 'Bảo vệ', 'Bảo vệ 24/7', 'Wifi', 'Chỗ để xe', 'Hồ bơi', 'Gym', 'Máy giặt'];
+      var NOITHAT_SET = ['Giường', 'Tủ quần áo', 'Tủ lạnh', 'Máy lạnh', 'Điều hòa', 'Bàn ghế', 'Bàn học', 'Nóng lạnh', 'Máy nước nóng', 'Bếp', 'Kệ bếp', 'Rèm', 'Sofa'];
+      function isTienich(t) { return TIENICH_SET.some(function (x) { return t.indexOf(x) >= 0 || x.indexOf(t) >= 0; }); }
+
+      // Build danh sách option động từ dữ liệu thật (gọi sau khi có ROOMS)
+      var filterDefs = null;
+      function buildFilterDefs(rooms) {
+        function uniq(arr) { var s = {}, o = []; arr.forEach(function (x) { x = (x || '').trim(); if (x && !s[x]) { s[x] = 1; o.push(x); } }); return o.sort(); }
+        var quans = uniq(rooms.map(function (r) { return r.quan; }));
+        var allTags = [];
+        rooms.forEach(function (r) { (r.tags || []).forEach(function (t) { allTags.push(t); }); });
+        var noithat = uniq(allTags.filter(function (t) { return !isTienich(t) && NOITHAT_SET.some(function (x) { return t.indexOf(x) >= 0; }); }));
+        var tienich = uniq(allTags.filter(isTienich));
+        filterDefs = [
+          { key: 'quan', ic: 'map', label: 'Quận / Khu vực', opts: quans },
+          { key: 'loai', ic: 'building', label: 'Loại phòng', opts: LOAI_LIST },
+          { key: 'gia', ic: 'wallet', label: 'Khoảng giá', opts: GIA_RANGES.map(function (g) { return g.label; }), keys: GIA_RANGES.map(function (g) { return g.key; }) },
+          { key: 'noithat', ic: 'package', label: 'Nội thất', opts: noithat.length ? noithat : NOITHAT_SET },
+          { key: 'tienich', ic: 'shield-check', label: 'Tiện ích', opts: tienich.length ? tienich : TIENICH_SET }
+        ];
+        renderSelects();
+      }
+
+      function renderSelects() {
+        var host = document.getElementById('kpSelects');
+        var anyActive = Object.keys(filterState).some(function (k) { return filterState[k].length; });
+        host.innerHTML = '<div class="kp-filter-bar">' + filterDefs.map(function (d) {
+          var n = filterState[d.key].length;
+          return '<span class="kp-selwrap"><button class="kp-select' + (n ? ' is-active' : '') + '" type="button" data-key="' + d.key + '">' +
+            I(d.ic, 15) + '<span>' + HT.esc(d.label) + '</span>' +
+            (n ? '<span class="kp-select__cnt">' + n + '</span>' : I('chevrons-up-down', 14)) + '</button></span>';
+        }).join('') +
+        (anyActive ? '<button class="kp-filter-reset" type="button" id="kpResetFilter">Xoá lọc</button>' : '') +
+        '</div>';
+      }
+
+      document.getElementById('kpSelects').addEventListener('click', function (e) {
+        if (e.target.closest('#kpResetFilter')) {
+          Object.keys(filterState).forEach(function (k) { filterState[k] = []; });
+          renderSelects(); applyGrid(); return;
+        }
+        var btn = e.target.closest('.kp-select');
+        if (!btn) return;
+        e.stopPropagation();
+        var key = btn.getAttribute('data-key');
+        var wasOpen = openDD && openDD.getAttribute('data-key') === key;
+        closeDD();
+        if (wasOpen) return;
+        var def = filterDefs.filter(function (d) { return d.key === key; })[0];
+        var dd = document.createElement('div');
+        dd.className = 'kp-dd'; dd.setAttribute('data-key', key);
+        dd.innerHTML = def.opts.map(function (label, i) {
+          var val = def.keys ? def.keys[i] : label;
+          var checked = filterState[key].indexOf(val) >= 0;
+          return '<label class="kp-dd__opt"><input type="checkbox" value="' + HT.esc(val) + '"' + (checked ? ' checked' : '') + '>' + HT.esc(label) + '</label>';
+        }).join('') +
+        '<div class="kp-dd__foot"><button class="kp-dd__clear" type="button">Bỏ chọn</button><button class="kp-dd__apply" type="button">Xong</button></div>';
+        btn.parentNode.appendChild(dd);
+        openDD = dd;
+        dd.addEventListener('click', function (ev) { ev.stopPropagation(); });
+        dd.addEventListener('change', function (ev) {
+          var cb = ev.target.closest('input[type=checkbox]'); if (!cb) return;
+          var v = cb.value;
+          var arr = filterState[key];
+          if (cb.checked) { if (arr.indexOf(v) < 0) arr.push(v); }
+          else { var idx = arr.indexOf(v); if (idx >= 0) arr.splice(idx, 1); }
+          renderSelects(); applyGrid();
+          // giữ dropdown mở: render lại nút nhưng dropdown đã bị renderSelects xoá → mở lại
+          setTimeout(function () { var b = document.querySelector('.kp-select[data-key="' + key + '"]'); if (b) b.click(); }, 0);
+        });
+        dd.querySelector('.kp-dd__clear').addEventListener('click', function () {
+          filterState[key] = []; renderSelects(); applyGrid(); closeDD();
+        });
+        dd.querySelector('.kp-dd__apply').addEventListener('click', closeDD);
+      });
+
+      // Áp bộ lọc lên 1 phòng
+      function passFilter(r) {
+        var f = filterState;
+        if (f.quan.length && f.quan.indexOf((r.quan || '').trim()) < 0) return false;
+        if (f.loai.length && f.loai.indexOf(loaiOf(r)) < 0) return false;
+        if (f.gia.length) {
+          var pv = priceTrieu(r);
+          var ok = f.gia.some(function (gk) { var g = GIA_RANGES.filter(function (x) { return x.key === gk; })[0]; return g && g.test(pv); });
+          if (!ok) return false;
+        }
+        if (f.noithat.length && !f.noithat.every(function (nt) { return (r.tags || []).some(function (t) { return t.indexOf(nt) >= 0; }); })) return false;
+        if (f.tienich.length && !f.tienich.every(function (ti) { return (r.tags || []).some(function (t) { return t.indexOf(ti) >= 0; }); })) return false;
+        return true;
+      }
 
       // ---- Đọc phòng THẬT từ D1 rồi render (bọc async) ----
       window.HT_loadBuildings(function () {
@@ -178,6 +305,8 @@
         var list = roomsForTab(activeTab).map(function (r) {
           return { r: r, i: rooms.indexOf(r) };
         });
+        // Bộ lọc dropdown (Quận/Loại/Giá/Nội thất/Tiện ích)
+        list = list.filter(function (o) { return passFilter(o.r); });
         if (q) {
           list = list.filter(function (o) {
             var hay = ((o.r.t || '') + ' ' + (o.r.l || '') + ' ' + (o.r.quan || '') + ' ' + (o.r.rid || '')).toLowerCase();
@@ -201,6 +330,8 @@
       });
       searchEl.addEventListener('input', renderGrid);
 
+      applyGrid = renderGrid; // nối tham chiếu để handler filter ở scope ngoài gọi được
+      buildFilterDefs(rooms);
       renderTabs();
       renderGrid();
       });
