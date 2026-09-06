@@ -134,20 +134,6 @@
               </div>
             </section>
 
-            <!-- Ma trận HH mặc định -->
-            <section class="card">
-              <div class="card__head">
-                <h3>Ma trận hoa hồng mặc định</h3>
-                <div class="sub">Toà nhà mới sẽ tự động dùng ma trận này</div>
-              </div>
-              <div class="card__body">
-                <div class="tier-head">
-                  <span>Kỳ hạn</span><span>% Sale</span><span>% Công ty</span>
-                </div>
-                <div id="tierList"></div>
-              </div>
-            </section>
-
             <div class="save-bar">
               <button class="btn btn--ghost">Huỷ</button>
               <button class="btn btn--primary" id="btnSave">Lưu cài đặt</button>
@@ -195,23 +181,6 @@
     }
     var settings = loadSettings();
 
-    /* ---- Ma trận HH ---- */
-    var tiers = [
-      { name: '6 tháng',  sale: '50', cty: '50' },
-      { name: '9 tháng',  sale: '60', cty: '40' },
-      { name: '12 tháng', sale: '70', cty: '30' }
-    ];
-    document.getElementById('tierList').innerHTML = tiers.map(function (t, i) {
-      var sv = (settings.tiers && settings.tiers[i]) || {};
-      var sale = sv.sale != null ? sv.sale : t.sale;
-      var cty = sv.cty != null ? sv.cty : t.cty;
-      return '<div class="tier-row">' +
-        '<span class="tier-name">' + esc(t.name) + '</span>' +
-        '<span class="tier-field"><div class="pct"><input type="text" data-tier="' + i + '" data-part="sale" value="' + esc(sale) + '" /><span>%</span></div></span>' +
-        '<span class="tier-field"><div class="pct"><input type="text" data-tier="' + i + '" data-part="cty" value="' + esc(cty) + '" /><span>%</span></div></span>' +
-      '</div>';
-    }).join('');
-
     /* ---- Nạp thông tin công ty đã lưu vào input ---- */
     if (settings.company) {
       document.querySelectorAll('input[data-set]').forEach(function (inp) {
@@ -226,13 +195,7 @@
       document.querySelectorAll('input[data-set]').forEach(function (inp) {
         company[inp.getAttribute('data-set')] = inp.value.trim();
       });
-      var tierVals = [];
-      document.querySelectorAll('#tierList input[data-tier]').forEach(function (inp) {
-        var i = Number(inp.getAttribute('data-tier'));
-        tierVals[i] = tierVals[i] || {};
-        tierVals[i][inp.getAttribute('data-part')] = inp.value.trim();
-      });
-      var data = { company: company, tiers: tierVals };
+      var data = { company: company };
       try { localStorage.setItem('ht_settings', JSON.stringify(data)); } catch (e) {}
       settings = data;
       if (window.HT && HT.toast) HT.toast('Đã lưu cài đặt', 'success');

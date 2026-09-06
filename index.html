@@ -187,13 +187,13 @@
     <section class="container" id="uu-dai" style="padding-block:16px 40px">
       <div class="offer">
         <div>
-          <span class="offer__tag" id="offerTag">Ưu đãi thành viên mới</span>
-          <div class="offer__h">Giảm ngay 500.000đ cho lần thuê đầu tiên</div>
-          <div class="offer__s">Thưởng thêm 200.000đ mỗi khi bạn giới thiệu bạn bè chốt deal thành công. Đăng ký hội viên HT HOME hoàn toàn miễn phí.</div>
+          <span class="offer__tag" id="offerTag">Minh bạch tuyệt đối</span>
+          <div class="offer__h">Xem phòng thật, đặt lịch trong 1 phút</div>
+          <div class="offer__s">HT HOME kết nối bạn với hàng nghìn phòng trọ &amp; căn hộ dịch vụ minh bạch tại TP.HCM — phòng thật, giá thật, có Sale dẫn xem tận nơi.</div>
         </div>
         <div class="offer__cta">
-          <a class="btn btn--gold" id="offerBtn" href="dangky.html">Đăng ký nhận ưu đãi</a>
-          <span class="offer__note">Áp dụng đến hết 31/07/2026</span>
+          <a class="btn btn--gold" id="offerBtn" href="timphong.html">Xem phòng ngay</a>
+          <span class="offer__note">Miễn phí môi giới cho khách thuê</span>
         </div>
       </div>
     </section>
@@ -223,8 +223,8 @@
       return '<div class="stat"><span class="commit__ic">' + HT.icon(c.ic, 20) + '</span>' +
         '<div class="commit__n">' + c.n + '</div><div class="stat__l">' + c.l + '</div></div>';
     }).join('');
-    document.getElementById('offerTag').innerHTML = HT.icon('gift', 14) + ' Ưu đãi thành viên mới';
-    document.getElementById('offerBtn').innerHTML = 'Đăng ký nhận ưu đãi ' + HT.icon('arrow-right', 16);
+    document.getElementById('offerTag').innerHTML = HT.icon('shield-check', 14) + ' Minh bạch tuyệt đối';
+    document.getElementById('offerBtn').innerHTML = 'Xem phòng ngay ' + HT.icon('arrow-right', 16);
 
     // ---- Cắm dữ liệu phòng THẬT từ data.js ----
     var rooms = window.ROOMS || [];

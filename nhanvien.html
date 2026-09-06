@@ -79,7 +79,7 @@
             <table class="nv">
               <thead>
                 <tr>
-                  <th>Nhân viên</th><th>Vai trò</th><th>Khu vực</th>
+                  <th>Nhân viên</th><th>Vai trò</th>
                   <th>Deal Th7</th><th>HH Th7</th><th>Trạng thái</th><th></th>
                 </tr>
               </thead>
@@ -185,14 +185,14 @@
       function matchSearch(e) {
         var kw = state.search.trim().toLowerCase();
         if (!kw) return true;
-        return ((e.name || '') + ' ' + (e.email || '') + ' ' + (e.kv || '')).toLowerCase().indexOf(kw) >= 0;
+        return ((e.name || '') + ' ' + (e.email || '')).toLowerCase().indexOf(kw) >= 0;
       }
 
       function renderRows() {
         var rows = emps.filter(function (e) { return matchTab(e) && matchSearch(e); });
         var tbody = document.getElementById('nvRows');
         if (!rows.length) {
-          tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted-fg);padding:28px">Không tìm thấy nhân viên phù hợp.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted-fg);padding:28px">Không tìm thấy nhân viên phù hợp.</td></tr>';
           return;
         }
         tbody.innerHTML = rows.map(function (e) {
@@ -201,7 +201,6 @@
               '<span><span class="nv-emp__name">' + esc(e.name) + '</span>' +
               '<span class="nv-emp__email">' + esc(e.email) + '</span></span></div></td>' +
             '<td>' + roleBadge(e.role) + '</td>' +
-            '<td>' + esc(e.kv) + '</td>' +
             '<td class="nv-num">' + esc(e.deal) + '</td>' +
             '<td class="nv-num">' + esc(e.hh) + '</td>' +
             '<td>' + statusBadge(e.st) + '</td>' +
@@ -245,26 +244,21 @@
             '<div class="mfield"><label class="mfield__label">Họ tên</label><input id="fName" type="text" placeholder="VD: Nguyễn Văn A" autocomplete="off"></div>' +
             '<div class="mfield"><label class="mfield__label">Email đăng nhập</label><input id="fEmail" type="email" placeholder="ten@hthome.vn" autocomplete="off"></div>' +
             '<div class="mfield"><label class="mfield__label">Mật khẩu cấp cho nhân viên</label><input id="fPass" type="text" placeholder="Tối thiểu 6 ký tự" autocomplete="off"></div>' +
-            '<div class="mrow">' +
-              '<div class="mfield"><label class="mfield__label">Vai trò</label><select id="fRole">' + roleOptions('Sale') + '</select></div>' +
-              '<div class="mfield"><label class="mfield__label">Khu vực</label><input id="fKv" type="text" placeholder="VD: Gò Vấp" autocomplete="off"></div>' +
-            '</div>',
+            '<div class="mfield"><label class="mfield__label">Vai trò</label><select id="fRole">' + roleOptions('Sale') + '</select></div>',
           onSubmit: function (el, close) {
             var name = el.querySelector('#fName').value.trim();
             var email = el.querySelector('#fEmail').value.trim();
             var pass = el.querySelector('#fPass').value;
             var role = el.querySelector('#fRole').value;
-            var kv = el.querySelector('#fKv').value.trim();
             if (!name) { HT.toast('Vui lòng nhập họ tên', 'danger'); return false; }
             if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { HT.toast('Email không hợp lệ', 'danger'); return false; }
             if (findEmp(email)) { HT.toast('Email đã tồn tại', 'danger'); return false; }
             if (!pass || pass.length < 6) { HT.toast('Mật khẩu tối thiểu 6 ký tự', 'danger'); return false; }
-            if (!kv) { HT.toast('Vui lòng nhập khu vực', 'danger'); return false; }
             var roleKey = role === 'Admin' ? 'admin' : 'sale';
             fetch('/api/nhan-vien', {
               method: 'POST',
               headers: { 'content-type': 'application/json' },
-              body: JSON.stringify({ av: initials(name), name: name, email: email, mat_khau: pass, role: role, role_key: roleKey, kv: kv })
+              body: JSON.stringify({ av: initials(name), name: name, email: email, mat_khau: pass, role: role, role_key: roleKey })
             }).then(function (r) { return r.json(); }).then(function (res) {
               if (res.error) { HT.toast(res.error, 'danger'); return; }
               close();
@@ -285,7 +279,7 @@
         var e = findEmp(btn.getAttribute('data-email'));
         if (!e || !window.HT || !HT.modal) return;
         HT.modal({
-          title: e.name, sub: e.role + ' · ' + e.kv, submitLabel: null,
+          title: e.name, sub: e.role, submitLabel: null,
           bodyHTML:
             '<div style="display:flex;flex-direction:column;gap:8px">' +
               '<button class="btn btn--ghost" data-act="view" type="button" style="justify-content:flex-start">Xem hồ sơ</button>' +
@@ -313,8 +307,7 @@
               title: 'Hồ sơ nhân viên', sub: e.name, submitLabel: null,
               bodyHTML:
                 '<div class="mfield"><label class="mfield__label">Email</label><div>' + esc(e.email) + '</div></div>' +
-                '<div class="mrow"><div class="mfield"><label class="mfield__label">Vai trò</label><div>' + esc(e.role) + '</div></div>' +
-                '<div class="mfield"><label class="mfield__label">Khu vực</label><div>' + esc(e.kv) + '</div></div></div>' +
+                '<div class="mfield"><label class="mfield__label">Vai trò</label><div>' + esc(e.role) + '</div></div>' +
                 '<div class="mrow"><div class="mfield"><label class="mfield__label">Deal Th7</label><div>' + esc(e.deal) + '</div></div>' +
                 '<div class="mfield"><label class="mfield__label">Hoa hồng Th7</label><div>' + esc(e.hh) + '</div></div></div>' +
                 '<div class="mfield"><label class="mfield__label">Trạng thái</label><div>' + esc(e.st) + '</div></div>'
@@ -325,22 +318,17 @@
               title: 'Sửa thông tin', sub: e.name, submitLabel: 'Lưu',
               bodyHTML:
                 '<div class="mfield"><label class="mfield__label">Họ tên</label><input id="eName" type="text" value="' + esc(e.name) + '"></div>' +
-                '<div class="mrow">' +
-                  '<div class="mfield"><label class="mfield__label">Vai trò</label><select id="eRole">' + roleOptions(e.role) + '</select></div>' +
-                  '<div class="mfield"><label class="mfield__label">Khu vực</label><input id="eKv" type="text" value="' + esc(e.kv) + '"></div>' +
-                '</div>',
+                '<div class="mfield"><label class="mfield__label">Vai trò</label><select id="eRole">' + roleOptions(e.role) + '</select></div>',
               onSubmit: function (elx) {
                 var nm = elx.querySelector('#eName').value.trim();
-                var kv = elx.querySelector('#eKv').value.trim();
                 if (!nm) { HT.toast('Vui lòng nhập họ tên', 'danger'); return false; }
-                if (!kv) { HT.toast('Vui lòng nhập khu vực', 'danger'); return false; }
-                e.name = nm; e.av = initials(nm); e.role = elx.querySelector('#eRole').value; e.kv = kv;
+                e.name = nm; e.av = initials(nm); e.role = elx.querySelector('#eRole').value;
                 var eRoleKey = e.role === 'Admin' ? 'admin' : 'sale';
                 refreshAll();
                 HT.toast('Đã cập nhật nhân viên', 'success');
                 fetch('/api/nhan-vien', {
                   method: 'PATCH', headers: { 'content-type': 'application/json' },
-                  body: JSON.stringify({ id: e.id, name: e.name, av: e.av, role: e.role, role_key: eRoleKey, kv: e.kv })
+                  body: JSON.stringify({ id: e.id, name: e.name, av: e.av, role: e.role, role_key: eRoleKey })
                 }).catch(function () { HT.toast('Lỗi lưu, thử lại', 'danger'); });
                 return true;
               }

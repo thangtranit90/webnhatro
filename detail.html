@@ -260,13 +260,13 @@
                 </div>
               </div>
               <div class="contact-card__actions">
-                <a class="btn btn--primary btn--block" id="btnChat" target="_blank" rel="noopener"></a>
+                <button class="btn btn--primary btn--block" id="btnBook" type="button"></button>
                 <a class="btn btn--ghost btn--block" id="btnCall"></a>
-                <button class="btn btn--ghost btn--block" id="btnBook" type="button"></button>
+                <a class="btn btn--ghost btn--block" id="btnChat" target="_blank" rel="noopener"></a>
               </div>
               <div class="qr">
                 <a class="qr__box" id="qrBox" target="_blank" rel="noopener"></a>
-                <div class="qr__note">Quét mã <a id="qrLink" target="_blank" rel="noopener">Zalo QR</a> để chat nhanh với sale</div>
+                <div class="qr__note">Quét mã <a id="qrLink" target="_blank" rel="noopener">Zalo QR</a> để nhắn Zalo với sale</div>
               </div>
             </div>
           </div>
@@ -484,16 +484,18 @@
       var initial = (r.t || 'M').trim().charAt(0).toUpperCase() || 'M';
       document.getElementById('saleAv').textContent = initial;
       document.getElementById('saleStars').innerHTML = Array(5).fill(HTicon('star', 12)).join('');
-      var btnChat = document.getElementById('btnChat');
-      btnChat.href = zalo;
-      btnChat.innerHTML = IC.message(16) + ' Chat với sale ngay';
+      // v3.6: bỏ chat trong app → nút chính "Đặt lịch xem phòng"; phụ: Gọi ngay + Nhắn Zalo (dùng chung số tổng đài).
+      var btnBook = document.getElementById('btnBook');
+      btnBook.innerHTML = IC.calendar(16) + ' Đặt lịch xem phòng';
+      btnBook.addEventListener('click', function () {
+        window.location.href = 'datlich.html';
+      });
       var btnCall = document.getElementById('btnCall');
       btnCall.href = 'tel:' + phone;
       btnCall.innerHTML = HTicon('phone', 16) + ' Gọi ngay: ' + esc(r.phone || phone);
-      document.getElementById('btnBook').innerHTML = IC.calendar(16) + ' Đặt lịch xem phòng';
-      document.getElementById('btnBook').addEventListener('click', function () {
-        window.open(zalo, '_blank', 'noopener');
-      });
+      var btnChat = document.getElementById('btnChat');
+      btnChat.href = zalo;
+      btnChat.innerHTML = IC.message(16) + ' Nhắn Zalo';
       var qrBox = document.getElementById('qrBox');
       qrBox.href = zalo;
       qrBox.innerHTML = IC.qr(64);

@@ -52,7 +52,6 @@
     { k: 'baocao', label: 'Báo cáo tổng', href: 'baocao.html', icon: 'file-text' },
     { k: 'tintuc', label: 'Tin tức', href: 'tintuc-noibo.html', icon: 'megaphone' },
     { k: 'nhanvien', label: 'Nhân viên', href: 'nhanvien.html', icon: 'user-cog' },
-    { k: 'phanquyen', label: 'Phân quyền', href: 'phanquyen.html', icon: 'shield-check' },
     { k: 'caidat', label: 'Cài đặt', href: 'caidat.html', icon: 'settings' }
   ];
   // Nav riêng cho SALE (khu "của tôi" — không có mục quản trị). Theo v3.6.
@@ -144,7 +143,7 @@
   }
 
   // Trang chỉ Admin được vào (sale bị chặn). doanhthu KHÔNG chặn — sale xem "Doanh thu của tôi".
-  var ADMIN_ONLY = ['baocao', 'tintuc', 'nhanvien', 'phanquyen', 'caidat'];
+  var ADMIN_ONLY = ['baocao', 'tintuc', 'nhanvien', 'caidat'];
 
   function mount() {
     var host = document.getElementById('ht-sidebar');

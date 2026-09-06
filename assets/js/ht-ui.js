@@ -65,12 +65,6 @@
     { k: 'news', label: 'Tin tức', href: 'tintuc.html' }
   ];
 
-  /* ---- Trạng thái đăng nhập khách ---- */
-  function currentUser() {
-    try { var u = JSON.parse(localStorage.getItem('ht_user') || 'null'); return (u && (u.name || u.phone)) ? u : null; }
-    catch (_) { return null; }
-  }
-
   /* ---- HEADER ---- */
   function headerHTML(active) {
     var links = NAV.map(function (n) {
@@ -80,23 +74,11 @@
       return '<a href="' + n.href + '" data-k="' + n.k + '"' + (n.k === active ? ' class="is-active"' : '') + '>' + n.label + '</a>';
     }).join('');
 
-    var u = currentUser();
-    var authActions, mAuthActions;
-    if (u) {
-      var uname = esc(u.name || u.phone);
-      authActions =
-        '<a class="link-login" href="taikhoan.html">' + icon('user', 15) + ' ' + uname + '</a>' +
-        '<a class="btn btn--ghost btn--staff" href="dangnhap-noibo.html">' + icon('lock', 13) + 'Nội bộ</a>';
-      mAuthActions = '<a class="btn btn--primary btn--sm" href="taikhoan.html">' + icon('user', 15) + ' ' + uname + '</a>';
-    } else {
-      authActions =
-        '<a class="link-login" href="dangnhap-khach.html">Đăng nhập</a>' +
-        '<a class="btn btn--primary btn--sm" href="dangky.html">Đăng ký</a>' +
-        '<a class="btn btn--ghost btn--staff" href="dangnhap-noibo.html">' + icon('lock', 13) + 'Nội bộ</a>';
-      mAuthActions =
-        '<a class="btn btn--ghost btn--sm" href="dangnhap-khach.html">Đăng nhập</a>' +
-        '<a class="btn btn--primary btn--sm" href="dangky.html">Đăng ký</a>';
-    }
+    // v3.6: Khách KHÔNG có tài khoản (không mật khẩu) → chỉ còn lối vào Nội bộ (nhân viên).
+    var authActions =
+      '<a class="btn btn--ghost btn--staff" href="dangnhap-noibo.html">' + icon('lock', 13) + 'Nội bộ</a>';
+    var mAuthActions =
+      '<a class="btn btn--ghost btn--sm" href="dangnhap-noibo.html">' + icon('lock', 13) + 'Nội bộ</a>';
 
     return '' +
       '<header class="site-header">' +
@@ -121,9 +103,9 @@
 
   /* ---- FOOTER ---- */
   function footerHTML() {
-    var kham = ['Tìm phòng', 'Phòng nổi bật', 'Phòng mới đăng', 'Ưu đãi thành viên', 'Câu hỏi thường gặp'];
+    var kham = ['Tìm phòng', 'Phòng nổi bật', 'Phòng mới đăng', 'Tin tức', 'Bảng giá khu vực', 'Câu hỏi thường gặp'];
     var khu = ['Gò Vấp', 'Bình Thạnh', 'Thủ Đức', 'Tân Phú', 'Quận 8', 'Quận 11'];
-    var khamHref = { 'Tìm phòng': 'timphong.html', 'Phòng nổi bật': 'index.html', 'Phòng mới đăng': 'index.html', 'Ưu đãi thành viên': 'dangky.html', 'Câu hỏi thường gặp': '#' };
+    var khamHref = { 'Tìm phòng': 'timphong.html', 'Phòng nổi bật': 'index.html', 'Phòng mới đăng': 'index.html', 'Tin tức': 'tintuc.html', 'Bảng giá khu vực': 'timphong.html', 'Câu hỏi thường gặp': '#' };
     var link = function (t) { return '<a href="' + (khamHref[t] || '#') + '">' + t + '</a>'; };
     var row = function (ic, t) { return '<div class="footer-col__row">' + icon(ic, 14) + '<span>' + t + '</span></div>'; };
     return '' +
@@ -132,7 +114,7 @@
           '<div class="footer-cols">' +
             '<div class="footer-brand">' +
               '<img class="footer-brand__logo" src="logo-full-dark.png?v=2" alt="HT HOME" style="height:30px;width:auto"/>' +
-              '<p class="footer-brand__desc">Nền tảng tìm thuê phòng trọ, căn hộ dịch vụ &amp; ký túc xá tại TP.HCM. Minh bạch, uy tín, tận tâm.</p>' +
+              '<p class="footer-brand__desc">Nền tảng tìm thuê phòng trọ, căn hộ dịch vụ &amp; ký túc xá tại TP.HCM. Minh bạch, uy tín, tận tâm. Vận hành bởi Công ty Cổ phần Bất động sản HTHOME.</p>' +
               '<a class="footer-social" href="#">' + icon('facebook', 15) + 'Fanpage HT HOME</a>' +
             '</div>' +
             '<div class="footer-col"><div class="footer-col__title">Khám phá</div>' + kham.map(link).join('') + '</div>' +
@@ -146,7 +128,7 @@
           '</div>' +
           '<div class="footer-divider"></div>' +
           '<div class="footer-bottom">' +
-            '<div>© 2026 HT HOME Real Estate JSC · Toàn bộ nội dung được bảo hộ.</div>' +
+            '<div>© 2026 Công ty Cổ phần Bất động sản HTHOME (HTHOME Real Estate JSC) · MST 0319411244 · Toàn bộ nội dung được bảo hộ.</div>' +
             '<div class="footer-legal">' +
               '<a href="vechungtoi.html">Về chúng tôi</a><a href="dieukhoan.html">Điều khoản</a><a href="baomat.html">Chính sách bảo mật</a><a href="dieukhoan.html">Quy chế hoạt động</a>' +
             '</div>' +
