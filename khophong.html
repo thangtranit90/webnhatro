@@ -155,6 +155,26 @@
     .kp-ctx__item.danger { color: var(--danger); }
     .kp-ctx__item .ic { color: var(--muted-fg); display: inline-flex; }
     .kp-ctx__item.danger .ic { color: var(--danger); }
+
+    /* ===== Modal form (thêm/sửa/đổi trạng thái/chi tiết) ===== */
+    .kpm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .kpm-field { display: flex; flex-direction: column; gap: 6px; }
+    .kpm-field.col2 { grid-column: span 2; }
+    .kpm-field label { font-size: 12.5px; font-weight: 600; color: var(--fg); }
+    .kpm-field input, .kpm-field select, .kpm-field textarea { border: 1px solid var(--input, #d6d3cc); border-radius: var(--radius-m); padding: 9px 12px; font: inherit; font-size: 14px; color: var(--fg); background: var(--card); outline: none; }
+    .kpm-field input:focus, .kpm-field select:focus, .kpm-field textarea:focus { border-color: var(--fg); }
+    .kpm-radios { display: flex; flex-direction: column; gap: 8px; }
+    .kpm-radio { display: flex; align-items: center; gap: 10px; padding: 11px 14px; border: 1px solid var(--border); border-radius: var(--radius-m); cursor: pointer; font-size: 14px; font-weight: 500; color: var(--fg); }
+    .kpm-radio:hover { border-color: var(--fg); }
+    .kpm-radio input { accent-color: var(--fg); width: 16px; height: 16px; }
+    .kpm-warn { margin-top: 12px; display: flex; gap: 8px; align-items: flex-start; background: var(--warning-soft, #fbf0dc); color: var(--warning, #9a5b00); border-radius: var(--radius-m); padding: 10px 12px; font-size: 12.5px; }
+    .kpm-dspecs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 14px 0; }
+    .kpm-spec { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-m); padding: 10px 12px; }
+    .kpm-spec b { display: block; font-size: 15px; }
+    .kpm-spec span { font-size: 12px; color: var(--muted-fg); }
+    .kpm-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .kpm-chip { font-size: 12px; background: var(--muted); color: var(--fg); border-radius: 999px; padding: 4px 10px; }
+    .kpm-sec { font-size: 13px; font-weight: 700; margin: 16px 0 8px; }
   </style>
 </head>
 <body>
@@ -226,7 +246,9 @@
         'pencil-line': '<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
         'repeat': '<path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/>',
         'arrow-right-left': '<path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/>',
-        'mouse-pointer-click': '<path d="m9 9 5 12 1.8-5.2L21 14Z"/><path d="M7.2 2.2 8 5.1"/><path d="m5.1 8-2.9-.8"/><path d="M14 4.1 12 6"/><path d="m6 12-1.9 2"/>'
+        'mouse-pointer-click': '<path d="m9 9 5 12 1.8-5.2L21 14Z"/><path d="M7.2 2.2 8 5.1"/><path d="m5.1 8-2.9-.8"/><path d="M14 4.1 12 6"/><path d="m6 12-1.9 2"/>',
+        'triangle-alert': '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
+        'eye': '<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>'
       };
       function hasBody(svg) { return /<(path|circle|rect|line|polygon|polyline|ellipse)/.test(svg || ''); }
       function I(name, size) {
@@ -245,7 +267,8 @@
       document.getElementById('btnSidebar').innerHTML = I('menu', 22);
       document.getElementById('btnAdd').innerHTML = I('plus', 16) + 'Thêm phòng';
       document.getElementById('btnAdd').addEventListener('click', function () {
-        HT.roomModal({ onDone: function () { location.reload(); } });
+        if (typeof window.__kpAdd === 'function') window.__kpAdd();
+        else HT.roomModal({ onDone: function () { location.reload(); } });
       });
       document.getElementById('icSearch').innerHTML = HT.icon('search', 18);
       document.getElementById('icHint').innerHTML = I('mouse-pointer-click', 14);
@@ -451,6 +474,7 @@
 
         // ================= RENDER =================
         function render() {
+          document.getElementById('btnAdd').innerHTML = I('plus', 16) + (state.mainTab === 'toanha' ? 'Thêm tòa nhà' : 'Thêm phòng');
           renderViewToggle();
           renderMainTabs();
           renderStatusTabs();
@@ -652,8 +676,8 @@
           var act = btn.getAttribute('data-act');
           if (act === 'clear') { clearSel(); syncSelectionUI(); updateActionBar(); return; }
           var n = selCount();
-          if (act === 'delete') { if (confirm('Xóa ' + n + ' mục đã chọn?')) { clearSel(); render(); } return; }
-          if (act === 'status') { HT.toast ? HT.toast('Đổi trạng thái ' + n + ' mục (demo)') : alert('Đổi trạng thái ' + n + ' mục (demo)'); return; }
+          if (act === 'delete') { confirmDelete(n + ' mục đã chọn', function () { clearSel(); render(); }); return; }
+          if (act === 'status') { openStatusModal(Object.keys(state.sel)); return; }
           if (act === 'move') { HT.toast ? HT.toast('Chuyển tòa ' + n + ' mục (demo)') : alert('Chuyển tòa ' + n + ' mục (demo)'); return; }
         });
 
@@ -668,14 +692,16 @@
           var bulk = n > 1 && isSel(targetId);
           var title = bulk ? (n + ' mục đang chọn') : (kind === 'bld' ? 'Tòa nhà' : 'Phòng');
           var sub = bulk ? 'Áp dụng cho tất cả mục đã chọn' : 'Thao tác nhanh';
-          var items = [
+          var items = [];
+          if (!bulk && kind !== 'bld') items.push({ act: 'view', ic: 'eye', label: 'Xem chi tiết' });
+          items.push(
             { act: 'edit', ic: 'pencil-line', label: 'Chỉnh sửa' },
             { act: 'dup', ic: 'copy', label: 'Nhân bản' },
             { act: 'share', ic: 'share-2', label: 'Chia sẻ' },
             { act: 'status', ic: 'repeat', label: 'Đổi trạng thái' },
             { sep: true },
             { act: 'delete', ic: 'trash-2', label: (kind === 'bld' ? 'Xóa tòa nhà' : 'Xóa phòng'), danger: true }
-          ];
+          );
           var el = document.createElement('div');
           el.className = 'kp-ctx';
           el.innerHTML = '<div class="kp-ctx__hd"><b>' + esc(title) + '</b><span>' + esc(sub) + '</span></div><div class="kp-ctx__sep"></div>' +
@@ -694,9 +720,16 @@
             var act = it.getAttribute('data-act');
             closeCtx();
             var scope = bulk ? (n + ' mục') : '1 mục';
-            if (act === 'delete') { if (confirm('Xóa ' + scope + '?')) { if (bulk) { clearSel(); } else { delete state.sel[targetId]; } render(); } return; }
-            var msg = { edit: 'Chỉnh sửa', dup: 'Nhân bản', share: 'Chia sẻ', status: 'Đổi trạng thái' }[act] + ' ' + scope + ' (demo)';
-            HT.toast ? HT.toast(msg) : alert(msg);
+            if (act === 'view') { if (targetId.indexOf('room:') === 0) openRoomDetail(+targetId.slice(5)); else if (targetId.indexOf('brm:') === 0) { var fv = findBrm(targetId); if (fv) openRoomDetailObj(fv.r, fv.b); } return; }
+            if (act === 'edit') {
+              if (kind === 'bld') openBuildingEdit(targetId.slice(4));
+              else if (targetId.indexOf('room:') === 0) { var rr = rooms[+targetId.slice(5)] || {}; openRoomEdit({ name: rr.t, area: rr.a, price: rr.p, loai: loaiOf(rr), desc: rr.desc }); }
+              else if (targetId.indexOf('brm:') === 0) { var fe = findBrm(targetId); openRoomEdit(fe ? { name: fe.r.loai, area: fe.r.m2, price: fe.r.price, loai: fe.r.loai, desc: '' } : {}); }
+              return;
+            }
+            if (act === 'status') { openStatusModal(bulk ? Object.keys(state.sel) : [targetId]); return; }
+            if (act === 'delete') { confirmDelete(scope, function () { if (bulk) { clearSel(); } else { delete state.sel[targetId]; } render(); }); return; }
+            HT.toast(({ dup: 'Đã nhân bản', share: 'Đã copy link chia sẻ' }[act] || 'Đã thực hiện') + ' ' + scope + ' (demo)');
           });
         }
 
@@ -743,7 +776,15 @@
               syncSelectionUI(); updateActionBar(); return;
             }
           }
-          // click thường trên hàng list/tree (không phải grid card <a>) -> chọn đơn
+          // grid card phòng: click thường mở modal Chi tiết (thay vì điều hướng trang)
+          if (item.classList.contains('kp-item') && item.getAttribute('data-kind') === 'room') {
+            e.preventDefault();
+            openRoomDetail(+item.getAttribute('data-idx'));
+            return;
+          }
+          // grid card tòa nhà: để thẻ <a> điều hướng sang trang chi tiết như cũ
+          if (item.classList.contains('kp-item') && item.getAttribute('data-kind') === 'bld') return;
+          // click thường trên hàng list/tree -> chọn đơn
           state.lastIdx = selectableIds().indexOf(id);
           if (item.tagName === 'TR' || item.classList.contains('kp-troom')) {
             clearSel(); setSel(id, true); syncSelectionUI(); updateActionBar();
@@ -790,6 +831,103 @@
             if (selCount()) { clearSel(); syncSelectionUI(); updateActionBar(); }
           }
         });
+
+        // ================= MODALS (khớp design nhatro_v3.pen) =================
+        function findBrm(id) {
+          var rid = id.slice(4);
+          for (var i = 0; i < buildings.length; i++) {
+            var rs = buildings[i].rooms || [];
+            for (var j = 0; j < rs.length; j++) { if ((rs[j].rid || (buildings[i].bid + '_r' + j)) === rid) return { b: buildings[i], r: rs[j] }; }
+          }
+          return null;
+        }
+        function confirmDelete(scope, cb) {
+          if (HT.confirm) HT.confirm({ title: 'Xóa ' + scope + '?', message: 'Hành động này không thể hoàn tác.', danger: true, confirmLabel: 'Xóa', onConfirm: cb });
+          else if (confirm('Xóa ' + scope + '?')) cb();
+        }
+        function fld(label, val, ph, col) { return '<div class="kpm-field' + (col ? ' col2' : '') + '"><label>' + esc(label) + '</label><input value="' + esc(val == null ? '' : val) + '" placeholder="' + esc(ph || '') + '"></div>'; }
+        function selFld(label, val, opts) { return '<div class="kpm-field"><label>' + esc(label) + '</label><select>' + opts.map(function (o) { return '<option' + (o === val ? ' selected' : '') + '>' + esc(o) + '</option>'; }).join('') + '</select></div>'; }
+
+        function roomFormBody(d) {
+          d = d || {};
+          return '<div class="kpm-grid">' +
+            fld('Mã / Tên phòng *', d.name, 'P.201') +
+            fld('Tầng', d.floor, '2') +
+            selFld('Loại phòng *', d.loai || '', ['Studio', '1PN', '2PN', '3PN', 'Duplex', 'KTX', 'Căn hộ DV', 'Nhà nguyên căn']) +
+            selFld('Nội thất', d.noithat || 'Full', ['Full', 'Cơ bản', 'Trống']) +
+            fld('Diện tích', d.area, '20 m²') +
+            fld('Giá thuê / tháng *', d.price, '2,8 triệu') +
+            '<div class="kpm-field col2"><label>Mô tả phòng</label><textarea rows="3" placeholder="Mô tả ngắn gọn về phòng, tiện ích nổi bật...">' + esc(d.desc || '') + '</textarea></div>' +
+          '</div>';
+        }
+        function openRoomEdit(d) {
+          HT.modal({ wide: true, title: 'Sửa phòng', sub: (d && d.name) ? d.name : 'Cập nhật thông tin phòng', submitLabel: 'Lưu thay đổi', bodyHTML: roomFormBody(d), onSubmit: function () { HT.toast('Đã lưu thay đổi phòng'); render(); return true; } });
+        }
+        function buildingFormBody(b) {
+          b = b || {};
+          return '<div class="kpm-grid">' +
+            fld('Số nhà *', '', 'Số nhà') +
+            fld('Đường *', b.addr || '', 'Tên đường...', true) +
+            selFld('Quận / Huyện *', b.quan || '', ['Gò Vấp', 'Bình Thạnh', 'Quận 10', 'Phú Nhuận', 'Thủ Đức', 'Quận 3']) +
+            fld('Phường / Xã', '', 'Chọn phường') +
+            fld('Số tầng', '', 'VD: 5') +
+            fld('Link Zalo chủ nhà', b.zaloNhom || '', 'https://zalo.me/...') +
+            '<div class="kpm-field col2"><label>Ghi chú</label><textarea rows="2" placeholder="Thông tin thêm về tòa nhà...">' + esc(b.note || '') + '</textarea></div>' +
+          '</div>';
+        }
+        function openBuildingAdd() { HT.modal({ wide: true, title: 'Thêm tòa nhà mới', sub: 'Nhập thông tin tòa nhà mới vào hệ thống', submitLabel: 'Tạo tòa nhà', bodyHTML: buildingFormBody({}), onSubmit: function () { HT.toast('Đã tạo tòa nhà (demo)'); return true; } }); }
+        function openBuildingEdit(bid) { var b = buildings.filter(function (x) { return x.bid === bid; })[0] || {}; HT.modal({ wide: true, title: 'Sửa tòa nhà', sub: b.addr || '', submitLabel: 'Lưu thay đổi', bodyHTML: buildingFormBody(b), onSubmit: function () { HT.toast('Đã lưu tòa nhà'); return true; } }); }
+
+        function openStatusModal(ids) {
+          var n = (ids && ids.length) || 1;
+          var opts = [['open', 'Còn trống'], ['soon', 'Sắp trống'], ['rented', 'Đã cho thuê'], ['hold', 'Giữ chỗ'], ['stop', 'Ngưng cho thuê']];
+          var body = '<div class="kpm-radios">' + opts.map(function (o, i) {
+            return '<label class="kpm-radio"><input type="radio" name="kpstat" value="' + o[0] + '"' + (i === 0 ? ' checked' : '') + '><span>' + esc(o[1]) + '</span></label>';
+          }).join('') + '</div><div class="kpm-warn">' + I('triangle-alert', 15) + '<span>Chuyển sang “Đã cho thuê” sẽ ẩn phòng khỏi kho công khai.</span></div>';
+          HT.modal({ title: 'Đổi trạng thái phòng', sub: 'Thay đổi sẽ hiện ngay trên web công khai', submitLabel: 'Cập nhật trạng thái', bodyHTML: body, onSubmit: function () { HT.toast('Đã cập nhật trạng thái ' + n + ' phòng'); clearSel(); render(); return true; } });
+        }
+
+        function detailBody(name, price, loai, area, beds, addr, tags, desc, rid) {
+          var cover = (name || '').indexOf('#') === 0 ? name : '';
+          var chips = (tags || []).length ? ('<div class="kpm-sec">Tiện ích & thiết kế</div><div class="kpm-chips">' + tags.map(function (t) { return '<span class="kpm-chip">' + esc(t) + '</span>'; }).join('') + '</div>') : '';
+          return '<div style="display:flex;gap:16px;flex-wrap:wrap">' +
+              '<div style="flex:1;min-width:220px;height:180px;border-radius:var(--radius-l);background:' + (cover ? ('linear-gradient(135deg,' + cover + ')') : 'var(--muted)') + '"></div>' +
+              '<div style="flex:1;min-width:220px">' +
+                '<div style="font-size:22px;font-weight:800">' + esc(price || '—') + '/tháng</div>' +
+                '<div style="color:var(--muted-fg);margin:4px 0 10px">' + esc(loai || '') + (area ? ' · ' + esc(area) : '') + '</div>' +
+                '<span class="kp-sbadge free"><span class="dot"></span>Còn trống</span>' +
+                '<div style="display:flex;gap:6px;align-items:flex-start;margin-top:12px;font-size:13.5px">' + I('map-pin', 15) + '<span>' + esc(addr || 'TP.HCM') + '</span></div>' +
+              '</div>' +
+            '</div>' +
+            '<div class="kpm-dspecs">' +
+              '<div class="kpm-spec"><b>' + esc(area || '—') + '</b><span>Diện tích</span></div>' +
+              '<div class="kpm-spec"><b>' + esc(beds || '—') + '</b><span>Phòng ngủ</span></div>' +
+              '<div class="kpm-spec"><b>' + esc(loai || '—') + '</b><span>Loại phòng</span></div>' +
+            '</div>' + chips +
+            '<div class="kpm-sec">Giới thiệu</div><div style="font-size:13.5px;line-height:1.6">' + esc(desc || 'Phòng đầy đủ nội thất, thoáng mát, thuận tiện di chuyển.') + '</div>' +
+            '<div style="display:flex;gap:8px;margin-top:16px"><button class="btn btn--primary btn--sm" data-detedit>' + I('pencil-line', 15) + 'Sửa phòng</button><button class="btn btn--ghost btn--sm" data-detshare>' + I('share-2', 15) + 'Chia sẻ</button></div>';
+        }
+        function wireDetail(m, editData) {
+          var eb = m.el.querySelector('[data-detedit]'); if (eb) eb.addEventListener('click', function () { m.close(); openRoomEdit(editData); });
+          var sb = m.el.querySelector('[data-detshare]'); if (sb) sb.addEventListener('click', function () { HT.toast('Đã copy link chia sẻ (demo)'); });
+        }
+        function openRoomDetail(idx) {
+          var r = rooms[idx] || {};
+          var loai = loaiOf(r) || shortType(catOf(r)) || 'Phòng';
+          var cover = (r.imgs && r.imgs[0]) || '';
+          var body = detailBody(cover, r.p, loai, r.a, bedsFromTags(r.tags), (r.quan ? r.quan + ', ' : '') + 'TP.HCM', r.tags, r.desc, r.rid);
+          var m = HT.modal({ wide: true, title: r.t || 'Chi tiết phòng', sub: 'Mã: ' + (r.rid || '—'), submitLabel: null, bodyHTML: body });
+          wireDetail(m, { name: r.t, area: r.a, price: r.p, loai: loai, desc: r.desc });
+        }
+        function openRoomDetailObj(rm, b) {
+          var cover = (b && b.imgs && b.imgs[0]) || '';
+          var tags = (rm.tags || []).concat(rm.noithat || []);
+          var body = detailBody(cover, rm.price, rm.loai, rm.m2 ? rm.m2 + ' m²' : '', '', b ? b.addr : 'TP.HCM', tags, '', rm.rid);
+          var m = HT.modal({ wide: true, title: rm.loai || 'Chi tiết phòng', sub: (b ? b.addr : '') + ' · ' + (rm.soTrong || 0) + '/' + (rm.soLuong || 0) + ' trống', submitLabel: null, bodyHTML: body });
+          wireDetail(m, { name: rm.loai, area: rm.m2, price: rm.price, loai: rm.loai, desc: '' });
+        }
+
+        window.__kpAdd = function () { if (state.mainTab === 'toanha') openBuildingAdd(); else HT.roomModal({ onDone: function () { location.reload(); } }); };
 
         // ---- init (deep-link: ?main=phong|toanha &view=grid|list|tree &status=all|trong|...) ----
         try {
