@@ -1,5 +1,20 @@
 # RÀ SOÁT GIAO DIỆN vs THIẾT KẾ v3.6 — bản chốt cùng team
 
+> **CẬP NHẬT 06/09 — sau phản hồi team (đọc phần này trước):**
+> - ✅ **Xác nhận nguồn đối chiếu đúng:** dùng `desktop-handoff/index.html` (export của `HT-HOME-thiet-ke.pen`) — đã grep thấy màn `Public — Xác thực SĐT khách (OTP)`. KHÔNG dùng `nhatro_v2.pen`.
+> - **Correction từ team (ghi đè các mục liên quan bên dưới):**
+>   1. **Giới thiệu + Về chúng tôi**: cả 2 đều có trong thiết kế, GIỮ cả hai (Giới thiệu = trang mở đầu; Về chúng tôi = giới thiệu công ty). Không phải lỗi.
+>   2. **index_v2.html**: gỡ khỏi web root — *(đã gỡ khỏi repo: gitignore + git rm --cached)*.
+>   3. **Cụm Tin tức/CMS** có design đầy đủ (Public Tin tức, Chi tiết bài, Nội bộ Tin tức, Soạn bài, **Modal Xem trước bài viết**) — không phải build vượt design. Modal Xem trước là gap thật cần build.
+>   4. **`nhap-otp.html` CÓ design** (`Public — Xác thực SĐT (OTP) · Đặt lịch/Tra cứu`) — **chức năng cốt lõi, KHÔNG phải orphan.** Orphan thật: `chat.html`, `quynoibo.html`, `khuvuc.html`.
+>   5. **`taikhoan.html` + toàn bộ tab con (Giao dịch/Thông báo/Đổi mật khẩu) PHẢI BỎ** — SPEC v3.6: khách không có tài khoản (không đăng ký/đăng nhập/mật khẩu). Thay bằng: **Phòng đã lưu** (trang riêng, localStorage, không cần tài khoản) + **Lịch hẹn của tôi** (trang riêng, vào bằng OTP).
+> - **3 khác biệt cấu trúc** (theo DESIGN-INDEX): Tòa nhà = **tab trong Kho phòng** (không phải mục sidebar); Lịch hẹn = gộp trong trang **Khách hàng** (không tách riêng); Thêm phòng = **modal** (không phải trang `themphong.html`).
+> - **Quyết định:** Tạo Deal chỉ Admin (chặn server) — ✅ ĐÃ LÀM. Người tìm/dẫn khách chọn từ danh sách NV (gắn `nhan_vien_id`, không gõ tay) — chờ component thiết kế.
+> - ⛔ **Cần chốt cách làm OTP** (vì chủ dự án từng nói chưa có brand name SMS): OTP thật (cần dịch vụ SMS) / OTP demo giả lập (mã hiện trên màn, chạy ngay cho đồ án).
+
+---
+
+
 > Đối chiếu bản build đang chạy (`hthome.thanghost.io.vn`) với `desktop-handoff/` (CHANGELOG.md + BUGS.md + BUGS-NOIBO.md + file thiết kế `.pen`).
 > Ngày rà soát: 05/09/2026. Mọi mục dưới đây đã **verify trực tiếp** trên code + dữ liệu API thật (không phỏng đoán).
 
