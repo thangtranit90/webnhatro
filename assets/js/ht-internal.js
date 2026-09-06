@@ -46,12 +46,10 @@
     { k: 'deal', label: 'Deal & Hợp đồng', href: 'deal.html', icon: 'file-text', badge: '3' },
     { k: 'doanhthu', label: 'Doanh thu', href: 'doanhthu.html', icon: 'wallet' },
     { k: 'lichhen', label: 'Lịch hẹn', href: 'lichhen.html', icon: 'calendar-days' },
-    { k: 'bangtin', label: 'Bảng tin', href: 'bangtin.html', icon: 'megaphone' },
-    { k: 'khuvuc', label: 'Khu vực', href: 'khuvuc.html', icon: 'map' }
+    { k: 'bangtin', label: 'Bảng tin', href: 'bangtin.html', icon: 'megaphone' }
   ];
   var NAV_ADMIN = [
     { k: 'baocao', label: 'Báo cáo tổng', href: 'baocao.html', icon: 'file-text' },
-    { k: 'quy', label: 'Quỹ nội bộ', href: 'quynoibo.html', icon: 'banknote' },
     { k: 'tintuc', label: 'Tin tức', href: 'tintuc-noibo.html', icon: 'megaphone' },
     { k: 'nhanvien', label: 'Nhân viên', href: 'nhanvien.html', icon: 'user-cog' },
     { k: 'phanquyen', label: 'Phân quyền', href: 'phanquyen.html', icon: 'shield-check' },
@@ -146,7 +144,7 @@
   }
 
   // Trang chỉ Admin được vào (sale bị chặn). doanhthu KHÔNG chặn — sale xem "Doanh thu của tôi".
-  var ADMIN_ONLY = ['baocao', 'quy', 'tintuc', 'nhanvien', 'phanquyen', 'caidat', 'khuvuc'];
+  var ADMIN_ONLY = ['baocao', 'tintuc', 'nhanvien', 'phanquyen', 'caidat'];
 
   function mount() {
     var host = document.getElementById('ht-sidebar');
