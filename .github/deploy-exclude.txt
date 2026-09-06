@@ -2,13 +2,17 @@
 # Moi thu KHONG liet ke o day se duoc day len web. Them file .html moi -> tu dong len.
 # Chi can bo sung vao day khi co LOAI FILE/THU MUC NOI BO moi khong duoc public.
 
-# --- Version control / CI / cong cu ---
+# --- Version control / CI / cong cu (moi dot-dir/file khong duoc len web) ---
 .git
 .github
 .claude
-node_modules
+.agents
+.codex
 .wrangler
 .playwright-mcp
+.vc-installed-files
+.vc-version
+node_modules
 site-upload
 
 # --- Tai lieu / process noi bo (KHONG public) ---
