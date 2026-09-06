@@ -38,29 +38,27 @@
     return '<svg class="ic" width="' + size + '" height="' + size + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (IC[name] || '') + '</svg>';
   }
 
+  // Sidebar ADMIN theo design v3 (cmp/Sidebar): Dashboard · Kho phòng · Khách hàng · Deal · Báo cáo.
+  // Tòa nhà = tab trong Kho phòng · Lịch hẹn gộp Khách hàng · Doanh thu là của Sale → KHÔNG đứng riêng ở sidebar.
   var NAV_MAIN = [
     { k: 'dashboard', label: 'Dashboard', href: 'dashboard.html', icon: 'layout-dashboard' },
-    { k: 'khophong', label: 'Giỏ hàng / Kho phòng', href: 'khophong.html', icon: 'package', badge: '12' },
-    { k: 'toanha', label: 'Tòa nhà', href: 'toanha.html', icon: 'building' },
-    { k: 'crm', label: 'Khách hàng (CRM)', href: 'crm.html', icon: 'users' },
+    { k: 'khophong', label: 'Kho phòng', href: 'khophong.html', icon: 'package', badge: '12' },
+    { k: 'crm', label: 'Khách hàng', href: 'crm.html', icon: 'users' },
     { k: 'deal', label: 'Deal & Hợp đồng', href: 'deal.html', icon: 'file-text', badge: '3' },
-    { k: 'doanhthu', label: 'Doanh thu', href: 'doanhthu.html', icon: 'wallet' },
-    { k: 'lichhen', label: 'Lịch hẹn', href: 'lichhen.html', icon: 'calendar-days' },
-    { k: 'bangtin', label: 'Bảng tin', href: 'bangtin.html', icon: 'megaphone' }
+    { k: 'baocao', label: 'Báo cáo', href: 'baocao.html', icon: 'file-text' }
   ];
+  // Khu QUẢN TRỊ (chỉ Admin thấy) theo design v3.
   var NAV_ADMIN = [
-    { k: 'baocao', label: 'Báo cáo tổng', href: 'baocao.html', icon: 'file-text' },
     { k: 'tintuc', label: 'Tin tức', href: 'tintuc-noibo.html', icon: 'megaphone' },
     { k: 'nhanvien', label: 'Nhân viên', href: 'nhanvien.html', icon: 'user-cog' },
     { k: 'caidat', label: 'Cài đặt', href: 'caidat.html', icon: 'settings' }
   ];
-  // Nav riêng cho SALE (khu "của tôi" — không có mục quản trị). Theo v3.6.
+  // Sidebar SALE theo design v3 (cmp/Sidebar_Sale): không có khu quản trị, không có Lịch hẹn riêng.
   var NAV_SALE = [
     { k: 'dashboard', label: 'Dashboard', href: 'dashboard.html', icon: 'layout-dashboard' },
     { k: 'khophong', label: 'Kho phòng', href: 'khophong.html', icon: 'package' },
-    { k: 'crm', label: 'Khách của tôi', href: 'crm.html', icon: 'users' },
-    { k: 'deal', label: 'Deal của tôi', href: 'deal.html', icon: 'file-text' },
-    { k: 'lichhen', label: 'Lịch hẹn', href: 'lichhen.html', icon: 'calendar-days' },
+    { k: 'crm', label: 'Khách hàng', href: 'crm.html', icon: 'users' },
+    { k: 'deal', label: 'Deal & Hợp đồng', href: 'deal.html', icon: 'file-text' },
     { k: 'doanhthu', label: 'Doanh thu của tôi', href: 'doanhthu.html', icon: 'wallet' }
   ];
 
