@@ -14,24 +14,12 @@ jobs:
       - name: Lay code moi nhat
         uses: actions/checkout@v4
 
-      - name: Gom rieng cac file website (khong dua tai lieu noi bo len web)
+      - name: Gom file website (copy ca thu muc, loai tru tai lieu noi bo)
         run: |
-          mkdir -p site-upload
-          cp index.html detail.html timphong.html sosanh.html \
-             tintuc.html bai-viet.html tintuc-noibo.html soanbai.html \
-             gioithieu.html \
-             vechungtoi.html dieukhoan.html baomat.html 404.html \
-             dangky.html dangnhap-khach.html taikhoan.html datlich.html \
-             dangnhap-noibo.html quenmatkhau.html nhap-otp.html datmatkhau.html \
-             dashboard.html khophong.html crm.html deal.html doanhthu.html \
-             toanha.html toanha-chitiet.html lichhen.html themphong.html phong-noibo.html \
-             baocao.html thongbao.html nhanvien.html caidat.html bangtin.html \
-             chon-loai.html them-tin.html \
-             data.js footer.js login.js ht-home-logo.png logo-full-light.png logo-full-dark.png logo-mark.png \
-             manifest.json sw.js _headers _redirects \
-             site-upload/
-          cp -r assets site-upload/
-          cp -r functions site-upload/
+          # Copy TOAN BO repo vao site-upload, tru cac thu muc/file khong duoc len web.
+          # Them file .html moi -> tu dong len, KHONG can sua file nay nua.
+          # DANH SACH LOAI TRU (cap nhat neu them loai file noi bo moi):
+          rsync -a --exclude-from=.github/deploy-exclude.txt ./ site-upload/
 
       - name: Deploy len Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
