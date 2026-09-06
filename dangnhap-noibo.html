@@ -19,7 +19,7 @@
     /* --- Panel thương hiệu (trái) --- */
     .auth-brand {
       background: var(--primary); color: #fff; padding: 22px 20px;
-      display: flex; flex-direction: column; justify-content: center;
+      display: flex; flex-direction: column; justify-content: space-between;
     }
     @media (min-width: 1024px) { .auth-brand { padding: 56px 52px; } }
     .auth-brand__logo { font-size: 22px; font-weight: 800; letter-spacing: .02em; color: #fff; }
@@ -29,14 +29,14 @@
     @media (min-width: 1024px) {
       .auth-brand__tagline {
         display: block; font-size: 34px; font-weight: 800; line-height: 1.15;
-        letter-spacing: -.02em; margin-top: 40px; max-width: 460px;
+        letter-spacing: -.02em; margin-top: 0; max-width: 460px;
       }
       .auth-brand__desc {
         display: block; font-size: 15px; line-height: 1.65; color: rgba(255,255,255,.72);
         margin-top: 20px; max-width: 440px;
       }
       .auth-brand__stats { display: flex; gap: 34px; margin-top: 48px; }
-      .auth-brand__stat-n { font-size: 26px; font-weight: 800; color: var(--gold-fg); }
+      .auth-brand__stat-n { font-size: 26px; font-weight: 800; color: var(--gold); }
       .auth-brand__stat-l { font-size: 13px; color: rgba(255,255,255,.7); margin-top: 4px; }
     }
 
@@ -108,8 +108,10 @@
     <!-- PANEL THƯƠNG HIỆU -->
     <aside class="auth-brand">
       <a class="auth-brand__logo" href="index.html"><img src="logo-full-dark.png?v=2" alt="HT HOME" style="height:30px;width:auto"/></a>
-      <h1 class="auth-brand__tagline">Nền tảng vận hành phòng trọ chuyên nghiệp</h1>
-      <p class="auth-brand__desc">Quản lý 500+ tòa nhà, 1.000+ phòng, đội ngũ sale minh bạch — tất cả trong 1 hệ thống.</p>
+      <div class="auth-brand__mid">
+        <h1 class="auth-brand__tagline">Nền tảng vận hành phòng trọ chuyên nghiệp</h1>
+        <p class="auth-brand__desc">Quản lý 500+ tòa nhà, 1.000+ phòng, đội ngũ sale minh bạch — tất cả trong 1 hệ thống.</p>
+      </div>
       <div class="auth-brand__stats">
         <div><div class="auth-brand__stat-n">500+</div><div class="auth-brand__stat-l">Tòa nhà</div></div>
         <div><div class="auth-brand__stat-n">1.024</div><div class="auth-brand__stat-l">Phòng</div></div>
