@@ -294,6 +294,7 @@
   <script src="data.js"></script>
   <script src="assets/js/ht-ui.js?v=15"></script>
   <script>
+    HT_loadPublicRooms(function () {
     (function () {
       'use strict';
 
@@ -534,6 +535,7 @@
         document.getElementById('similarSec').classList.add('is-hidden');
       }
     })();
+    }); // ← HT_loadPublicRooms callback
   </script>
 </body>
 </html>

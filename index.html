@@ -205,6 +205,8 @@
   <script src="data.js"></script>
   <script src="assets/js/ht-ui.js?v=15"></script>
   <script>
+    // Nạp phòng THẬT từ /api/phong (fail → giữ ROOMS tĩnh trong data.js) rồi mới render
+    HT_loadPublicRooms(function () {
     // Icon cho ô tìm kiếm + banner
     document.getElementById('sfKhuvuc').innerHTML = HT.icon('map-pin', 18);
     document.getElementById('sfGia').innerHTML = HT.icon('wallet', 18);
@@ -277,7 +279,7 @@
         '<span class="area-card__count">' + a[1] + ' phòng</span>' +
       '</a>';
     }).join('');
-
+    }); // ← HT_loadPublicRooms callback
   </script>
 </body>
 </html>

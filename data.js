@@ -209,6 +209,16 @@ window.HT_loadBuildings = function(cb){
   }).catch(function(){ if (cb) cb(); });
 };
 
+/* ── Nạp phòng THẬT cho TRANG KHÁCH từ /api/phong (endpoint công khai, field an toàn) ──
+   Ghi đè window.ROOMS bằng dữ liệu thật từ D1 rồi gọi cb. Lỗi mạng / rỗng → GIỮ ROOMS
+   tĩnh trong data.js (trang vẫn hiển thị, không vỡ). Trang khách bọc phần render trong cb. */
+window.HT_loadPublicRooms = function(cb){
+  fetch('/api/phong').then(function(r){ return r.json(); }).then(function(rows){
+    if (Array.isArray(rows) && rows.length) window.ROOMS = rows;
+    if (cb) cb();
+  }).catch(function(){ if (cb) cb(); });
+};
+
 /* CHỈ lưu bền vào localStorage (không đụng vào HT_BUILDINGS đang chạy).
    Dùng cho dashboard — nơi đã tự unshift vào BUILDINGS_DATA in-memory rồi. */
 window.HT_saveListing = function(building, group){

@@ -302,6 +302,7 @@
   <script src="data.js"></script>
   <script src="assets/js/ht-ui.js?v=15"></script>
   <script>
+  HT_loadPublicRooms(function () {
   (function () {
     'use strict';
 
@@ -675,6 +676,7 @@
     render();
     updateCompareBar();
   })();
+  }); // ← HT_loadPublicRooms callback
   </script>
 </body>
 </html>

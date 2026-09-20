@@ -36,9 +36,10 @@ export async function onRequest(context) {
   const method = request.method;
   const isAll = url.searchParams.get('all') === '1';
 
-  // 1) PUBLIC — login + đổi mật khẩu (auth tự kiểm), và tin tức đã đăng
+  // 1) PUBLIC — login + đổi mật khẩu (auth tự kiểm), tin tức đã đăng, và phòng công khai
   if (ep === 'auth-noibo' || ep === 'auth-khach') return next();
   if (ep === 'tin-tuc' && method === 'GET' && !isAll) return next();
+  if (ep === 'phong' && method === 'GET') return next(); // /api/phong: field an toàn cho khách
 
   // 2) Cần phiên đăng nhập hợp lệ
   const user = await getUser(request, env);
