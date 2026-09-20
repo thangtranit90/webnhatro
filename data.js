@@ -237,7 +237,7 @@ window.HT_saveListing = function(building, group){
   }
 };
 
-/* Thêm một tin mới (từ them-tin.html) → cập nhật danh mục đang chạy + lưu bền + dựng lại ROOMS. */
+/* Thêm một tin mới (từ soanbai.html) → cập nhật danh mục đang chạy + lưu bền + dựng lại ROOMS. */
 window.HT_addListing = function(building, group){
   const g = group === 'cc' ? 'cc' : 'ptro';
   window.HT_BUILDINGS[g].unshift(building);

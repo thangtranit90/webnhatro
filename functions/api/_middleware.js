@@ -1,8 +1,8 @@
 // Middleware bảo vệ MỌI /api/* — chạy trước từng function.
 // Chính sách:
 //   PUBLIC (không cần đăng nhập): auth-noibo, auth-khach (login); tin-tuc GET (bài đã đăng, không ?all=1)
-//   STAFF (bất kỳ nhân viên đã đăng nhập): toa-nha, khach, lich-hen, bang-tin GET, upload, deal GET/PATCH/DELETE, change-password
-//   ADMIN (role_key='admin'): nhan-vien, giao-dich, cau-hinh, tin-tuc (ghi hoặc ?all=1), bang-tin ghi, deal POST (Tạo deal)
+//   STAFF (bất kỳ nhân viên đã đăng nhập): toa-nha, khach, lich-hen, bang-tin GET + PATCH (like), upload, deal GET/PATCH/DELETE, change-password
+//   ADMIN (role_key='admin'): nhan-vien, giao-dich, cau-hinh, tin-tuc (ghi hoặc ?all=1), bang-tin POST/DELETE, deal POST (Tạo deal)
 // localStorage phía client CHỈ để hiển thị — quyền do server quyết qua cookie httpOnly ht_sess.
 
 function json(data, status) {
@@ -53,7 +53,7 @@ export async function onRequest(context) {
     (ep === 'giao-dich') ||
     (ep === 'cau-hinh') ||
     (ep === 'tin-tuc' && (method !== 'GET' || isAll)) ||
-    (ep === 'bang-tin' && method !== 'GET') ||
+    (ep === 'bang-tin' && method !== 'GET' && method !== 'PATCH') ||
     (ep === 'deal' && method === 'POST');
   if (adminNeeded && !isAdmin) return json({ error: 'Chỉ Admin có quyền thực hiện thao tác này.' }, 403);
 

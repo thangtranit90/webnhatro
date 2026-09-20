@@ -134,11 +134,45 @@
 
       // ---- Đọc phòng THẬT từ D1 rồi render (bọc async) ----
       window.HT_loadBuildings(function () {
-      // ---- Lấy phòng theo ?i= ----
+      // ---- Lấy phòng theo ?rid= (ưu tiên) hoặc ?i= ----
       var ROOMS = window.ROOMS || [];
-      var i = parseInt(new URLSearchParams(location.search).get('i') || '0', 10);
+      var qs = new URLSearchParams(location.search);
+      var ridParam = qs.get('rid');
+      var i = parseInt(qs.get('i') || '0', 10);
+      if (ridParam) {
+        var fi = ROOMS.findIndex(function (x) { return x.rid === ridParam; });
+        if (fi >= 0) i = fi;
+      }
       if (isNaN(i) || i < 0 || i >= ROOMS.length) i = 0;
       var r = ROOMS[i] || ROOMS[0];
+
+      // ---- Tham chiếu phòng THẬT trong D1 (để Sửa / Đổi trạng thái / Tạo deal ghi lại) ----
+      var buildings = [].concat((window.HT_BUILDINGS && window.HT_BUILDINGS.ptro) || [], (window.HT_BUILDINGS && window.HT_BUILDINGS.cc) || []);
+      var keyRid = ridParam || (r && r.rid) || '';
+      var curB = null, curR = null;
+      if (keyRid) {
+        for (var bi = 0; bi < buildings.length && !curR; bi++) {
+          var brs = buildings[bi].rooms || [];
+          for (var rj = 0; rj < brs.length; rj++) {
+            if ((brs[rj].rid || (buildings[bi].bid + '_r' + rj)) === keyRid) { curB = buildings[bi]; curR = brs[rj]; break; }
+          }
+        }
+      }
+      var ST_LABEL = { open: 'Còn trống', soon: 'Sắp trống', rented: 'Đã cho thuê', hold: 'Giữ chỗ', stop: 'Ngưng' };
+      var LABEL_ST = { 'Còn trống': 'open', 'Sắp trống': 'soon', 'Đã cho thuê': 'rented', 'Giữ chỗ': 'hold', 'Ngưng': 'stop' };
+      function stOpt(cur) { return ['Còn trống', 'Sắp trống', 'Đã cho thuê', 'Giữ chỗ', 'Ngưng'].map(function (l) { return '<option' + (l === cur ? ' selected' : '') + '>' + l + '</option>'; }).join(''); }
+      function curLabel() { return (curR && ST_LABEL[curR.status]) || 'Còn trống'; }
+      function priceNum(p) {
+        var s = String(p || '').toLowerCase();
+        if (/tr|triệu/.test(s)) { var m = s.replace(/[^\d.,]/g, '').replace(',', '.'); return Math.round((parseFloat(m) || 0) * 1e6); }
+        var d = s.replace(/\D/g, ''); return d ? parseInt(d, 10) : 0;
+      }
+      function patchCurBuilding(okMsg) {
+        fetch('/api/toa-nha', { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ bid: curB.bid, building: curB }) })
+          .then(function (x) { return x.json(); })
+          .then(function (res) { if (res && res.error) { HT.toast(res.error, 'danger'); return; } HT.toast(okMsg, 'success'); location.reload(); })
+          .catch(function () { HT.toast('Lỗi mạng, vui lòng thử lại', 'danger'); });
+      }
 
       var backEl = document.getElementById('btnBack');
       var arrowLeft = svg('<path d="M19 12H5"/><path d="m12 19-7-7 7-7"/>', 14);
@@ -309,7 +343,7 @@
         } else { HT.toast(url, 'success'); }
       });
 
-      // ---- Sửa (demo) ----
+      // ---- Sửa: ghi vào D1 (PATCH tòa nhà) ----
       document.getElementById('btnEdit').addEventListener('click', function () {
         HT.modal({
           title: 'Sửa thông tin phòng', sub: maPhong + ' · ' + toaNha,
@@ -317,29 +351,59 @@
           bodyHTML:
             '<div class="mrow">' +
               '<div class="mfield"><label class="mfield__label">Giá thuê</label>' +
-                '<input type="text" data-f="gia" value="' + esc(r.p || '') + '" /></div>' +
+                '<input type="text" data-f="gia" value="' + esc((curR && curR.price) || r.p || '') + '" /></div>' +
               '<div class="mfield"><label class="mfield__label">Diện tích</label>' +
-                '<input type="text" data-f="dt" value="' + esc(r.a || '') + '" /></div>' +
+                '<input type="text" data-f="dt" value="' + esc((curR && curR.m2) || r.a || '') + '" /></div>' +
             '</div>' +
             '<div class="mfield" style="margin-top:12px"><label class="mfield__label">Trạng thái</label>' +
-              '<select data-f="tt"><option>Còn trống</option><option>Sắp trống</option><option>Đã cho thuê</option><option>Giữ chỗ</option></select></div>',
-          onSubmit: function () { HT.toast('Đã lưu thay đổi phòng', 'success'); return true; }
+              '<select data-f="tt">' + stOpt(curLabel()) + '</select></div>',
+          onSubmit: function (bd) {
+            if (!curB || !curR) { HT.toast('Đã lưu thay đổi phòng', 'success'); return true; }
+            function v(f) { var el = bd.querySelector('[data-f="' + f + '"]'); return el ? el.value.trim() : ''; }
+            var gia = v('gia'), dt = v('dt'), tt = v('tt');
+            if (gia) curR.price = gia;
+            if (dt) curR.m2 = dt.replace(/[^\d.,]/g, '') || curR.m2;
+            if (LABEL_ST[tt]) curR.status = LABEL_ST[tt];
+            patchCurBuilding('Đã lưu thay đổi phòng');
+            return false;
+          }
         });
       });
 
-      // ---- Panel nội bộ ----
+      // ---- Panel nội bộ: Đổi trạng thái → ghi D1 ----
       document.getElementById('btnStatus').addEventListener('click', function () {
         HT.modal({
           title: 'Đổi trạng thái phòng', sub: maPhong,
           submitLabel: 'Cập nhật',
           bodyHTML:
             '<div class="mfield"><label class="mfield__label">Trạng thái mới</label>' +
-              '<select data-f="tt"><option>Còn trống</option><option>Sắp trống</option><option>Đã cho thuê</option><option>Giữ chỗ</option><option>Ngưng</option></select></div>',
-          onSubmit: function () { HT.toast('Đã đổi trạng thái phòng', 'success'); return true; }
+              '<select data-f="tt">' + stOpt(curLabel()) + '</select></div>',
+          onSubmit: function (bd) {
+            if (!curB || !curR) { HT.toast('Đã đổi trạng thái phòng', 'success'); return true; }
+            var tt = (bd.querySelector('[data-f="tt"]') || {}).value;
+            if (LABEL_ST[tt]) curR.status = LABEL_ST[tt];
+            patchCurBuilding('Đã đổi trạng thái phòng');
+            return false;
+          }
         });
       });
+      // ---- Tạo deal: POST /api/deal (server chặn non-admin → hiện lỗi 403) ----
       document.getElementById('btnDeal').addEventListener('click', function () {
-        HT.toast('Đã tạo deal mới cho ' + maPhong, 'success');
+        var payload = {
+          khach: 'Khách mới',
+          phong: (curR && curR.rid) || maPhong,
+          toanha: (curB && curB.addr) || toaNha,
+          sale: '',
+          gia_tri: priceNum((curR && curR.price) || r.p),
+          trang_thai: 'checkin'
+        };
+        fetch('/api/deal', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) })
+          .then(function (res) { return res.json().then(function (j) { return { ok: res.ok, j: j }; }); })
+          .then(function (o) {
+            if (!o.ok || (o.j && o.j.error)) { HT.toast((o.j && o.j.error) || 'Không tạo được deal', 'danger'); return; }
+            HT.toast('Đã tạo deal mới cho ' + maPhong, 'success');
+          })
+          .catch(function () { HT.toast('Lỗi mạng, vui lòng thử lại', 'danger'); });
       });
       });
     })();

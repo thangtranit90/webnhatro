@@ -391,8 +391,35 @@
 
       // ================= LOAD DATA =================
       window.HT_loadBuildings(function () {
-        var rooms = window.ROOMS || [];
         var buildings = [].concat((window.HT_BUILDINGS && window.HT_BUILDINGS.ptro) || [], (window.HT_BUILDINGS && window.HT_BUILDINGS.cc) || []);
+
+        // ---- status helpers (khớp room.status trong D1) ----
+        var ST_LABEL = { open: 'Còn trống', soon: 'Sắp trống', rented: 'Đã cho thuê', hold: 'Giữ chỗ', stop: 'Ngưng cho thuê' };
+        function statusLabel(s) { return ST_LABEL[s] || 'Còn trống'; }
+        function isFreeStatus(s) { return s !== 'rented' && s !== 'stop'; }
+        function videoUrlOf(v) { if (!v) return ''; return /^https?:/i.test(v) ? v : ('https://www.tiktok.com/@ht.home/video/' + v); }
+
+        // ---- FLATTEN phòng THẬT từ D1 buildings (mỗi phòng mang theo bid + rid) ----
+        var rooms = [];
+        buildings.forEach(function (b) {
+          (b.rooms || []).forEach(function (r, ri) {
+            var rid = r.rid || (b.bid + '_r' + ri);
+            rooms.push({
+              bid: b.bid, rid: rid,
+              t: (r.loai || 'Phòng') + ' — ' + (b.addr || ''),
+              imgs: (r.imgs && r.imgs.length) ? r.imgs : (b.imgs || []),
+              p: r.price || '',
+              ty: r.loai || '', cat: r.loai || '',
+              a: r.m2 ? (r.m2 + 'm²') : '',
+              l: b.quan ? (b.quan + ', TP.HCM') : (b.addr || ''),
+              quan: b.quan || '',
+              video: videoUrlOf(b.tiktokUrl),
+              tags: (r.tags || []).concat(r.noithat || []).concat(b.tienich || []),
+              status: r.status || 'open',
+              desc: r.desc || ''
+            });
+          });
+        });
 
         function shortType(cat) { return { 'Căn hộ dịch vụ': 'CHDV', 'Ký túc xá': 'KTX' }[cat] || cat; }
         function bedsFromTags(tags) {
@@ -406,23 +433,23 @@
         function catOf(r) { return window.catOf ? window.catOf(r) : (r.cat || r.ty); }
         function toCard(r, i) {
           return {
-            href: 'phong-noibo.html?i=' + i,
+            href: 'phong-noibo.html?rid=' + encodeURIComponent(r.rid),
             img: (r.imgs && r.imgs[0]) || '',
             price: r.p, type: shortType(catOf(r)), title: r.t,
             addr: r.quan ? (r.quan + ', TP.HCM') : (r.l || ''),
             area: r.a, beds: bedsFromTags(r.tags),
-            status: 'Còn trống', statusKey: 'success', video: !!r.video
+            status: statusLabel(r.status), statusKey: isFreeStatus(r.status) ? 'success' : 'muted', video: !!r.video
           };
         }
 
-        // ---- status tabs (Phòng) ----
+        // ---- status tabs (Phòng) — lọc theo room.status THẬT ----
         function roomsForTab(k) {
           if (k === 'all') return rooms.slice();
-          if (k === 'trong') return rooms.slice();
-          if (k === 'saptrong') return rooms.filter(function (r, i) { return i % 4 === 0; });
-          if (k === 'giucho') return rooms.filter(function (r, i) { return i % 6 === 1; });
+          if (k === 'trong') return rooms.filter(function (r) { return r.status === 'open'; });
+          if (k === 'saptrong') return rooms.filter(function (r) { return r.status === 'soon'; });
+          if (k === 'giucho') return rooms.filter(function (r) { return r.status === 'hold'; });
           if (k === 'demo') return rooms.filter(function (r) { return !!r.video; });
-          if (k === 'ngung') return [];
+          if (k === 'ngung') return rooms.filter(function (r) { return r.status === 'stop'; });
           return rooms.slice();
         }
         var statusTabs = [
@@ -522,8 +549,8 @@
           var list = currentRooms();
           if (!list.length) { viewEl.innerHTML = '<div class="kp-empty">Không có phòng nào khớp trong mục này.</div>'; return; }
           viewEl.innerHTML = '<div class="room-grid">' + list.map(function (o) {
-            var id = 'room:' + o.i;
-            return '<div class="kp-item" data-id="' + id + '" data-kind="room" data-idx="' + o.i + '">' +
+            var id = 'brm:' + o.r.rid;
+            return '<div class="kp-item" data-id="' + id + '" data-kind="brm" data-idx="' + o.i + '" data-bid="' + esc(o.r.bid) + '" data-rid="' + esc(o.r.rid) + '">' +
               '<span class="kp-check">' + checkGlyph() + '</span>' + HT.roomCard(toCard(o.r, o.i)) + '</div>';
           }).join('') + '</div>';
         }
@@ -533,15 +560,16 @@
           var list = currentRooms();
           if (!list.length) { viewEl.innerHTML = '<div class="kp-empty">Không có phòng nào khớp trong mục này.</div>'; return; }
           var rowsHtml = list.map(function (o) {
-            var r = o.r, id = 'room:' + o.i;
-            return '<tr data-id="' + id + '" data-kind="room" data-idx="' + o.i + '">' +
+            var r = o.r, id = 'brm:' + o.r.rid;
+            var free = isFreeStatus(r.status);
+            return '<tr data-id="' + id + '" data-kind="brm" data-idx="' + o.i + '" data-bid="' + esc(r.bid) + '" data-rid="' + esc(r.rid) + '">' +
               '<td class="kp-col-check"><span class="kp-rowcheck">' + checkGlyph() + '</span></td>' +
               '<td><div class="kp-cell-name">' + esc(r.t || '—') + '</div>' +
                 '<div class="kp-cell-sub">' + esc((r.quan || '') + (r.quan ? ', TP.HCM' : (r.l || ''))) + '</div></td>' +
               '<td><span class="kp-typetag">' + esc(loaiOf(r) || shortType(catOf(r)) || '—') + '</span></td>' +
               '<td>' + esc(r.a || '—') + '</td>' +
               '<td style="font-weight:600">' + esc(r.p || '—') + '</td>' +
-              '<td><span class="kp-sbadge free"><span class="dot"></span>Còn trống</span></td>' +
+              '<td><span class="kp-sbadge ' + (free ? 'free' : 'rented') + '"><span class="dot"></span>' + esc(statusLabel(r.status)) + '</span></td>' +
               '<td style="text-align:right"><button class="kp-kebab" type="button" data-kebab>' + I('ellipsis-vertical', 16) + '</button></td>' +
             '</tr>';
           }).join('');
@@ -678,7 +706,7 @@
           var n = selCount();
           if (act === 'delete') { confirmDelete(n + ' mục đã chọn', function () { clearSel(); render(); }); return; }
           if (act === 'status') { openStatusModal(Object.keys(state.sel)); return; }
-          if (act === 'move') { HT.toast ? HT.toast('Chuyển tòa ' + n + ' mục (demo)') : alert('Chuyển tòa ' + n + ' mục (demo)'); return; }
+          if (act === 'move') { moveRooms(Object.keys(state.sel)); return; }
         });
 
         // ================= CONTEXT MENU =================
@@ -723,13 +751,14 @@
             if (act === 'view') { if (targetId.indexOf('room:') === 0) openRoomDetail(+targetId.slice(5)); else if (targetId.indexOf('brm:') === 0) { var fv = findBrm(targetId); if (fv) openRoomDetailObj(fv.r, fv.b); } return; }
             if (act === 'edit') {
               if (kind === 'bld') openBuildingEdit(targetId.slice(4));
-              else if (targetId.indexOf('room:') === 0) { var rr = rooms[+targetId.slice(5)] || {}; openRoomEdit({ name: rr.t, area: rr.a, price: rr.p, loai: loaiOf(rr), desc: rr.desc }); }
-              else if (targetId.indexOf('brm:') === 0) { var fe = findBrm(targetId); openRoomEdit(fe ? { name: fe.r.loai, area: fe.r.m2, price: fe.r.price, loai: fe.r.loai, desc: '' } : {}); }
+              else if (targetId.indexOf('brm:') === 0) { var fe = findBrm(targetId); openRoomEdit(fe ? { bid: fe.b.bid, rid: fe.r.rid, name: fe.r.ten || fe.r.rid, floor: fe.r.tang || '', area: fe.r.m2, price: fe.r.price, loai: fe.r.loai, noithat: fe.r.noithatMuc || 'Full', desc: fe.r.desc || '' } : {}); }
               return;
             }
             if (act === 'status') { openStatusModal(bulk ? Object.keys(state.sel) : [targetId]); return; }
+            if (act === 'dup') { dupRoom(targetId); return; }
+            if (act === 'share') { shareRoom(targetId); return; }
             if (act === 'delete') { confirmDelete(scope, function () { if (bulk) { clearSel(); } else { delete state.sel[targetId]; } render(); }); return; }
-            HT.toast(({ dup: 'Đã nhân bản', share: 'Đã copy link chia sẻ' }[act] || 'Đã thực hiện') + ' ' + scope + ' (demo)');
+            HT.toast('Đã thực hiện ' + scope);
           });
         }
 
@@ -777,7 +806,7 @@
             }
           }
           // grid card phòng: click thường mở modal Chi tiết (thay vì điều hướng trang)
-          if (item.classList.contains('kp-item') && item.getAttribute('data-kind') === 'room') {
+          if (item.classList.contains('kp-item') && item.getAttribute('data-kind') === 'brm') {
             e.preventDefault();
             openRoomDetail(+item.getAttribute('data-idx'));
             return;
@@ -851,17 +880,95 @@
         function roomFormBody(d) {
           d = d || {};
           return '<div class="kpm-grid">' +
-            fld('Mã / Tên phòng *', d.name, 'P.201') +
-            fld('Tầng', d.floor, '2') +
-            selFld('Loại phòng *', d.loai || '', ['Studio', '1PN', '2PN', '3PN', 'Duplex', 'KTX', 'Căn hộ DV', 'Nhà nguyên căn']) +
-            selFld('Nội thất', d.noithat || 'Full', ['Full', 'Cơ bản', 'Trống']) +
-            fld('Diện tích', d.area, '20 m²') +
-            fld('Giá thuê / tháng *', d.price, '2,8 triệu') +
-            '<div class="kpm-field col2"><label>Mô tả phòng</label><textarea rows="3" placeholder="Mô tả ngắn gọn về phòng, tiện ích nổi bật...">' + esc(d.desc || '') + '</textarea></div>' +
+            fld('Mã / Tên phòng *', d.name, 'P.201', false, 'name') +
+            fld('Tầng', d.floor, '2', false, 'floor') +
+            selFld('Loại phòng *', d.loai || '', ['Studio', '1PN', '2PN', '3PN', 'Duplex', 'KTX', 'Căn hộ DV', 'Nhà nguyên căn'], 'loai') +
+            selFld('Nội thất', d.noithat || 'Full', ['Full', 'Cơ bản', 'Trống'], 'noithat') +
+            fld('Diện tích', d.area, '20 m²', false, 'area') +
+            fld('Giá thuê / tháng *', d.price, '2,8 triệu', false, 'price') +
+            '<div class="kpm-field col2"><label>Mô tả phòng</label><textarea data-f="desc" rows="3" placeholder="Mô tả ngắn gọn về phòng, tiện ích nổi bật...">' + esc(d.desc || '') + '</textarea></div>' +
           '</div>';
         }
         function openRoomEdit(d) {
-          HT.modal({ wide: true, title: 'Sửa phòng', sub: (d && d.name) ? d.name : 'Cập nhật thông tin phòng', submitLabel: 'Lưu thay đổi', bodyHTML: roomFormBody(d), onSubmit: function () { HT.toast('Đã lưu thay đổi phòng'); render(); return true; } });
+          d = d || {};
+          HT.modal({ wide: true, title: 'Sửa phòng', sub: d.name || 'Cập nhật thông tin phòng', submitLabel: 'Lưu thay đổi', bodyHTML: roomFormBody(d), onSubmit: function (bd, close) {
+            if (!d.bid || !d.rid) { HT.toast('Đã lưu thay đổi phòng'); render(); return true; } // fallback: không có tham chiếu D1
+            function v(f) { var el = bd.querySelector('[data-f="' + f + '"]'); return el ? el.value.trim() : ''; }
+            var b = buildings.filter(function (x) { return x.bid === d.bid; })[0];
+            if (!b) { HT.toast('Không tìm thấy tòa nhà', 'danger'); return false; }
+            var k = -1, rs = b.rooms || [];
+            for (var j = 0; j < rs.length; j++) { if ((rs[j].rid || (b.bid + '_r' + j)) === d.rid) { k = j; break; } }
+            if (k < 0) { HT.toast('Không tìm thấy phòng', 'danger'); return false; }
+            var loai = v('loai'), area = v('area'), price = v('price'), noithat = v('noithat'), name = v('name'), floor = v('floor'), desc = v('desc');
+            if (loai) b.rooms[k].loai = loai;
+            if (area) b.rooms[k].m2 = area.replace(/[^\d.,]/g, '') || b.rooms[k].m2;
+            if (price) b.rooms[k].price = price;
+            if (name) b.rooms[k].ten = name;
+            if (floor) b.rooms[k].tang = floor;
+            if (noithat) b.rooms[k].noithatMuc = noithat;
+            b.rooms[k].desc = desc;
+            fetch('/api/toa-nha', { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ bid: b.bid, building: b }) })
+              .then(function (r) { return r.json(); })
+              .then(function (res) { if (res && res.error) { HT.toast(res.error, 'danger'); return; } HT.toast('Đã lưu phòng', 'success'); location.reload(); })
+              .catch(function () { HT.toast('Lỗi mạng, vui lòng thử lại', 'danger'); });
+            return false;
+          } });
+        }
+        // ---- Nhân bản phòng (clone → PATCH tòa nguồn → reload) ----
+        function dupRoom(id) {
+          if (!id || id.indexOf('brm:') !== 0) { HT.toast('Chỉ nhân bản được phòng'); return; }
+          var fv = findBrm(id); if (!fv) { HT.toast('Không tìm thấy phòng', 'danger'); return; }
+          var clone = JSON.parse(JSON.stringify(fv.r));
+          clone.rid = fv.b.bid + '_r' + Date.now();
+          fv.b.rooms.push(clone);
+          fetch('/api/toa-nha', { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ bid: fv.b.bid, building: fv.b }) })
+            .then(function (r) { return r.json(); })
+            .then(function (res) { if (res && res.error) { HT.toast(res.error, 'danger'); return; } HT.toast('Đã nhân bản phòng', 'success'); location.reload(); })
+            .catch(function () { HT.toast('Lỗi mạng, vui lòng thử lại', 'danger'); });
+        }
+        // ---- Chuyển tòa: gỡ khỏi tòa nguồn, thêm vào tòa đích, PATCH cả 2 ----
+        function moveRooms(ids) {
+          ids = (ids || []).filter(function (id) { return id.indexOf('brm:') === 0; });
+          if (!ids.length) { HT.toast('Chọn phòng để chuyển'); return; }
+          if (buildings.length < 2) { HT.toast('Cần ít nhất 2 tòa nhà để chuyển'); return; }
+          var body = '<div class="kpm-field col2"><label>Chuyển ' + ids.length + ' phòng tới tòa nhà</label><select data-f="dest">' +
+            buildings.map(function (b) { return '<option value="' + esc(b.bid) + '">' + esc(b.addr || b.bid) + (b.quan ? ' · ' + esc(b.quan) : '') + '</option>'; }).join('') +
+            '</select></div>';
+          HT.modal({ title: 'Chuyển tòa', sub: ids.length + ' phòng đã chọn', submitLabel: 'Chuyển', bodyHTML: '<div class="kpm-grid">' + body + '</div>', onSubmit: function (bd, close) {
+            var dest = (bd.querySelector('[data-f="dest"]') || {}).value;
+            var destB = buildings.filter(function (x) { return x.bid === dest; })[0];
+            if (!destB) { HT.toast('Không tìm thấy tòa đích', 'danger'); return false; }
+            var affected = {};
+            ids.forEach(function (id) {
+              var fv = findBrm(id); if (!fv || fv.b.bid === dest) return;
+              var rs = fv.b.rooms, idx = rs.indexOf(fv.r);
+              if (idx >= 0) rs.splice(idx, 1);
+              destB.rooms.push(fv.r);
+              affected[fv.b.bid] = fv.b;
+            });
+            affected[dest] = destB;
+            var bids = Object.keys(affected);
+            if (bids.length < 2) { HT.toast('Các phòng đã ở tòa này rồi'); return false; }
+            Promise.all(bids.map(function (bid) {
+              return fetch('/api/toa-nha', { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ bid: bid, building: affected[bid] }) }).then(function (r) { return r.json(); });
+            })).then(function (results) {
+              var err = results.filter(function (x) { return x && x.error; })[0];
+              if (err) { HT.toast(err.error, 'danger'); return; }
+              HT.toast('Đã chuyển phòng', 'success'); location.reload();
+            }).catch(function () { HT.toast('Lỗi mạng, vui lòng thử lại', 'danger'); });
+            return false;
+          } });
+        }
+        // ---- Chia sẻ link phòng (copy clipboard, fallback toast) ----
+        function copyLink(url) {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(url).then(function () { HT.toast('Đã copy link', 'success'); }, function () { HT.toast(url, 'success'); });
+          } else { HT.toast(url, 'success'); }
+        }
+        function shareRoom(id) {
+          var url = location.origin + '/phong-noibo.html';
+          if (id && id.indexOf('brm:') === 0) { var fv = findBrm(id); if (fv) url += '?rid=' + encodeURIComponent(fv.r.rid); }
+          copyLink(url);
         }
         function buildingFormBody(b) {
           b = b || {};
@@ -928,7 +1035,26 @@
           var body = '<div class="kpm-radios">' + opts.map(function (o, i) {
             return '<label class="kpm-radio"><input type="radio" name="kpstat" value="' + o[0] + '"' + (i === 0 ? ' checked' : '') + '><span>' + esc(o[1]) + '</span></label>';
           }).join('') + '</div><div class="kpm-warn">' + I('triangle-alert', 15) + '<span>Chuyển sang “Đã cho thuê” sẽ ẩn phòng khỏi kho công khai.</span></div>';
-          HT.modal({ title: 'Đổi trạng thái phòng', sub: 'Thay đổi sẽ hiện ngay trên web công khai', submitLabel: 'Cập nhật trạng thái', bodyHTML: body, onSubmit: function () { HT.toast('Đã cập nhật trạng thái ' + n + ' phòng'); clearSel(); render(); return true; } });
+          HT.modal({ title: 'Đổi trạng thái phòng', sub: 'Thay đổi sẽ hiện ngay trên web công khai', submitLabel: 'Cập nhật trạng thái', bodyHTML: body, onSubmit: function (bd, close) {
+            var sel = bd.querySelector('input[name="kpstat"]:checked');
+            var val = sel ? sel.value : 'open';
+            var affected = {}; // bid -> building (dedupe: 1 PATCH / tòa)
+            (ids || []).forEach(function (id) {
+              if (!id || id.indexOf('brm:') !== 0) return;
+              var fv = findBrm(id);
+              if (fv) { fv.r.status = val; affected[fv.b.bid] = fv.b; }
+            });
+            var bids = Object.keys(affected);
+            if (!bids.length) { HT.toast('Không có phòng để cập nhật', 'danger'); return false; }
+            Promise.all(bids.map(function (bid) {
+              return fetch('/api/toa-nha', { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ bid: bid, building: affected[bid] }) }).then(function (r) { return r.json(); });
+            })).then(function (results) {
+              var err = results.filter(function (x) { return x && x.error; })[0];
+              if (err) { HT.toast(err.error, 'danger'); return; }
+              HT.toast('Đã cập nhật trạng thái ' + n + ' phòng', 'success'); location.reload();
+            }).catch(function () { HT.toast('Lỗi mạng, vui lòng thử lại', 'danger'); });
+            return false;
+          } });
         }
 
         function detailBody(name, price, loai, area, beds, addr, tags, desc, rid) {
@@ -953,7 +1079,9 @@
         }
         function wireDetail(m, editData) {
           var eb = m.el.querySelector('[data-detedit]'); if (eb) eb.addEventListener('click', function () { m.close(); openRoomEdit(editData); });
-          var sb = m.el.querySelector('[data-detshare]'); if (sb) sb.addEventListener('click', function () { HT.toast('Đã copy link chia sẻ (demo)'); });
+          var sb = m.el.querySelector('[data-detshare]'); if (sb) sb.addEventListener('click', function () {
+            copyLink(location.origin + '/phong-noibo.html' + (editData && editData.rid ? '?rid=' + encodeURIComponent(editData.rid) : ''));
+          });
         }
         function openRoomDetail(idx) {
           var r = rooms[idx] || {};
@@ -961,14 +1089,14 @@
           var cover = (r.imgs && r.imgs[0]) || '';
           var body = detailBody(cover, r.p, loai, r.a, bedsFromTags(r.tags), (r.quan ? r.quan + ', ' : '') + 'TP.HCM', r.tags, r.desc, r.rid);
           var m = HT.modal({ wide: true, title: r.t || 'Chi tiết phòng', sub: 'Mã: ' + (r.rid || '—'), submitLabel: null, bodyHTML: body });
-          wireDetail(m, { name: r.t, area: r.a, price: r.p, loai: loai, desc: r.desc });
+          wireDetail(m, { bid: r.bid, rid: r.rid, name: r.t, floor: '', area: r.a, price: r.p, loai: loai, noithat: 'Full', desc: r.desc });
         }
         function openRoomDetailObj(rm, b) {
           var cover = (b && b.imgs && b.imgs[0]) || '';
           var tags = (rm.tags || []).concat(rm.noithat || []);
-          var body = detailBody(cover, rm.price, rm.loai, rm.m2 ? rm.m2 + ' m²' : '', '', b ? b.addr : 'TP.HCM', tags, '', rm.rid);
-          var m = HT.modal({ wide: true, title: rm.loai || 'Chi tiết phòng', sub: (b ? b.addr : '') + ' · ' + (rm.soTrong || 0) + '/' + (rm.soLuong || 0) + ' trống', submitLabel: null, bodyHTML: body });
-          wireDetail(m, { name: rm.loai, area: rm.m2, price: rm.price, loai: rm.loai, desc: '' });
+          var body = detailBody(cover, rm.price, rm.loai, rm.m2 ? rm.m2 + ' m²' : '', '', b ? b.addr : 'TP.HCM', tags, rm.desc || '', rm.rid);
+          var m = HT.modal({ wide: true, title: rm.loai || 'Chi tiết phòng', sub: (b ? b.addr : '') + ' · ' + statusLabel(rm.status), submitLabel: null, bodyHTML: body });
+          wireDetail(m, { bid: b ? b.bid : '', rid: rm.rid, name: rm.ten || rm.loai, floor: rm.tang || '', area: rm.m2, price: rm.price, loai: rm.loai, noithat: rm.noithatMuc || 'Full', desc: rm.desc || '' });
         }
 
         window.__kpAdd = function () { if (state.mainTab === 'toanha') openBuildingAdd(); else HT.roomModal({ onDone: function () { location.reload(); } }); };

@@ -304,7 +304,40 @@
           if (act === 'xem') {
             window.location.href = 'phong-noibo.html?i=' + (gi != null && gi !== '-1' ? gi : 0);
           } else if (act === 'doi') {
-            HT.toast('Đã cập nhật trạng thái ' + code, 'success');
+            var room = (b.rooms || []).filter(function (x) { return x.rid === rid; })[0];
+            if (!room) { HT.toast('Không tìm thấy phòng', 'error'); return; }
+            var STOPTS = [
+              { v: 'open', t: 'Còn trống' },
+              { v: 'soon', t: 'Sắp trống' },
+              { v: 'rented', t: 'Đã cho thuê' },
+              { v: 'hold', t: 'Giữ chỗ' },
+              { v: 'stop', t: 'Ngưng cho thuê' }
+            ];
+            var optHTML = STOPTS.map(function (o) {
+              return '<option value="' + o.v + '"' + (room.status === o.v ? ' selected' : '') + '>' + o.t + '</option>';
+            }).join('');
+            HT.modal({
+              title: 'Đổi trạng thái phòng', sub: code || '',
+              submitLabel: 'Lưu thay đổi',
+              bodyHTML: '<div class="mfield"><label class="mfield__label">Trạng thái</label>' +
+                '<select data-f="status">' + optHTML + '</select></div>',
+              onSubmit: function (bd) {
+                var sel = bd.querySelector('[data-f="status"]');
+                var nv = sel ? sel.value : '';
+                if (!nv) { HT.toast('Chọn trạng thái', 'error'); return false; }
+                room.status = nv;
+                fetch('/api/toa-nha', {
+                  method: 'PATCH',
+                  headers: { 'content-type': 'application/json' },
+                  body: JSON.stringify({ bid: b.bid, building: b })
+                }).then(function (res) { return res.json(); }).then(function (j) {
+                  if (j && j.error) { HT.toast(j.error, 'danger'); return; }
+                  HT.toast('Đã cập nhật trạng thái', 'success');
+                  location.reload();
+                }).catch(function () { HT.toast('Lỗi mạng', 'danger'); });
+                return true;
+              }
+            });
           } else if (act === 'xoa') {
             HT.confirm({
               title: 'Xoá phòng',

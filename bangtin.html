@@ -125,7 +125,7 @@
         '<div class="post__title">' + E(p.title) + '</div>' +
         '<div class="post__body">' + E(p.body) + '</div>' +
         '<div class="post__foot">' +
-          '<span class="post__like" style="cursor:pointer">♥ <b>' + p.like + '</b> like</span>' +
+          '<span class="post__like" data-id="' + p.id + '" style="cursor:pointer">♥ <b>' + p.like + '</b> like</span>' +
           '<span class="post__cmt" style="cursor:pointer">💬 <b>' + p.cmt + '</b> bình luận</span>' +
           '<span class="post__del" data-del="' + p.id + '" title="Xoá bài" style="cursor:pointer;color:var(--danger);margin-left:auto">🗑 Xoá</span>' +
         '</div>' +
@@ -156,10 +156,27 @@
         });
         return;
       }
-      var s = e.target.closest('.post__like, .post__cmt');
-      if (!s) return;
-      var b = s.querySelector('b');
-      if (b) b.textContent = (parseInt(b.textContent, 10) || 0) + 1;
+      var likeEl = e.target.closest ? e.target.closest('.post__like') : null;
+      if (likeEl) {
+        var id = likeEl.getAttribute('data-id');
+        var b = likeEl.querySelector('b');
+        // Optimistic tăng ngay, đối chiếu lại theo response
+        if (b) b.textContent = (parseInt(b.textContent, 10) || 0) + 1;
+        fetch('/api/bang-tin', {
+          method: 'PATCH',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ id: id, action: 'like' })
+        }).then(function (r) { return r.json(); }).then(function (res) {
+          if (res && res.error) { HT.toast(res.error, 'danger'); loadPosts(); return; }
+          if (b && res && res.likes != null) b.textContent = res.likes;
+        }).catch(function () { HT.toast('Lỗi mạng', 'danger'); });
+        return;
+      }
+      // Bình luận chưa có backend → tăng đếm cục bộ (no-op nhẹ nhàng)
+      var cmt = e.target.closest('.post__cmt');
+      if (!cmt) return;
+      var cb = cmt.querySelector('b');
+      if (cb) cb.textContent = (parseInt(cb.textContent, 10) || 0) + 1;
     });
 
     // Đăng thông báo

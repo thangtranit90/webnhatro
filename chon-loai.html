@@ -65,7 +65,7 @@
   const TYPE_TAGS = window.TYPE_TAGS || {};
   document.getElementById('grid').innerHTML = TYPES.map(([name,cls,ic,desc])=>{
     const groups = Object.keys(TYPE_TAGS[name]||{}).join(' · ');
-    return `<a class="type-card" href="them-tin.html?type=${encodeURIComponent(name)}">
+    return `<a class="type-card" href="soanbai.html?type=${encodeURIComponent(name)}">
       <div class="tc-ic ${cls}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${ic}</svg></div>
       <h3>${name}</h3>
       <p>${desc}</p>

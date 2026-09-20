@@ -366,12 +366,55 @@
         '<div class="cp-sect"><div class="cp-sect__h">Lịch sử tương tác</div>' + timeline(c) + '</div>' +
         '<div class="cp-sect"><button class="btn btn--sm btn--block" data-p="del" style="background:var(--danger);color:#fff">Xoá khách</button></div>';
     }
+    function openZalo(c) {
+      var digits = String((c && c.phone) || '').replace(/[^0-9]/g, '');
+      if (!digits) { HT.toast('Khách chưa có SĐT', 'warning'); return; }
+      window.open('https://zalo.me/' + digits, '_blank');
+    }
+    function openLichModal(c) {
+      var body =
+        '<div class="mfield"><label class="mfield__label">Khách</label>' +
+          '<input type="text" data-f="khach" value="' + esc(c.name || '') + '" /></div>' +
+        '<div class="mfield" style="margin-top:12px"><label class="mfield__label">SĐT</label>' +
+          '<input type="text" data-f="sdt" value="' + esc(c.phone || '') + '" /></div>' +
+        '<div class="mfield" style="margin-top:12px"><label class="mfield__label">Phòng / Khu vực</label>' +
+          '<input type="text" data-f="phong" placeholder="VD: P201 · Q.Bình Thạnh" /></div>' +
+        '<div class="mfield" style="margin-top:12px"><label class="mfield__label">Ngày</label>' +
+          '<input type="date" data-f="ngay" /></div>' +
+        '<div class="mfield" style="margin-top:12px"><label class="mfield__label">Giờ</label>' +
+          '<input type="time" data-f="gio" /></div>';
+      HT.modal({
+        title: 'Tạo lịch xem phòng', sub: c.name || '',
+        submitLabel: 'Tạo lịch', bodyHTML: body,
+        onSubmit: function (bd) {
+          function val(f) { var el = bd.querySelector('[data-f="' + f + '"]'); return el ? el.value.trim() : ''; }
+          var payload = { khach: val('khach'), sdt: val('sdt'), phong: val('phong'), ngay: val('ngay'), gio: val('gio'), trang_thai: 'cho' };
+          if (!payload.khach) { HT.toast('Thiếu tên khách', 'error'); return false; }
+          fetch('/api/lich-hen', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify(payload)
+          }).then(function (r) { return r.json(); }).then(function (res) {
+            if (res && res.ok) {
+              HT.toast('Đã tạo lịch', 'success');
+              fetch('/api/lich-hen').then(function (r) { return r.json(); }).then(function (rows) {
+                APPTS = Array.isArray(rows) ? rows : [];
+                if (panelActive) fillPanel(panelActive);
+              }).catch(function () {});
+            } else {
+              HT.toast((res && res.error) || 'Lỗi tạo lịch', 'danger');
+            }
+          }).catch(function () { HT.toast('Lỗi mạng', 'danger'); });
+          return true;
+        }
+      });
+    }
     elPanel.addEventListener('click', panelClick);
     function panelClick(e) {
       var b = e.target.closest('[data-p]'); if (!b || !panelActive) return;
       var c = panelActive, act = b.getAttribute('data-p');
-      if (act === 'zalo') return HT.toast('Đang mở Zalo tới ' + c.name + '…', 'success');
-      if (act === 'lich') return HT.toast('Đã tạo lịch xem phòng cho ' + c.name, 'success');
+      if (act === 'zalo') return openZalo(c);
+      if (act === 'lich') return openLichModal(c);
       if (act === 'next') {
         var idx = STAGES.indexOf(c.col);
         if (idx < 0 || idx >= STAGES.length - 1) return;
@@ -414,8 +457,8 @@
       });
       var m = document.querySelector('.modal-backdrop.is-open') || document.querySelector('.modal-backdrop');
       if (m) {
-        var z = m.querySelector('#d_zalo'); if (z) z.addEventListener('click', function () { HT.toast('Đang mở Zalo tới ' + c.name + '…', 'success'); });
-        var l = m.querySelector('#d_lich'); if (l) l.addEventListener('click', function () { HT.toast('Đã tạo lịch xem phòng cho ' + c.name, 'success'); });
+        var z = m.querySelector('#d_zalo'); if (z) z.addEventListener('click', function () { openZalo(c); });
+        var l = m.querySelector('#d_lich'); if (l) l.addEventListener('click', function () { openLichModal(c); });
         var d = m.querySelector('#d_del'); if (d) d.addEventListener('click', function () {
           HT.confirm({
             title: 'Xoá khách',

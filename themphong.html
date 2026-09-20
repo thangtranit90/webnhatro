@@ -100,7 +100,7 @@
         <form id="roomForm" class="tp-cols">
           <!-- Cột form -->
           <div class="stack">
-            <div class="ok-toast" id="okToast">✓ Đã lưu & đăng phòng thành công! (demo)</div>
+            <div class="ok-toast" id="okToast">✓ Đã lưu & đăng phòng thành công!</div>
 
             <!-- 1. Toà nhà & Mã phòng -->
             <section class="card">
@@ -392,7 +392,7 @@
 
       // ---- Lưu nháp ----
       document.getElementById('btnDraft').addEventListener('click', function () {
-        alert('Đã lưu nháp phòng (demo).');
+        saveRoom('nháp', { confirmText: '✓ Đã lưu nháp', redirect: false });
       });
 
       // ---- Nạp danh sách toà nhà THẬT từ D1 để chọn ----
@@ -408,9 +408,9 @@
         }).catch(function () { elBuilding.innerHTML = '<option value="">(Không tải được toà nhà)</option>'; });
       })();
 
-      // ---- Submit: ghi phòng mới vào toà nhà đã chọn (D1) ----
-      document.getElementById('roomForm').addEventListener('submit', function (e) {
-        e.preventDefault();
+      // ---- Ghi phòng mới vào toà nhà đã chọn (D1) — dùng chung cho Đăng & Lưu nháp ----
+      function saveRoom(status, opts) {
+        opts = opts || {};
         var bid = elBuilding.value;
         var b = BUILDINGS.filter(function (x) { return x.bid === bid; })[0];
         if (!b) { HT.toast('Vui lòng chọn toà nhà', 'danger'); return; }
@@ -429,7 +429,7 @@
           m2: String(elArea.value || ''),
           price: String(elPrice.value || ''),
           coc: '1 tháng', cocsố: '', hh: '50%–80%', hd: '6T–12T',
-          chiPhi: { loai: 'tro' }, soLuong: 1, soTrong: 1, status: 'open'
+          chiPhi: { loai: 'tro' }, soLuong: 1, soTrong: 1, status: status
         };
         b.rooms = (b.rooms || []).concat([room]);
         if (roomImgs.length) { b.imgs = (b.imgs || []).filter(function (x) { return /^https?:|^\/img\//.test(x); }).concat(roomImgs); }
@@ -438,10 +438,20 @@
           body: JSON.stringify({ bid: bid, building: b })
         }).then(function (r) { return r.json(); }).then(function (res) {
           if (res && res.error) { HT.toast(res.error, 'danger'); return; }
-          document.getElementById('okToast').classList.add('show');
+          var toast = document.getElementById('okToast');
+          if (opts.confirmText) toast.textContent = opts.confirmText;
+          toast.classList.add('show');
           window.scrollTo({ top: 0, behavior: 'smooth' });
-          setTimeout(function () { window.location.href = 'toanha-chitiet.html?bid=' + encodeURIComponent(bid); }, 1000);
+          if (opts.redirect !== false) {
+            setTimeout(function () { window.location.href = 'toanha-chitiet.html?bid=' + encodeURIComponent(bid); }, 1000);
+          }
         }).catch(function () { HT.toast('Lỗi mạng, chưa lưu được', 'danger'); });
+      }
+
+      // ---- Submit: đăng phòng (status open) ----
+      document.getElementById('roomForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        saveRoom('open', { redirect: true });
       });
 
       updateSummary();

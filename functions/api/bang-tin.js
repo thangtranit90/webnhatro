@@ -35,6 +35,17 @@ export async function onRequestPost({ request, env }) {
   } catch (e) { return json({ error: String(e) }, 500); }
 }
 
+export async function onRequestPatch({ request, env }) {
+  try {
+    const b = await request.json();
+    if (!b.id) return json({ error: 'Thiếu id' }, 400);
+    if (b.action !== 'like') return json({ error: 'Hành động không hợp lệ' }, 400);
+    await env.DB.prepare('UPDATE bang_tin SET likes = COALESCE(likes,0)+1 WHERE id=?').bind(b.id).run();
+    const row = await env.DB.prepare('SELECT likes FROM bang_tin WHERE id=?').bind(b.id).first();
+    return json({ ok: true, likes: row ? row.likes : null });
+  } catch (e) { return json({ error: String(e) }, 500); }
+}
+
 export async function onRequestDelete({ request, env }) {
   try {
     const b = await request.json();

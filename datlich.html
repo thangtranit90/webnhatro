@@ -214,11 +214,35 @@
         return;
       }
 
-      /* Thành công */
-      document.getElementById('successIcon').innerHTML = htico('shield-check', 30);
-      document.getElementById('bookView').style.display = 'none';
-      document.getElementById('bookSuccess').classList.add('is-show');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      /* Persist rồi mới hiện màn thành công */
+      var submitBtn = form.querySelector('[type="submit"]');
+      if (submitBtn) submitBtn.disabled = true;
+      var payload = {
+        khach: name,
+        sdt: phone,
+        phong: document.getElementById('bRoom').value.trim(),
+        ngay: dateInp.value,
+        gio: pickedTime,
+        trang_thai: 'cho'
+      };
+      fetch('/api/lich-hen', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).then(function (r) { return r.json(); }).then(function (res) {
+        if (res && res.ok) {
+          document.getElementById('successIcon').innerHTML = htico('shield-check', 30);
+          document.getElementById('bookView').style.display = 'none';
+          document.getElementById('bookSuccess').classList.add('is-show');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+          if (submitBtn) submitBtn.disabled = false;
+          alert((res && res.error) || 'Đặt lịch thất bại, vui lòng thử lại.');
+        }
+      }).catch(function () {
+        if (submitBtn) submitBtn.disabled = false;
+        alert('Lỗi mạng, vui lòng thử lại.');
+      });
     });
   })();
   </script>

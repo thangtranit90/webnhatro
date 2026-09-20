@@ -51,6 +51,10 @@ export async function onRequestGet({ env }) {
     const rooms = [];
     buildings.forEach(function (b) {
       (b.rooms || []).forEach(function (r) {
+        // Ẩn phòng KHÔNG còn nhận khách khỏi feed công khai:
+        // 'rented' (đã cho thuê) và 'stop' (ngưng cho thuê). open/soon/hold + phòng
+        // chưa có status = vẫn hiển thị cho khách.
+        if (r.status === 'rented' || r.status === 'stop') return;
         const cat = LOAI_TO_CAT[r.loai] || r.loai;
         rooms.push({
           rid: r.rid,

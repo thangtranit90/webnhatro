@@ -175,30 +175,29 @@
 
     var esc = (window.HT && HT.esc) ? HT.esc : function (s) { return String(s == null ? '' : s); };
 
-    /* ---- Nạp cài đặt đã lưu ---- */
-    function loadSettings() {
-      try { return JSON.parse(localStorage.getItem('ht_settings')) || {}; } catch (e) { return {}; }
-    }
-    var settings = loadSettings();
-
-    /* ---- Nạp thông tin công ty đã lưu vào input ---- */
-    if (settings.company) {
+    /* ---- Nạp cài đặt từ /api/cau-hinh vào input (match theo data-set) ---- */
+    fetch('/api/cau-hinh').then(function (r) { return r.json(); }).then(function (cfg) {
+      if (!cfg || typeof cfg !== 'object') return;
       document.querySelectorAll('input[data-set]').forEach(function (inp) {
         var k = inp.getAttribute('data-set');
-        if (settings.company[k] != null) inp.value = settings.company[k];
+        if (cfg[k] != null) inp.value = cfg[k];
       });
-    }
+    }).catch(function () {});
 
-    /* ---- Lưu cài đặt ---- */
+    /* ---- Lưu cài đặt → PUT /api/cau-hinh ---- */
     document.getElementById('btnSave').addEventListener('click', function () {
-      var company = {};
+      var payload = {};
       document.querySelectorAll('input[data-set]').forEach(function (inp) {
-        company[inp.getAttribute('data-set')] = inp.value.trim();
+        payload[inp.getAttribute('data-set')] = inp.value.trim();
       });
-      var data = { company: company };
-      try { localStorage.setItem('ht_settings', JSON.stringify(data)); } catch (e) {}
-      settings = data;
-      if (window.HT && HT.toast) HT.toast('Đã lưu cài đặt', 'success');
+      fetch('/api/cau-hinh', {
+        method: 'PUT',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).then(function (r) { return r.json(); }).then(function (res) {
+        if (res && res.error) { HT.toast(res.error, 'danger'); return; }
+        HT.toast('Đã lưu cài đặt', 'success');
+      }).catch(function () { HT.toast('Lỗi mạng, chưa lưu được', 'danger'); });
     });
   </script>
 </body>

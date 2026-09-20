@@ -257,8 +257,35 @@
         });
       });
 
+      function csvCell(v) {
+        var s = (v == null ? '' : String(v));
+        if (/[",\r\n]/.test(s)) { s = '"' + s.replace(/"/g, '""') + '"'; }
+        return s;
+      }
+      function stripTags(v) { return String(v == null ? '' : v).replace(/<[^>]*>/g, '').trim(); }
       document.getElementById('btnExport').addEventListener('click', function () {
-        alert('Đang xuất báo cáo tổng (demo).');
+        var rows = [];
+        rows.push(['BÁO CÁO TỔNG HỢP']);
+        rows.push([]);
+        rows.push(['KPI', 'Giá trị', 'Biến động']);
+        kpis.forEach(function (k) { rows.push([k.label, k.val, stripTags(k.delta)]); });
+        rows.push([]);
+        rows.push(['Hoa hồng theo tháng', 'Đã nhận (tr)', 'Chờ release (tr)']);
+        data.forEach(function (d) { rows.push([d[0], d[1], d[2]]); });
+        rows.push([]);
+        rows.push(['Doanh thu theo khu vực', 'Số deal', 'Doanh thu (tr)']);
+        areas.forEach(function (a) { rows.push([a.area, a.deal, a.rev]); });
+
+        var csv = '﻿' + rows.map(function (r) { return r.map(csvCell).join(','); }).join('\r\n');
+        var blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+        var d = new Date();
+        var ymd = d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'bao-cao-tong-hop-' + ymd + '.csv';
+        a.click();
+        URL.revokeObjectURL(a.href);
+        alert('Đã tải báo cáo');
       });
 
       // ===== Widget dữ liệu THẬT: Pipeline khách + Cảnh báo =====
