@@ -845,8 +845,8 @@
           if (HT.confirm) HT.confirm({ title: 'Xóa ' + scope + '?', message: 'Hành động này không thể hoàn tác.', danger: true, confirmLabel: 'Xóa', onConfirm: cb });
           else if (confirm('Xóa ' + scope + '?')) cb();
         }
-        function fld(label, val, ph, col) { return '<div class="kpm-field' + (col ? ' col2' : '') + '"><label>' + esc(label) + '</label><input value="' + esc(val == null ? '' : val) + '" placeholder="' + esc(ph || '') + '"></div>'; }
-        function selFld(label, val, opts) { return '<div class="kpm-field"><label>' + esc(label) + '</label><select>' + opts.map(function (o) { return '<option' + (o === val ? ' selected' : '') + '>' + esc(o) + '</option>'; }).join('') + '</select></div>'; }
+        function fld(label, val, ph, col, key) { return '<div class="kpm-field' + (col ? ' col2' : '') + '"><label>' + esc(label) + '</label><input' + (key ? ' data-f="' + key + '"' : '') + ' value="' + esc(val == null ? '' : val) + '" placeholder="' + esc(ph || '') + '"></div>'; }
+        function selFld(label, val, opts, key) { return '<div class="kpm-field"><label>' + esc(label) + '</label><select' + (key ? ' data-f="' + key + '"' : '') + '>' + opts.map(function (o) { return '<option' + (o === val ? ' selected' : '') + '>' + esc(o) + '</option>'; }).join('') + '</select></div>'; }
 
         function roomFormBody(d) {
           d = d || {};
@@ -866,17 +866,61 @@
         function buildingFormBody(b) {
           b = b || {};
           return '<div class="kpm-grid">' +
-            fld('Số nhà *', '', 'Số nhà') +
-            fld('Đường *', b.addr || '', 'Tên đường...', true) +
-            selFld('Quận / Huyện *', b.quan || '', ['Gò Vấp', 'Bình Thạnh', 'Quận 10', 'Phú Nhuận', 'Thủ Đức', 'Quận 3']) +
-            fld('Phường / Xã', '', 'Chọn phường') +
-            fld('Số tầng', '', 'VD: 5') +
-            fld('Link Zalo chủ nhà', b.zaloNhom || '', 'https://zalo.me/...') +
-            '<div class="kpm-field col2"><label>Ghi chú</label><textarea rows="2" placeholder="Thông tin thêm về tòa nhà...">' + esc(b.note || '') + '</textarea></div>' +
+            fld('Số nhà *', '', 'Số nhà', false, 'sonha') +
+            fld('Đường *', b.addr || '', 'Tên đường...', true, 'duong') +
+            selFld('Quận / Huyện *', b.quan || '', ['Gò Vấp', 'Bình Thạnh', 'Quận 10', 'Phú Nhuận', 'Thủ Đức', 'Quận 3'], 'quan') +
+            fld('Phường / Xã', '', 'Chọn phường', false, 'phuong') +
+            fld('Số tầng', b.soTang || '', 'VD: 5', false, 'sotang') +
+            fld('Link Zalo chủ nhà', b.zaloNhom || '', 'https://zalo.me/...', false, 'zalo') +
+            '<div class="kpm-field col2"><label>Ghi chú</label><textarea data-f="note" rows="2" placeholder="Thông tin thêm về tòa nhà...">' + esc(b.note || '') + '</textarea></div>' +
           '</div>';
         }
-        function openBuildingAdd() { HT.modal({ wide: true, title: 'Thêm tòa nhà mới', sub: 'Nhập thông tin tòa nhà mới vào hệ thống', submitLabel: 'Tạo tòa nhà', bodyHTML: buildingFormBody({}), onSubmit: function () { HT.toast('Đã tạo tòa nhà (demo)'); return true; } }); }
-        function openBuildingEdit(bid) { var b = buildings.filter(function (x) { return x.bid === bid; })[0] || {}; HT.modal({ wide: true, title: 'Sửa tòa nhà', sub: b.addr || '', submitLabel: 'Lưu thay đổi', bodyHTML: buildingFormBody(b), onSubmit: function () { HT.toast('Đã lưu tòa nhà'); return true; } }); }
+        function openBuildingAdd() {
+          HT.modal({ wide: true, title: 'Thêm tòa nhà mới', sub: 'Nhập thông tin tòa nhà mới vào hệ thống', submitLabel: 'Tạo tòa nhà', bodyHTML: buildingFormBody({}), onSubmit: function (bd, close) {
+            function v(f){ var el = bd.querySelector('[data-f="' + f + '"]'); return el ? el.value.trim() : ''; }
+            var sonha = v('sonha'), duong = v('duong'), quan = v('quan');
+            if (!sonha || !duong || !quan) { HT.toast('Vui lòng nhập Số nhà, Đường và Quận', 'error'); return false; }
+            var building = {
+              bid: 'u_' + Date.now(),
+              addr: duong,
+              addrFull: [sonha, duong, v('phuong'), quan].filter(Boolean).join(', '),
+              quan: quan,
+              soTang: v('sotang'),
+              zaloNhom: v('zalo'),
+              note: v('note'),
+              date: 'Hôm nay',
+              imgs: ['#c8d8ff,#a0b8f0'],
+              tienich: [],
+              rooms: []
+            };
+            fetch('/api/toa-nha', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ grp: 'ptro', building: building }) })
+              .then(function (r) { return r.json(); })
+              .then(function (res) { if (res && res.error) { HT.toast(res.error, 'danger'); return; } HT.toast('Đã tạo tòa nhà', 'success'); location.reload(); })
+              .catch(function () { HT.toast('Lỗi mạng, vui lòng thử lại', 'danger'); });
+            return false;
+          } });
+        }
+        function openBuildingEdit(bid) {
+          var b = buildings.filter(function (x) { return x.bid === bid; })[0] || {};
+          HT.modal({ wide: true, title: 'Sửa tòa nhà', sub: b.addr || '', submitLabel: 'Lưu thay đổi', bodyHTML: buildingFormBody(b), onSubmit: function (bd, close) {
+            function v(f){ var el = bd.querySelector('[data-f="' + f + '"]'); return el ? el.value.trim() : ''; }
+            var sonha = v('sonha'), duong = v('duong'), quan = v('quan');
+            if (!duong || !quan) { HT.toast('Vui lòng nhập Đường và Quận', 'error'); return false; }
+            var merged = Object.assign({}, b, {
+              addr: duong,
+              addrFull: [sonha, duong, v('phuong'), quan].filter(Boolean).join(', '),
+              quan: quan,
+              soTang: v('sotang') || b.soTang || '',
+              zaloNhom: v('zalo'),
+              note: v('note')
+            });
+            fetch('/api/toa-nha', { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ bid: b.bid || bid, building: merged }) })
+              .then(function (r) { return r.json(); })
+              .then(function (res) { if (res && res.error) { HT.toast(res.error, 'danger'); return; } HT.toast('Đã lưu tòa nhà', 'success'); location.reload(); })
+              .catch(function () { HT.toast('Lỗi mạng, vui lòng thử lại', 'danger'); });
+            return false;
+          } });
+        }
 
         function openStatusModal(ids) {
           var n = (ids && ids.length) || 1;
