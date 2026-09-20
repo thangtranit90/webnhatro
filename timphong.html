@@ -663,6 +663,16 @@
         var chip = typeChips.querySelector('.fchip[data-v="' + loai + '"]');
         if (chip) { chip.classList.add('is-on'); state.types.push(loai); }
       }
+      // Lọc theo khoảng giá từ trang chủ (gia = "lo-hi" triệu, vd "2-4")
+      var gia = qparam('gia');
+      if (gia && /^\d+(?:\.\d+)?-\d+(?:\.\d+)?$/.test(gia)) {
+        var pr = gia.split('-'), lo = parseFloat(pr[0]), hi = parseFloat(pr[1]);
+        ALL = ALL.filter(function (e) {
+          var mm = String(e.r.p || '').replace(',', '.').match(/[\d.]+/);
+          var v = mm ? parseFloat(mm[0]) : -1;
+          return v >= lo && v <= hi;
+        });
+      }
     })();
 
     /* ---- Cập nhật phụ đề theo tổng số sau khi lọc ban đầu ---- */

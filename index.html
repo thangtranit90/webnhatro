@@ -33,6 +33,9 @@
     .searchbar__col { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
     .searchbar__lbl { font-size: 11px; font-weight: 600; color: var(--muted-fg); text-transform: uppercase; letter-spacing: .03em; }
     .searchbar__val { font-size: 14px; font-weight: 600; color: var(--fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .searchbar__field { cursor: pointer; }
+    .searchbar__sel { border: 0; outline: none; background: transparent; font: inherit; font-size: 14px; font-weight: 600; color: var(--fg); cursor: pointer; padding: 0; max-width: 100%; appearance: none; -webkit-appearance: none; }
+    .searchbar__sel:focus { color: var(--gold-fg); }
     .searchbar__div { display: none; }
     @media (min-width:768px){ .searchbar__div { display: block; width: 1px; height: 36px; background: var(--border); flex-shrink: 0; } }
     .searchbar__btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: var(--primary); color: #fff; font-weight: 700; font-size: 14px; border-radius: var(--radius-m); padding: 14px 20px; }
@@ -105,23 +108,41 @@
         <h1 class="hero__title">Tìm phòng trọ &amp; căn hộ dịch vụ tại TP.HCM</h1>
         <p class="hero__sub">Hàng nghìn phòng thật, hình thật, giá minh bạch — có video review &amp; sale hỗ trợ tận nơi.</p>
 
-        <a class="searchbar" href="timphong.html" aria-label="Tìm phòng">
-          <span class="searchbar__field">
+        <form class="searchbar" id="heroSearch" aria-label="Tìm phòng">
+          <label class="searchbar__field">
             <span class="ic" id="sfKhuvuc"></span>
-            <span class="searchbar__col"><span class="searchbar__lbl">Khu vực</span><span class="searchbar__val">Gò Vấp, TP.HCM</span></span>
-          </span>
+            <span class="searchbar__col"><span class="searchbar__lbl">Khu vực</span>
+              <select class="searchbar__sel" id="sfQuan"><option value="">Tất cả khu vực</option></select></span>
+          </label>
           <span class="searchbar__div"></span>
-          <span class="searchbar__field">
+          <label class="searchbar__field">
             <span class="ic" id="sfGia"></span>
-            <span class="searchbar__col"><span class="searchbar__lbl">Khoảng giá</span><span class="searchbar__val">2 – 5 triệu</span></span>
-          </span>
+            <span class="searchbar__col"><span class="searchbar__lbl">Khoảng giá</span>
+              <select class="searchbar__sel" id="sfGiaSel">
+                <option value="">Tất cả giá</option>
+                <option value="0-2">Dưới 2 triệu</option>
+                <option value="2-4">2 – 4 triệu</option>
+                <option value="4-6">4 – 6 triệu</option>
+                <option value="6-8">6 – 8 triệu</option>
+                <option value="8-999">Trên 8 triệu</option>
+              </select></span>
+          </label>
           <span class="searchbar__div"></span>
-          <span class="searchbar__field">
+          <label class="searchbar__field">
             <span class="ic" id="sfLoai"></span>
-            <span class="searchbar__col"><span class="searchbar__lbl">Loại phòng</span><span class="searchbar__val">Studio, 1PN</span></span>
-          </span>
-          <span class="searchbar__btn" id="sfBtn">Tìm phòng</span>
-        </a>
+            <span class="searchbar__col"><span class="searchbar__lbl">Loại phòng</span>
+              <select class="searchbar__sel" id="sfLoaiSel">
+                <option value="">Tất cả loại</option>
+                <option value="Studio">Studio</option>
+                <option value="1PN">1PN</option>
+                <option value="2PN">2PN</option>
+                <option value="3PN">3PN</option>
+                <option value="Duplex">Duplex</option>
+                <option value="Penthouse">Penthouse</option>
+              </select></span>
+          </label>
+          <button class="searchbar__btn" type="submit" id="sfBtn">Tìm phòng</button>
+        </form>
 
         <div class="quicktypes">
           <span class="quicktypes__lbl">Phổ biến:</span>
@@ -230,6 +251,32 @@
 
     // ---- Cắm dữ liệu phòng THẬT từ data.js ----
     var rooms = window.ROOMS || [];
+
+    // ---- Thanh tìm kiếm hero: đổ khu vực thật + submit ra timphong ----
+    (function () {
+      var selQuan = document.getElementById('sfQuan');
+      if (selQuan) {
+        var seen = {}, quans = [];
+        rooms.forEach(function (r) { var q = (r.quan || '').trim(); if (q && !seen[q]) { seen[q] = 1; quans.push(q); } });
+        quans.sort();
+        quans.forEach(function (q) {
+          var o = document.createElement('option'); o.value = q; o.textContent = q; selQuan.appendChild(o);
+        });
+      }
+      var form = document.getElementById('heroSearch');
+      if (form) form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var quan = (document.getElementById('sfQuan') || {}).value || '';
+        var gia = (document.getElementById('sfGiaSel') || {}).value || '';
+        var loai = (document.getElementById('sfLoaiSel') || {}).value || '';
+        var qs = [];
+        if (quan) qs.push('quan=' + encodeURIComponent(quan));
+        if (loai) qs.push('loai=' + encodeURIComponent(loai));
+        if (gia) qs.push('gia=' + encodeURIComponent(gia));
+        window.location.href = 'timphong.html' + (qs.length ? ('?' + qs.join('&')) : '');
+      });
+    })();
+
     function shortType(cat){ return {'Căn hộ dịch vụ':'CHDV','Ký túc xá':'KTX'}[cat] || cat; }
     function bedsFromTags(tags){
       var t = (tags || []).join(' ');
