@@ -22,7 +22,16 @@ const LOAI_TO_TY = {
   'Phòng trọ': 'Nhà trọ, phòng trọ', 'Căn hộ DV': 'Căn hộ',
   'Ký túc xá': 'Ký túc xá', 'Chung cư': 'Chung cư', 'Nhà nguyên căn': 'Nhà nguyên căn'
 };
-function priceTrieu(p) { return String(p || '').replace(/\s*TR\s*$/i, ' triệu'); }
+// Chuẩn hoá giá về "X,Y triệu" — xử lý cả 2 dạng: "3,6TR" (seed) và "3600000" (form nội bộ)
+function priceTrieu(p) {
+  var s = String(p || '').trim();
+  var digits = s.replace(/\D/g, '');
+  if (/tr/i.test(s) || !digits) return s.replace(/\s*TR\s*$/i, ' triệu'); // đã dạng "3,6TR"
+  if (digits.length >= 6) {                                              // số đồng thuần (>= 100.000)
+    return String(parseInt(digits, 10) / 1e6).replace('.', ',') + ' triệu';
+  }
+  return s;
+}
 function videoUrl(v) {
   if (!v) return '';
   if (/^https?:/i.test(v)) return v;
