@@ -152,8 +152,10 @@ window.HT_loadUserListings = function(){
 })();
 
 /* ── ADAPTER: HT_BUILDINGS → window.ROOMS (view phẳng cho trang public) ──
-   Mỗi phòng trong mỗi toà nhà = một tin đăng công khai. Giữ đúng thứ tự để
-   detail.html?i=<index> khớp với card ở trang chủ. Gọi lại sau khi thêm tin. */
+   Mỗi phòng trong mỗi toà nhà = một tin đăng công khai. Link chi tiết dùng MÃ
+   PHÒNG ỔN ĐỊNH `rid` (detail.html?id=<rid>&t=<slug>, xem HT_roomUrl bên dưới) —
+   KHÔNG dùng vị trí trong danh sách, vì thứ tự đổi khi thêm/xoá/cho thuê phòng.
+   Link cũ dạng ?i=<index> vẫn mở được (detail.html tự đổi sang ?id=). Gọi lại sau khi thêm tin. */
 window.HT_rebuildRooms = function(){
   const LOAI_TO_CAT = { 'Căn hộ DV':'Căn hộ dịch vụ' }; // các loại khác giữ nguyên
   const LOAI_TO_TY = {
@@ -225,6 +227,54 @@ window.HT_loadPublicRooms = function(cb){
     if (Array.isArray(rows) && rows.length) window.ROOMS = rows;
     if (cb) cb();
   }).catch(function(){ if (cb) cb(); });
+};
+
+/* ── LINK PHÒNG ỔN ĐỊNH (theo rid, không theo vị trí) ──
+   HT_slug('Studio — HT Nguyễn Kiệm') → 'studio-ht-nguyen-kiem' (chỉ để link đẹp/SEO;
+   detail.html KHÔNG dùng t để tìm phòng, chỉ dùng id). */
+window.HT_slug = function(text){
+  var s = String(text == null ? '' : text).toLowerCase();
+  try { s = s.normalize('NFD').replace(/[̀-ͯ]/g, ''); } catch (e) {}
+  s = s.replace(/đ/g, 'd').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  if (s.length > 60) s = s.slice(0, 60).replace(/-+[^-]*$/, '') || s.slice(0, 60);
+  return s.replace(/-+$/g, '');
+};
+/* Phần query của link phòng: 'id=<rid>&t=<slug>' ('' nếu phòng không có rid). */
+window.HT_roomQuery = function(room){
+  if (!room || room.rid == null || room.rid === '') return '';
+  var slug = window.HT_slug(room.t);
+  return 'id=' + encodeURIComponent(String(room.rid)) + (slug ? '&t=' + slug : '');
+};
+/* Link tương đối tới trang chi tiết: 'detail.html?id=<rid>&t=<slug>'. */
+window.HT_roomUrl = function(room){
+  var q = window.HT_roomQuery(room);
+  return q ? 'detail.html?' + q : 'timphong.html';
+};
+/* Tìm phòng theo rid trong danh sách (mặc định window.ROOMS). Không thấy → null. */
+window.HT_findRoom = function(rid, list){
+  list = list || window.ROOMS || [];
+  if (rid == null || rid === '') return null;
+  rid = String(rid);
+  for (var k = 0; k < list.length; k++) { if (list[k] && String(list[k].rid) === rid) return list[k]; }
+  return null;
+};
+/* Chuẩn hoá danh sách phòng đã lưu sang rid. Giá trị kiểu số (index cũ — vốn đã
+   không tin cậy) được map qua danh sách HIỆN TẠI; index không còn hợp lệ bị bỏ.
+   rid dạng chuỗi giữ nguyên (phòng có thể đang tạm ẩn rồi mở lại). Trả mảng rid không trùng. */
+window.HT_toRids = function(values, list){
+  list = list || window.ROOMS || [];
+  var out = [];
+  (Array.isArray(values) ? values : []).forEach(function(v){
+    var rid = null;
+    if (typeof v === 'number' || (typeof v === 'string' && /^\d+$/.test(v) && !window.HT_findRoom(v, list))) {
+      var room = list[Number(v)];
+      rid = room && room.rid != null ? String(room.rid) : null;
+    } else if (typeof v === 'string' && v) {
+      rid = v;
+    }
+    if (rid && out.indexOf(rid) < 0) out.push(rid);
+  });
+  return out;
 };
 
 /* CHỈ lưu bền vào localStorage (không đụng vào HT_BUILDINGS đang chạy).

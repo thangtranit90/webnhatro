@@ -266,9 +266,9 @@
       return '';
     }
     function catOfR(r) { return window.catOf ? window.catOf(r) : (r.cat || r.ty); }
-    function toCard(r, i) {
+    function toCard(r) {
       return {
-        href: 'detail.html?i=' + i,
+        href: HT_roomUrl(r),
         img: (r.imgs && r.imgs[0]) || '',
         price: r.p,
         type: shortType(catOfR(r)),
@@ -287,27 +287,36 @@
       return parseFloat(m[1].replace(/\./g, '').replace(',', '.')) || 0;
     }
 
-    /* ---- Phòng đã lưu ---- */
+    /* ---- Phòng đã lưu (dữ liệu phòng THẬT từ /api/phong, tìm theo rid) ---- */
+    HT_loadPublicRooms(function () {
     var ROOMS = window.ROOMS || [];
     var savedGrid = document.getElementById('savedGrid');
     var savedSub = document.getElementById('savedSub');
     var savedHint = document.getElementById('savedHint');
 
-    // Lấy index đã lưu từ localStorage; nếu rỗng → 4 phòng mẫu đầu
-    var favIdx = [];
+    // 'ht_favorites' lưu danh sách rid. Bản cũ lưu index (số) → chuyển 1 lần sang rid
+    // theo danh sách hiện tại (best effort), bỏ index không còn hợp lệ. Rỗng → 4 phòng mẫu đầu.
+    var favRids = [];
     try {
       var rawFav = localStorage.getItem('ht_favorites');
-      if (rawFav) { var arr = JSON.parse(rawFav); if (Array.isArray(arr)) favIdx = arr; }
+      if (rawFav) {
+        var arr = JSON.parse(rawFav);
+        if (Array.isArray(arr)) {
+          favRids = HT_toRids(arr, ROOMS);
+          var hadIdx = arr.some(function (v) { return typeof v === 'number'; });
+          if (hadIdx) localStorage.setItem('ht_favorites', JSON.stringify(favRids));
+        }
+      }
     } catch (_) {}
 
-    var isEmptyFav = favIdx.length === 0;
-    // Chuẩn hoá danh sách {r, i} và loại index không hợp lệ
+    var isEmptyFav = favRids.length === 0;
+    // Danh sách {r} — rid không còn cho thuê thì không hiển thị (vẫn giữ trong storage)
     var savedEntries;
     if (isEmptyFav) {
-      savedEntries = ROOMS.slice(0, 4).map(function (r, i) { return { r: r, i: i }; });
+      savedEntries = ROOMS.slice(0, 4).map(function (r) { return { r: r }; });
     } else {
-      savedEntries = favIdx
-        .map(function (i) { return { r: ROOMS[i], i: i }; })
+      savedEntries = favRids
+        .map(function (rid) { return { r: HT_findRoom(rid, ROOMS) }; })
         .filter(function (e) { return !!e.r; });
     }
 
@@ -325,13 +334,14 @@
         return;
       }
 
-      savedGrid.innerHTML = list.map(function (e) { return HT.roomCard(toCard(e.r, e.i)); }).join('');
+      savedGrid.innerHTML = list.map(function (e) { return HT.roomCard(toCard(e.r)); }).join('');
       savedSub.textContent = list.length + ' phòng bạn đang quan tâm · Nhấn ❤ để bỏ lưu';
       savedHint.classList.toggle('is-hidden', !isEmptyFav);
     }
 
     document.getElementById('savedSort').addEventListener('change', renderSaved);
     renderSaved();
+    }); // ← HT_loadPublicRooms callback
 
     /* ===== Thông tin cá nhân ===== */
     (function () {

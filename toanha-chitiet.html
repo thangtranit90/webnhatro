@@ -302,7 +302,7 @@
           var act = mb.getAttribute('data-act');
           closeMenu();
           if (act === 'xem') {
-            window.location.href = 'phong-noibo.html?i=' + (gi != null && gi !== '-1' ? gi : 0);
+            window.location.href = 'phong-noibo.html?rid=' + encodeURIComponent(rid || '');
           } else if (act === 'doi') {
             var room = (b.rooms || []).filter(function (x) { return x.rid === rid; })[0];
             if (!room) { HT.toast('Không tìm thấy phòng', 'error'); return; }

@@ -346,20 +346,39 @@
       function HTicon(name, size) { return window.HT ? window.HT.icon(name, size) : ''; }
       function esc(s) { return window.HT ? window.HT.esc(s) : String(s == null ? '' : s); }
 
-      // ---- Lấy phòng theo ?i= ----
+      // ---- Lấy phòng theo ?id=<rid> (ổn định). Link cũ ?i=<index> vẫn mở được rồi tự đổi URL sang ?id= ----
       var ROOMS = window.ROOMS || [];
-      var i = parseInt(new URLSearchParams(location.search).get('i') || '0', 10);
-      if (isNaN(i) || i < 0 || i >= ROOMS.length) i = 0;
-      var r = ROOMS[i] || ROOMS[0];
+      var qs = new URLSearchParams(location.search);
+      var idParam = qs.get('id');
+      var iParam = qs.get('i');
+      var r = null;
+      if (idParam) {
+        r = HT_findRoom(idParam, ROOMS);
+      } else if (iParam != null && /^\d+$/.test(iParam)) {
+        r = ROOMS[parseInt(iParam, 10)] || null;
+      }
+      // Link canonical (dùng cho chia sẻ / copy link) — luôn là ?id=<rid>, không dùng location.href
+      var roomQuery = r ? HT_roomQuery(r) : '';
+      if (r && roomQuery && !idParam) {
+        try { history.replaceState(null, '', location.pathname + '?' + roomQuery + location.hash); } catch (_) {}
+      }
 
-      // ---- Không có phòng nào → thông báo lịch sự ----
+      // ---- Không có phòng nào để hiển thị → thông báo lịch sự ----
       if (!r) {
-        document.getElementById('page').innerHTML =
+        var pageEl = document.getElementById('page');
+        var simSec = document.getElementById('similarSec');
+        document.title = 'Phòng này hiện không còn cho thuê — HT HOME';
+        pageEl.innerHTML =
           '<div class="container empty">' +
-            '<h1>Không tìm thấy phòng</h1>' +
-            '<p>Phòng bạn tìm không tồn tại hoặc đã được cho thuê. ' +
-            '<a href="index.html" style="color:var(--info);font-weight:600">Về trang chủ</a> để xem các phòng khác.</p>' +
+            '<h1>Phòng này hiện không còn cho thuê</h1>' +
+            '<p>Phòng bạn tìm đã được cho thuê, tạm ngưng hoặc đường link không còn đúng. ' +
+            'Bạn có thể xem các phòng khác đang trống bên dưới.</p>' +
+            '<div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:20px">' +
+              '<a class="btn btn--primary" href="timphong.html">Xem phòng khác</a>' +
+              '<a class="btn btn--ghost" href="index.html">Về trang chủ</a>' +
+            '</div>' +
           '</div>';
+        if (simSec) { pageEl.appendChild(simSec); renderSimilar(null, ''); }
         return;
       }
 
@@ -377,7 +396,7 @@
       bcQuan.href = 'timphong.html?quan=' + encodeURIComponent(quan);
 
       // ---- Chia sẻ ----
-      var pageUrl = location.href;
+      var pageUrl = roomQuery ? (location.origin + location.pathname + '?' + roomQuery) : location.href;
       var phone = (r.phone || '0974180000').replace(/[^\d+]/g, '');
       var zalo = r.zalo || ('https://zalo.me/' + phone);
       document.getElementById('shareFbIc').innerHTML = HTicon('facebook', 15);
@@ -613,36 +632,43 @@
       document.getElementById('qrLink').href = zalo;
 
       // ---- Phòng tương tự ----
-      function shortType(cat) { return { 'Căn hộ dịch vụ': 'CHDV', 'Ký túc xá': 'KTX' }[cat] || cat; }
-      function toCard(x, idx) {
-        return {
-          href: 'detail.html?i=' + idx,
-          img: (x.imgs && x.imgs[0]) || '',
-          price: x.p,
-          type: shortType(window.catOf ? window.catOf(x) : (x.cat || x.ty)),
-          title: x.t,
-          addr: x.quan ? (x.quan + ', TP.HCM') : (x.l || ''),
-          area: x.a,
-          beds: '',
-          status: 'Còn trống', statusKey: 'success',
-          video: !!x.video
-        };
-      }
-      var pool = ROOMS.map(function (x, k) { return { x: x, k: k }; }).filter(function (o) { return o.k !== i; });
-      var same = pool.filter(function (o) { return (o.x.quan || '') === quan; });
-      var list = same.length >= 4 ? same : same.concat(pool.filter(function (o) { return same.indexOf(o) < 0; }));
-      list = list.slice(0, 4);
-      document.getElementById('similarSub').textContent = same.length ? ('Cùng khu vực ' + quan) : 'Gợi ý cho bạn';
-      var similarEl = document.getElementById('similar');
-      if (list.length && window.HT && window.HT.roomCard) {
-        similarEl.innerHTML = list.map(function (o) { return window.HT.roomCard(toCard(o.x, o.k)); }).join('');
-        // favorite toggle
-        similarEl.addEventListener('click', function (e) {
-          var f = e.target.closest('.room-card__fav');
-          if (f) { e.preventDefault(); f.classList.toggle('is-active'); }
-        });
-      } else {
-        document.getElementById('similarSec').classList.add('is-hidden');
+      renderSimilar(r, quan);
+
+      // Hiện gợi ý phòng khác (loại trừ phòng đang xem theo rid). Không có → ẩn cả khối.
+      function renderSimilar(cur, quanName) {
+        var secEl = document.getElementById('similarSec');
+        var similarEl = document.getElementById('similar');
+        if (!secEl || !similarEl) return;
+        function shortType(cat) { return { 'Căn hộ dịch vụ': 'CHDV', 'Ký túc xá': 'KTX' }[cat] || cat; }
+        function toCard(x) {
+          return {
+            href: HT_roomUrl(x),
+            img: (x.imgs && x.imgs[0]) || '',
+            price: x.p,
+            type: shortType(window.catOf ? window.catOf(x) : (x.cat || x.ty)),
+            title: x.t,
+            addr: x.quan ? (x.quan + ', TP.HCM') : (x.l || ''),
+            area: x.a,
+            beds: '',
+            status: 'Còn trống', statusKey: 'success',
+            video: !!x.video
+          };
+        }
+        var pool = ROOMS.filter(function (x) { return x && x !== cur && (!cur || x.rid !== cur.rid); });
+        var same = quanName ? pool.filter(function (x) { return (x.quan || '') === quanName; }) : [];
+        var list = same.length >= 4 ? same : same.concat(pool.filter(function (x) { return same.indexOf(x) < 0; }));
+        list = list.slice(0, 4);
+        document.getElementById('similarSub').textContent = same.length ? ('Cùng khu vực ' + quanName) : 'Gợi ý cho bạn';
+        if (list.length && window.HT && window.HT.roomCard) {
+          similarEl.innerHTML = list.map(function (x) { return window.HT.roomCard(toCard(x)); }).join('');
+          // favorite toggle
+          similarEl.addEventListener('click', function (e) {
+            var f = e.target.closest('.room-card__fav');
+            if (f) { e.preventDefault(); f.classList.toggle('is-active'); }
+          });
+        } else {
+          secEl.classList.add('is-hidden');
+        }
       }
     })();
     }); // ← HT_loadPublicRooms callback

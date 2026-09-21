@@ -286,9 +286,9 @@
       if (/penthouse/i.test(t)) return 'Penthouse';
       return '';
     }
-    function toCard(r, i){
+    function toCard(r){
       return {
-        href: 'detail.html?i=' + i,
+        href: HT_roomUrl(r),
         img: (r.imgs && r.imgs[0]) || '',
         price: r.p,
         type: shortType(window.catOf ? window.catOf(r) : (r.cat || r.ty)),
@@ -305,10 +305,10 @@
     var newRooms = (news.length ? news : rooms.slice().reverse()).slice(0, 8);
 
     document.getElementById('featured').innerHTML =
-      featured.map(function(r, i){ return HT.roomCard(toCard(r, i)); }).join('') ||
+      featured.map(function(r){ return HT.roomCard(toCard(r)); }).join('') ||
       '<p class="t-caption">Chưa có phòng nào.</p>';
     document.getElementById('newRooms').innerHTML =
-      newRooms.map(function(r){ return HT.roomCard(toCard(r, rooms.indexOf(r))); }).join('') ||
+      newRooms.map(function(r){ return HT.roomCard(toCard(r)); }).join('') ||
       '<p class="t-caption">Chưa có phòng mới.</p>';
 
     // ---- Khối khu vực: TÍNH TỪ DỮ LIỆU THẬT (chỉ hiện quận có phòng, số đếm thật) ----

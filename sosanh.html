@@ -60,6 +60,7 @@
   <script src="data.js"></script>
   <script src="assets/js/ht-ui.js?v=15"></script>
   <script>
+    HT_loadPublicRooms(function () {
     (function () {
       var esc = HT.esc;
       function catOfR(r) { return window.catOf ? window.catOf(r) : (r.cat || r.ty); }
@@ -73,11 +74,29 @@
         return '<span class="ss-media"></span>';
       }
 
-      // Đọc danh sách index phòng từ ?i=0,3,5
-      var m = /[?&]i=([^&]*)/.exec(location.search);
-      var idxs = m ? decodeURIComponent(m[1]).split(',').map(function (x) { return parseInt(x, 10); }).filter(function (x) { return !isNaN(x); }) : [];
+      // Đọc danh sách phòng theo rid ổn định: ?id=<rid1>,<rid2> (mỗi rid đã encodeURIComponent).
+      // Tương thích link cũ ?i=0,3,5 (vị trí trong danh sách HIỆN TẠI) → tự đổi URL sang ?id=.
       var ROOMS = window.ROOMS || [];
-      var items = idxs.map(function (i) { return { i: i, r: ROOMS[i] }; }).filter(function (e) { return e.r; });
+      var mId = /[?&]id=([^&]*)/.exec(location.search);
+      var mIdx = /[?&]i=([^&]*)/.exec(location.search);
+      var rooms = [];
+      function safeDec(x) { try { return decodeURIComponent(x); } catch (_) { return x; } }
+      if (mId) {
+        rooms = mId[1].split(',').map(function (x) { return HT_findRoom(safeDec(x), ROOMS); });
+      } else if (mIdx) {
+        rooms = safeDec(mIdx[1]).split(',').map(function (x) { var n = parseInt(x, 10); return isNaN(n) ? null : ROOMS[n]; });
+      }
+      var seen = {};
+      var items = rooms.filter(function (r) {
+        if (!r || seen[r.rid]) return false;
+        seen[r.rid] = 1; return true;
+      }).map(function (r) { return { r: r }; });
+      if (!mId && mIdx && items.length) {
+        try {
+          history.replaceState(null, '', location.pathname + '?id=' +
+            items.map(function (e) { return encodeURIComponent(String(e.r.rid)); }).join(',') + location.hash);
+        } catch (_) {}
+      }
 
       var sub = document.getElementById('ssSub');
       var content = document.getElementById('ssContent');
@@ -91,10 +110,10 @@
 
       function rowFn(label, fn) {
         return '<tr><td class="ss-rowlb">' + label + '</td>' +
-          items.map(function (e) { return '<td>' + fn(e.r, e.i) + '</td>'; }).join('') + '</tr>';
+          items.map(function (e) { return '<td>' + fn(e.r) + '</td>'; }).join('') + '</tr>';
       }
       content.innerHTML = '<div class="ss-wrap"><table class="ss"><tbody>' +
-        rowFn('', function (r, i) { return '<a href="detail.html?i=' + i + '">' + media((r.imgs && r.imgs[0]) || '') + '</a>' +
+        rowFn('', function (r) { return '<a href="' + esc(HT_roomUrl(r)) + '">' + media((r.imgs && r.imgs[0]) || '') + '</a>' +
           '<div class="ss-name">' + esc(r.t) + '</div>'; }) +
         rowFn('Giá thuê', function (r) { return '<span class="ss-price">' + esc(r.p) + '</span>'; }) +
         rowFn('Loại', function (r) { return '<span class="ss-val">' + esc(catOfR(r)) + '</span>'; }) +
@@ -104,13 +123,14 @@
           var t = (r.tags || []).slice(0, 6);
           return t.length ? '<span class="ss-tags">' + t.map(function (x) { return '<span class="ss-tag">' + esc(x) + '</span>'; }).join('') + '</span>' : '<span class="ss-val">—</span>';
         }) +
-        rowFn('', function (r, i) {
+        rowFn('', function (r) {
           return '<div class="ss-cta">' +
-            '<a class="btn btn--primary btn--sm" href="detail.html?i=' + i + '" style="justify-content:center">Xem chi tiết</a>' +
+            '<a class="btn btn--primary btn--sm" href="' + esc(HT_roomUrl(r)) + '" style="justify-content:center">Xem chi tiết</a>' +
             '<a class="btn btn--ghost btn--sm" href="datlich.html" style="justify-content:center">Đặt lịch xem</a></div>';
         }) +
         '</tbody></table></div>';
     })();
+    }); // ← HT_loadPublicRooms callback
   </script>
 </body>
 </html>

@@ -331,9 +331,9 @@
       return '';
     }
     function catOfR(r) { return window.catOf ? window.catOf(r) : (r.cat || r.ty); }
-    function toCard(r, i) {
+    function toCard(r) {
       return {
-        href: 'detail.html?i=' + i,
+        href: HT_roomUrl(r),
         img: (r.imgs && r.imgs[0]) || '',
         price: r.p,
         type: shortType(catOfR(r)),
@@ -373,8 +373,8 @@
 
     /* ---- Dữ liệu gốc ---- */
     var ROOMS = window.ROOMS || [];
-    // Giữ index gốc để link detail.html?i=<index> luôn đúng
-    var ALL = ROOMS.map(function (r, i) { return { r: r, i: i }; });
+    // Link chi tiết/so sánh dùng rid ổn định (HT_roomUrl), không dùng vị trí trong danh sách
+    var ALL = ROOMS.map(function (r) { return { r: r }; });
 
     /* ---- Cấu hình bộ lọc ---- */
     var TYPES = ['Studio', '1PN', '2PN', '3PN', 'Duplex', 'Penthouse'];
@@ -393,7 +393,7 @@
       sort: 'new', page: 1
     };
     var PAGE_SIZE = 6;
-    var selected = {}; // rid -> {r, i}
+    var selected = {}; // rid -> {r}
 
     /* ---- Render chip / checkbox ---- */
     function renderChips(host, list, bag) {
@@ -491,9 +491,9 @@
       grid.innerHTML = pageItems.map(function (e) {
         var checked = selected[e.r.rid] ? ' checked' : '';
         return '<div class="result">' +
-          HT.roomCard(toCard(e.r, e.i)) +
+          HT.roomCard(toCard(e.r)) +
           '<div class="result__cmp-layer"><label class="cmp-toggle">' +
-            '<input type="checkbox" class="cmpChk" data-rid="' + esc(e.r.rid) + '" data-i="' + e.i + '"' + checked + '/>' +
+            '<input type="checkbox" class="cmpChk" data-rid="' + esc(e.r.rid) + '"' + checked + '/>' +
             '<span class="cmp-box">' + pico('check', 11) + '</span>So sánh</label></div>' +
         '</div>';
       }).join('');
@@ -529,8 +529,8 @@
     grid.addEventListener('change', function (e) {
       var c = e.target.closest('.cmpChk'); if (!c) return;
       var rid = c.getAttribute('data-rid');
-      var i = parseInt(c.getAttribute('data-i'), 10);
-      if (c.checked) selected[rid] = { r: ROOMS[i], i: i };
+      var room = HT_findRoom(rid, ROOMS);
+      if (c.checked && room) selected[rid] = { r: room };
       else delete selected[rid];
       updateCompareBar();
     });
@@ -570,7 +570,7 @@
         var cols = items.map(function (e) {
           var r = e.r;
           return '<td>' +
-            '<a href="detail.html?i=' + e.i + '"><div class="cmp-col-media">' + gradFill((r.imgs && r.imgs[0]) || '') + '</div></a>' +
+            '<a href="' + esc(HT_roomUrl(r)) + '"><div class="cmp-col-media">' + gradFill((r.imgs && r.imgs[0]) || '') + '</div></a>' +
             '<div class="cmp-col-title">' + esc(r.t) + '</div>' +
           '</td>';
         }).join('');
@@ -592,7 +592,7 @@
     document.getElementById('cmpOpen').addEventListener('click', function () {
       var items = selectedList();
       if (!items.length) { openModal(); return; }
-      location.href = 'sosanh.html?i=' + items.map(function (e) { return e.i; }).join(',');
+      location.href = 'sosanh.html?id=' + items.map(function (e) { return encodeURIComponent(String(e.r.rid)); }).join(',');
     });
     modal.addEventListener('click', function (e) { if (e.target.closest('[data-close]')) closeModal(); });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeModal(); });

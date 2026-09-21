@@ -1,5 +1,5 @@
 /* Service worker HT HOME — cache đơn giản cho PWA (cài như app + chạy mượt) */
-var CACHE = 'hthome-v31';
+var CACHE = 'hthome-v32';
 var CORE = [
   './',
   './index.html',
