@@ -90,12 +90,14 @@
   }
 
   // Sidebar ADMIN theo design v3 (cmp/Sidebar): Dashboard · Kho phòng · Khách hàng · Deal · Báo cáo.
-  // Tòa nhà = tab trong Kho phòng · Lịch hẹn gộp Khách hàng · Doanh thu là của Sale → KHÔNG đứng riêng ở sidebar.
+  // Tòa nhà = tab trong Kho phòng · Lịch hẹn + Bảng tin có mục riêng · Doanh thu là của Sale → KHÔNG đứng riêng ở sidebar.
   var NAV_MAIN = [
     { k: 'dashboard', label: 'Dashboard', href: 'dashboard.html', icon: 'layout-dashboard' },
-    { k: 'khophong', label: 'Kho phòng', href: 'khophong.html', icon: 'package', badge: '12' },
+    { k: 'khophong', label: 'Kho phòng', href: 'khophong.html', icon: 'package' },
     { k: 'crm', label: 'Khách hàng', href: 'crm.html', icon: 'users' },
-    { k: 'deal', label: 'Deal & Hợp đồng', href: 'deal.html', icon: 'file-text', badge: '3' },
+    { k: 'lichhen', label: 'Lịch hẹn', href: 'lichhen.html', icon: 'calendar-days' },
+    { k: 'deal', label: 'Deal & Hợp đồng', href: 'deal.html', icon: 'file-text' },
+    { k: 'bangtin', label: 'Bảng tin', href: 'bangtin.html', icon: 'megaphone' },
     { k: 'baocao', label: 'Báo cáo', href: 'baocao.html', icon: 'file-text' }
   ];
   // Khu QUẢN TRỊ (chỉ Admin thấy) theo design v3.
@@ -104,21 +106,59 @@
     { k: 'nhanvien', label: 'Nhân viên', href: 'nhanvien.html', icon: 'user-cog' },
     { k: 'caidat', label: 'Cài đặt', href: 'caidat.html', icon: 'settings' }
   ];
-  // Sidebar SALE theo design v3 (cmp/Sidebar_Sale): không có khu quản trị, không có Lịch hẹn riêng.
+  // Sidebar SALE theo design v3 (cmp/Sidebar_Sale): không có khu quản trị; có Lịch hẹn + Bảng tin.
   var NAV_SALE = [
     { k: 'dashboard', label: 'Dashboard', href: 'dashboard.html', icon: 'layout-dashboard' },
     { k: 'khophong', label: 'Kho phòng', href: 'khophong.html', icon: 'package' },
     { k: 'crm', label: 'Khách hàng', href: 'crm.html', icon: 'users' },
+    { k: 'lichhen', label: 'Lịch hẹn', href: 'lichhen.html', icon: 'calendar-days' },
     { k: 'deal', label: 'Deal & Hợp đồng', href: 'deal.html', icon: 'file-text' },
+    { k: 'bangtin', label: 'Bảng tin', href: 'bangtin.html', icon: 'megaphone' },
     { k: 'doanhthu', label: 'Doanh thu của tôi', href: 'doanhthu.html', icon: 'wallet' }
   ];
 
   function item(n, active) {
-    var badge = n.badge;
-    if (n.k === 'khophong' && window.ROOMS) badge = String(window.ROOMS.length); // đồng bộ số phòng thật
-    return '<a class="sidebar__item' + (n.k === active ? ' is-active' : '') + '" href="' + n.href + '" data-tip="' + n.label + '">' +
-      ic(n.icon, 18) + '<span class="sidebar__item-label">' + n.label + '</span>' +
-      (badge ? '<span class="sidebar__badge">' + badge + '</span>' : '') + '</a>';
+    // Badge thật được gắn sau khi tải nền (xem loadBadges) — không dùng số cố định.
+    return '<a class="sidebar__item' + (n.k === active ? ' is-active' : '') + '" href="' + n.href + '" data-tip="' + n.label + '" data-k="' + n.k + '">' +
+      ic(n.icon, 18) + '<span class="sidebar__item-label">' + n.label + '</span></a>';
+  }
+
+  /* ---- Badge sidebar = số liệu thật (tải nền, lỗi → không hiện badge) ---- */
+  function setBadge(k, n) {
+    var a = document.querySelector('#ht-sidebar .sidebar__item[data-k="' + k + '"]');
+    if (!a) return;
+    var b = a.querySelector('.sidebar__badge');
+    if (!(n > 0)) { if (b) b.remove(); return; }
+    if (!b) { b = document.createElement('span'); b.className = 'sidebar__badge'; a.appendChild(b); }
+    b.textContent = String(n);
+  }
+  function jsonOrNull(r) { return r && r.ok ? r.json().catch(function () { return null; }) : null; }
+  function countOpen(bd) {
+    var n = 0;
+    ['ptro', 'cc'].forEach(function (g) {
+      ((bd && bd[g]) || []).forEach(function (b) { ((b && b.rooms) || []).forEach(function (r) { if (r && r.status === 'open') n++; }); });
+    });
+    return n;
+  }
+  function loadBadges(s, lichReq) {
+    // Lịch hẹn: dùng lại request kiểm tra phiên (không gọi thêm)
+    lichReq.then(jsonOrNull).then(function (rows) {
+      if (Array.isArray(rows)) setBadge('lichhen', rows.filter(function (l) { return l && l.trang_thai === 'cho'; }).length);
+    }).catch(function () {});
+    // Kho phòng: dùng HT_BUILDINGS nếu trang đã có, không thì tải
+    var bdP = (window.HT_BUILDINGS && (HT_BUILDINGS.ptro || HT_BUILDINGS.cc))
+      ? Promise.resolve(window.HT_BUILDINGS)
+      : fetch('/api/toa-nha', { credentials: 'same-origin' }).then(jsonOrNull);
+    bdP.then(function (bd) { if (bd && !bd.error) setBadge('khophong', countOpen(bd)); }).catch(function () {});
+    // Deal cần xử lý: đợi cọc bù + đợi nhận HH (sale: chỉ deal của mình)
+    var nm = String(s.name || '').trim().toLowerCase();
+    function same(x) { return !!nm && String(x || '').trim().toLowerCase() === nm; }
+    function mine(d) { return same(d.sale) || same(d.tim_khach) || String(d.dan_khach || '').split(',').some(same); }
+    fetch('/api/deal', { credentials: 'same-origin' }).then(jsonOrNull).then(function (rows) {
+      if (!Array.isArray(rows)) return;
+      if (s.roleKey !== 'admin') rows = rows.filter(mine);
+      setBadge('deal', rows.filter(function (d) { return d && (d.trang_thai === 'doi_coc_bu' || d.trang_thai === 'doi_nhan_hh'); }).length);
+    }).catch(function () {});
   }
 
   /* Tìm kiếm toàn cục (⌘K / bấm ô tìm kiếm) — tìm phòng + tòa nhà thật */
@@ -207,7 +247,9 @@
 
     // Kiểm tra phiên server ngay khi mở trang (kể cả trang không gọi API lúc tải, vd doanhthu).
     // Nếu cookie hết hạn → 401 → bộ bọc fetch ở trên tự đưa về trang đăng nhập.
-    fetch('/api/lich-hen', { method: 'GET', credentials: 'same-origin' }).catch(function () {});
+    var lichReq = fetch('/api/lich-hen', { method: 'GET', credentials: 'same-origin' });
+    lichReq.catch(function () {});
+    if (!/dangnhap-noibo\.html$/.test(location.pathname)) loadBadges(s, lichReq);
 
     var lo = document.getElementById('htLogout');
     if (lo) lo.addEventListener('click', function (e) {

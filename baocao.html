@@ -109,10 +109,10 @@
           </div>
         </div>
         <div class="app-topbar__actions">
-          <div class="seg" role="tablist">
-            <button class="seg__btn is-active" type="button">Tháng 7, 2026</button>
-            <button class="seg__btn" type="button">Quý 3</button>
-            <button class="seg__btn" type="button">Năm 2026</button>
+          <div class="seg" role="tablist" id="segPeriod">
+            <button class="seg__btn is-active" type="button" data-p="month"></button>
+            <button class="seg__btn" type="button" data-p="quarter"></button>
+            <button class="seg__btn" type="button" data-p="year"></button>
           </div>
           <button class="btn btn--ghost btn--sm" type="button" id="btnExport"></button>
         </div>
@@ -127,7 +127,7 @@
           <section class="card">
             <div class="card__head">
               <div>
-                <h3>Doanh thu 6 tháng gần nhất</h3>
+                <h3 id="chartTitle">Doanh thu 6 tháng gần nhất</h3>
                 <div class="sub">So sánh HH đã nhận vs chờ release (triệu đồng)</div>
               </div>
               <div class="legend">
@@ -143,7 +143,7 @@
           <!-- Doanh thu theo khu vực -->
           <section class="card">
             <div class="card__head">
-              <div><h3>Doanh thu theo khu vực</h3><div class="sub">Tháng 7 · 5 khu vực dẫn đầu</div></div>
+              <div><h3>Doanh thu theo khu vực</h3><div class="sub" id="areaSub">Đang tải…</div></div>
             </div>
             <div class="card__body" style="padding-top:8px">
               <div class="table-wrap">
@@ -162,7 +162,7 @@
           <!-- Deal pipeline (dữ liệu thật) -->
           <section class="card">
             <div class="card__head">
-              <div><h3>Pipeline khách hàng</h3><div class="sub">Phễu từ khách mới đến chốt (dữ liệu thật)</div></div>
+              <div><h3>Pipeline khách hàng</h3><div class="sub" id="pipeSub">Khách tạo trong kỳ, theo cột hiện tại</div></div>
             </div>
             <div class="card__body" style="padding-top:8px">
               <div id="pipeRows"></div>
@@ -182,7 +182,7 @@
   </div>
 
   <script src="assets/js/ht-ui.js?v=15"></script>
-  <script src="assets/js/ht-internal.js?v=17"></script>
+  <script src="assets/js/ht-internal.js?v=18"></script>
   <script>
     (function () {
       'use strict';
@@ -190,122 +190,194 @@
       document.getElementById('btnSidebar').innerHTML = I('menu', 22);
       document.getElementById('btnExport').innerHTML = I('file-text', 16) + 'Xuất báo cáo';
 
-      // KPI (5 thẻ)
-      var kpis = [
-        { label: 'Doanh thu tháng', ic: 'wallet', val: '487 tr', delta: '<span class="up">+18%</span> vs 412tr T6', up: true },
-        { label: 'Deal chốt', ic: 'file-text', val: '42', delta: '<span class="up">+11%</span> · 38 T6 · 12 chờ HĐ', up: true },
-        { label: 'Phòng cho thuê', ic: 'package', val: '156/218', delta: '<span class="up">+3%</span> · 72% occupancy', up: true },
-        { label: 'Sale active', ic: 'users', val: '14', delta: '<span class="flat">±0</span> so tháng trước' },
-        { label: 'Hoa hồng đã trả', ic: 'banknote', val: '142 tr', delta: '<span class="up">+22%</span> · 45tr chờ release', up: true }
-      ];
-      document.getElementById('kpiRow').innerHTML = kpis.map(function (k) {
-        return '<div class="kpi"><div class="kpi__top"><span>' + k.label + '</span><span class="kpi__ic">' + I(k.ic, 18) + '</span></div>' +
-          '<div class="kpi__val">' + k.val + '</div><div class="kpi__delta">' + k.delta + '</div></div>';
-      }).join('');
+      // ===== Tiện ích số / tiền =====
+      function fmtTr(n) { return (Math.round((Number(n) || 0) / 1e5) / 10) + ' tr'; }
+      function trNum(n) { return Math.round((Number(n) || 0) / 1e5) / 10; }
+      function esc(v) { return HT.esc(v == null ? '' : String(v)); }
 
-      // Biểu đồ cột chồng — [tháng, đã nhận, chờ release]
-      var data = [
-        ['T2', 264, 36],
-        ['T3', 305, 45],
-        ['T4', 360, 45],
-        ['T5', 378, 52],
-        ['T6', 367, 45],
-        ['T7', 442, 45]
-      ];
-      var max = 0;
-      data.forEach(function (d) { max = Math.max(max, d[1] + d[2]); });
-      document.getElementById('chart').innerHTML = data.map(function (d) {
-        var total = d[1] + d[2];
-        var stackH = Math.round(total / max * 100);
-        var recvPct = d[1] / total * 100;
-        var pendPct = d[2] / total * 100;
-        return '<div class="chart__col">' +
-          '<span class="chart__total">' + total + '</span>' +
-          '<div class="chart__stack" style="height:' + stackH + '%">' +
-            '<div class="chart__seg chart__seg--pend" style="height:' + pendPct + '%" title="Chờ release: ' + d[2] + 'tr"></div>' +
-            '<div class="chart__seg chart__seg--recv" style="height:' + recvPct + '%" title="Đã nhận: ' + d[1] + 'tr"></div>' +
-          '</div>' +
-          '<span class="chart__m">' + d[0] + '</span></div>';
-      }).join('');
+      // Công thức hoa hồng gốc — GIỐNG deal.html tinhHH().goc
+      function hhGoc(d) { return Math.max(0, Math.round((Number(d.gia_tri) || 0) * (Number(d.hh_pct) || 0) / 100) - (Number(d.offer) || 0)); }
+      function isLive(d) { return d.trang_thai !== 'bo_coc'; } // bỏ cọc = không tính
 
-      // Doanh thu theo khu vực
-      var areas = [
-        { area: 'Gò Vấp', deal: 13, rev: 152 },
-        { area: 'Bình Thạnh', deal: 11, rev: 128 },
-        { area: 'Thủ Đức', deal: 9, rev: 96 },
-        { area: 'Phú Nhuận', deal: 6, rev: 68 },
-        { area: 'Tân Bình', deal: 3, rev: 43 }
-      ];
-      var maxRev = 0;
-      areas.forEach(function (a) { maxRev = Math.max(maxRev, a.rev); });
-      document.getElementById('areaRows').innerHTML = areas.map(function (a) {
-        var pct = Math.round(a.rev / maxRev * 100);
-        return '<tr>' +
-          '<td class="area">' + a.area + '</td>' +
-          '<td>' + a.deal + '</td>' +
-          '<td><div class="mini-bar"><span style="width:' + pct + '%"></span></div></td>' +
-          '<td class="num">' + a.rev + ' tr</td>' +
-          '</tr>';
-      }).join('');
+      // ===== Ngày giờ (Asia/Ho_Chi_Minh) =====
+      // Trả về số ngày dạng yyyymmdd theo giờ VN, hoặc null nếu không đọc được
+      function vnKey(y, m, d) { return y * 10000 + m * 100 + d; }
+      function todayVN() {
+        var t = new Date(Date.now() + 7 * 3600 * 1000);
+        return { y: t.getUTCFullYear(), m: t.getUTCMonth() + 1, d: t.getUTCDate() };
+      }
+      function parseDay(v) {
+        var s = String(v == null ? '' : v).trim();
+        if (!s) return null;
+        var m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/); // DD/MM/YYYY (ngày VN)
+        if (m) return vnKey(+m[3], +m[2], +m[1]);
+        m = s.match(/^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2})(?::(\d{2}))?)?(Z|[+-]\d{2}:?\d{2})?/);
+        if (!m) return null;
+        if (!m[4]) return vnKey(+m[1], +m[2], +m[3]); // chỉ có ngày → coi là ngày VN
+        var tz = m[7] || 'Z'; // D1 created_at 'YYYY-MM-DD HH:MM:SS' là UTC
+        var iso = m[1] + '-' + m[2] + '-' + m[3] + 'T' + m[4] + ':' + m[5] + ':' + (m[6] || '00') + (tz === 'Z' ? 'Z' : tz.replace(/^([+-]\d{2})(\d{2})$/, '$1:$2'));
+        var ms = Date.parse(iso);
+        if (isNaN(ms)) return null;
+        var t = new Date(ms + 7 * 3600 * 1000);
+        return vnKey(t.getUTCFullYear(), t.getUTCMonth() + 1, t.getUTCDate());
+      }
+      function dealDay(d) { var k = parseDay(d.ngay); return k != null ? k : parseDay(d.created_at); }
 
-      // Nút chọn kỳ (demo tĩnh)
-      var segBtns = document.querySelectorAll('.seg__btn');
+      // ===== Kỳ báo cáo =====
+      // Một kỳ = { type, y, i } (i: tháng 1-12 / quý 1-4 / 0 cho năm)
+      function periodOf(type, y, i) {
+        var m1, m2;
+        if (type === 'month') { m1 = i; m2 = i; }
+        else if (type === 'quarter') { m1 = (i - 1) * 3 + 1; m2 = m1 + 2; }
+        else { m1 = 1; m2 = 12; }
+        var label = type === 'month' ? 'Tháng ' + i + ', ' + y : type === 'quarter' ? 'Quý ' + i + ', ' + y : 'Năm ' + y;
+        var short = type === 'month' ? 'T' + i + (i === 1 ? '/' + String(y).slice(2) : '') : type === 'quarter' ? 'Q' + i + '/' + String(y).slice(2) : String(y);
+        var slug = type === 'month' ? 'thang-' + i + '-' + y : type === 'quarter' ? 'quy-' + i + '-' + y : 'nam-' + y;
+        return { type: type, y: y, i: i, from: vnKey(y, m1, 1), to: vnKey(y, m2, 31), label: label, short: short, slug: slug };
+      }
+      function currentPeriod(type, t) {
+        t = t || todayVN();
+        if (type === 'month') return periodOf('month', t.y, t.m);
+        if (type === 'quarter') return periodOf('quarter', t.y, Math.floor((t.m - 1) / 3) + 1);
+        return periodOf('year', t.y, 0);
+      }
+      function prevPeriod(p) {
+        if (p.type === 'month') return p.i === 1 ? periodOf('month', p.y - 1, 12) : periodOf('month', p.y, p.i - 1);
+        if (p.type === 'quarter') return p.i === 1 ? periodOf('quarter', p.y - 1, 4) : periodOf('quarter', p.y, p.i - 1);
+        return periodOf('year', p.y - 1, 0);
+      }
+      function inPeriod(key, p) { return key != null && key >= p.from && key <= p.to; }
+      function dealsIn(list, p) { return list.filter(function (d) { return inPeriod(dealDay(d), p); }); }
+      function khachIn(list, p) { return list.filter(function (c) { return inPeriod(parseDay(c.created_at), p); }); }
+
+      // ===== Chỉ số của 1 kỳ =====
+      function stats(p) {
+        var ds = dealsIn(deals, p).filter(isLive);
+        var recv = 0, pend = 0, sales = {};
+        ds.forEach(function (d) {
+          var g = hhGoc(d);
+          if (d.released) recv += g; else pend += g;
+          var s = String(d.sale || '').trim(); if (s) sales[s] = 1;
+        });
+        return { deals: ds, count: ds.length, rev: recv + pend, recv: recv, pend: pend, sales: Object.keys(sales).length };
+      }
+      function deltaHtml(cur, prev, prevLabel) {
+        if (!prev) return '<span class="flat">—</span> so ' + esc(prevLabel);
+        var pct = Math.round((cur - prev) / prev * 100);
+        if (pct === 0) return '<span class="flat">±0%</span> so ' + esc(prevLabel);
+        return (pct > 0 ? '<span class="up">+' + pct + '%</span>' : '<span style="color:var(--danger);font-weight:700">' + pct + '%</span>') + ' so ' + esc(prevLabel);
+      }
+
+      // ===== Dữ liệu =====
+      var khach = [], deals = [], blds = [], lich = [];
+      var period = currentPeriod('month');
+      var view = null; // số liệu đang hiển thị — dùng cho xuất CSV
+
+      // Nhãn nút kỳ: sinh từ ngày hôm nay
+      var segBtns = document.querySelectorAll('#segPeriod .seg__btn');
       segBtns.forEach(function (b) {
+        b.textContent = currentPeriod(b.getAttribute('data-p')).label;
         b.addEventListener('click', function () {
           segBtns.forEach(function (x) { x.classList.remove('is-active'); });
           b.classList.add('is-active');
+          period = currentPeriod(b.getAttribute('data-p'));
+          render();
         });
       });
 
-      function csvCell(v) {
-        var s = (v == null ? '' : String(v));
-        if (/[",\r\n]/.test(s)) { s = '"' + s.replace(/"/g, '""') + '"'; }
-        return s;
+      function allRooms() {
+        var out = [];
+        blds.forEach(function (b) { (b.rooms || []).forEach(function (r) { out.push(r); }); });
+        return out;
       }
-      function stripTags(v) { return String(v == null ? '' : v).replace(/<[^>]*>/g, '').trim(); }
-      document.getElementById('btnExport').addEventListener('click', function () {
-        var rows = [];
-        rows.push(['BÁO CÁO TỔNG HỢP']);
-        rows.push([]);
-        rows.push(['KPI', 'Giá trị', 'Biến động']);
-        kpis.forEach(function (k) { rows.push([k.label, k.val, stripTags(k.delta)]); });
-        rows.push([]);
-        rows.push(['Hoa hồng theo tháng', 'Đã nhận (tr)', 'Chờ release (tr)']);
-        data.forEach(function (d) { rows.push([d[0], d[1], d[2]]); });
-        rows.push([]);
-        rows.push(['Doanh thu theo khu vực', 'Số deal', 'Doanh thu (tr)']);
-        areas.forEach(function (a) { rows.push([a.area, a.deal, a.rev]); });
+      function norm(v) { return String(v == null ? '' : v).toLowerCase().replace(/\s+/g, ' ').trim(); }
+      function areaOfDeal(d) {
+        var t = norm(d.toanha);
+        if (!t) return 'Khác';
+        for (var i = 0; i < blds.length; i++) {
+          var b = blds[i];
+          var names = [b.addr, b.addrFull, b.name, b.bid].map(norm).filter(Boolean);
+          for (var j = 0; j < names.length; j++) {
+            if (names[j] === t || names[j].indexOf(t) >= 0 || t.indexOf(names[j]) >= 0) return String(b.quan || '').trim() || 'Khác';
+          }
+        }
+        return 'Khác';
+      }
 
-        var csv = '﻿' + rows.map(function (r) { return r.map(csvCell).join(','); }).join('\r\n');
-        var blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
-        var d = new Date();
-        var ymd = d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
-        var a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = 'bao-cao-tong-hop-' + ymd + '.csv';
-        a.click();
-        URL.revokeObjectURL(a.href);
-        alert('Đã tải báo cáo');
-      });
+      function render() {
+        var p = period, pp = prevPeriod(p);
+        var cur = stats(p), prev = stats(pp);
+        var rooms = allRooms().filter(function (r) { return r.status !== 'nháp'; });
+        var rented = rooms.filter(function (r) { return r.status === 'rented'; }).length;
+        var occ = rooms.length ? Math.round(rented / rooms.length * 100) : 0;
 
-      // ===== Widget dữ liệu THẬT: Pipeline khách + Cảnh báo =====
-      Promise.all([
-        fetch('/api/khach').then(function (r) { return r.json(); }).catch(function () { return []; }),
-        fetch('/api/deal').then(function (r) { return r.json(); }).catch(function () { return []; }),
-        fetch('/api/toa-nha').then(function (r) { return r.json(); }).catch(function () { return {}; }),
-        fetch('/api/lich-hen').then(function (r) { return r.json(); }).catch(function () { return []; })
-      ]).then(function (a) {
-        var khach = Array.isArray(a[0]) ? a[0] : [];
-        var deals = Array.isArray(a[1]) ? a[1] : [];
-        var blds = [].concat((a[2] && a[2].ptro) || [], (a[2] && a[2].cc) || []);
-        var lich = Array.isArray(a[3]) ? a[3] : [];
+        // --- KPI ---
+        var kpis = [
+          { label: 'Doanh thu (HH gốc)', ic: 'wallet', val: fmtTr(cur.rev), delta: deltaHtml(cur.rev, prev.rev, pp.label) },
+          { label: 'Deal chốt', ic: 'file-text', val: String(cur.count), delta: deltaHtml(cur.count, prev.count, pp.label) },
+          { label: 'Phòng cho thuê (hiện tại)', ic: 'package', val: rented + '/' + rooms.length, delta: occ + '% lấp đầy · không theo kỳ' },
+          { label: 'Sale có deal', ic: 'users', val: String(cur.sales), delta: deltaHtml(cur.sales, prev.sales, pp.label) },
+          { label: 'Hoa hồng đã trả', ic: 'banknote', val: fmtTr(cur.recv), delta: deltaHtml(cur.recv, prev.recv, pp.label) + ' · ' + fmtTr(cur.pend) + ' chờ release' }
+        ];
+        document.getElementById('kpiRow').innerHTML = kpis.map(function (k) {
+          return '<div class="kpi"><div class="kpi__top"><span>' + esc(k.label) + '</span><span class="kpi__ic">' + I(k.ic, 18) + '</span></div>' +
+            '<div class="kpi__val">' + esc(k.val) + '</div><div class="kpi__delta">' + k.delta + '</div></div>';
+        }).join('');
 
-        // --- Pipeline: đếm khách theo cột kanban ---
+        // --- Biểu đồ: 6 tháng / 4 quý / 3 năm gần nhất ---
+        var n = p.type === 'month' ? 6 : p.type === 'quarter' ? 4 : 3;
+        var unit = p.type === 'month' ? 'tháng' : p.type === 'quarter' ? 'quý' : 'năm';
+        document.getElementById('chartTitle').textContent = 'Doanh thu ' + n + ' ' + unit + ' gần nhất';
+        var series = [], q = p;
+        for (var i = 0; i < n; i++) { series.unshift(q); q = prevPeriod(q); }
+        var data = series.map(function (sp) { var st = stats(sp); return [sp.short, trNum(st.recv), trNum(st.pend), sp.label]; });
+        var max = 0;
+        data.forEach(function (d) { max = Math.max(max, d[1] + d[2]); });
+        document.getElementById('chart').innerHTML = data.map(function (d) {
+          var total = Math.round((d[1] + d[2]) * 10) / 10;
+          var stackH = max ? Math.round(total / max * 100) : 0;
+          var recvPct = total ? d[1] / total * 100 : 0;
+          var pendPct = total ? d[2] / total * 100 : 0;
+          return '<div class="chart__col" title="' + esc(d[3]) + '">' +
+            '<span class="chart__total">' + total + '</span>' +
+            '<div class="chart__stack" style="height:' + stackH + '%">' +
+              '<div class="chart__seg chart__seg--pend" style="height:' + pendPct + '%" title="Chờ release: ' + d[2] + 'tr"></div>' +
+              '<div class="chart__seg chart__seg--recv" style="height:' + recvPct + '%" title="Đã nhận: ' + d[1] + 'tr"></div>' +
+            '</div>' +
+            '<span class="chart__m">' + esc(d[0]) + '</span></div>';
+        }).join('');
+
+        // --- Doanh thu theo khu vực (deal trong kỳ) ---
+        var byArea = {};
+        cur.deals.forEach(function (d) {
+          var a = areaOfDeal(d);
+          byArea[a] = byArea[a] || { area: a, deal: 0, rev: 0 };
+          byArea[a].deal++; byArea[a].rev += hhGoc(d);
+        });
+        var areas = Object.keys(byArea).map(function (k) { return byArea[k]; })
+          .sort(function (x, y) { return y.rev - x.rev || y.deal - x.deal; });
+        var areasTop = areas.slice(0, 5);
+        document.getElementById('areaSub').textContent = p.label + ' · ' + (areas.length ? areasTop.length + ' khu vực dẫn đầu' : 'chưa có deal');
+        var maxRev = 0;
+        areasTop.forEach(function (a) { maxRev = Math.max(maxRev, a.rev); });
+        document.getElementById('areaRows').innerHTML = areasTop.length ? areasTop.map(function (a) {
+          var pct = maxRev ? Math.round(a.rev / maxRev * 100) : 0;
+          return '<tr>' +
+            '<td class="area">' + esc(a.area) + '</td>' +
+            '<td>' + a.deal + '</td>' +
+            '<td><div class="mini-bar"><span style="width:' + pct + '%"></span></div></td>' +
+            '<td class="num">' + trNum(a.rev) + ' tr</td>' +
+            '</tr>';
+        }).join('') : '<tr><td colspan="4" style="color:var(--muted-fg);text-align:center">Chưa có deal trong ' + esc(p.label) + '</td></tr>';
+
+        // --- Pipeline: khách TẠO TRONG KỲ, đếm theo cột hiện tại ---
+        var kIn = khachIn(khach, p);
         var stages = [
           { k: 'moi', lb: 'Khách mới' }, { k: 'tuvan', lb: 'Đã tư vấn' },
           { k: 'guiphong', lb: 'Đã gửi phòng' }, { k: 'danxem', lb: 'Đã dẫn xem' }, { k: 'chot', lb: 'Đã chốt' }
         ];
-        stages.forEach(function (s) { s.n = khach.filter(function (c) { return (c.cot || 'moi') === s.k; }).length; });
+        stages.forEach(function (s) { s.n = kIn.filter(function (c) { return (c.cot || 'moi') === s.k; }).length; });
+        document.getElementById('pipeSub').textContent = kIn.length + ' khách tạo trong ' + p.label + ' · theo cột hiện tại';
         var maxN = Math.max(1, Math.max.apply(null, stages.map(function (s) { return s.n; })));
         document.getElementById('pipeRows').innerHTML = '<div class="pipe">' + stages.map(function (s) {
           var w = Math.round(s.n / maxN * 100);
@@ -314,22 +386,80 @@
             '<span class="pipe__n">' + s.n + '</span></div>';
         }).join('') + '</div>';
 
-        // --- Cảnh báo: suy từ dữ liệu thật ---
+        // --- Cảnh báo ---
         var alerts = [];
-        var choRelease = deals.filter(function (d) { return d.trang_thai === 'chot'; }).length;
-        if (choRelease) alerts.push({ cls: 'a-warn', ic: 'banknote', t: choRelease + ' deal đã chốt đang chờ release hoa hồng', s: 'Vào Deal & Hợp đồng để release' });
-        var danxem = khach.filter(function (c) { return c.cot === 'danxem'; }).length;
-        if (danxem) alerts.push({ cls: 'a-info', ic: 'users', t: danxem + ' khách "Đã dẫn xem" chưa chốt', s: 'Cần chăm sóc để chốt deal' });
-        var trongToa = blds.filter(function (b) { return !(b.rooms && b.rooms.length); });
-        if (trongToa.length) alerts.push({ cls: 'a-warn', ic: 'building', t: trongToa.length + ' toà nhà chưa có phòng nào', s: 'Thêm phòng để đăng tin' });
-        var choXacNhan = lich.filter(function (l) { return l.trang_thai === 'cho'; }).length;
-        if (choXacNhan) alerts.push({ cls: 'a-info', ic: 'calendar-days', t: choXacNhan + ' lịch hẹn chờ xác nhận', s: 'Xem ở Lịch hẹn' });
-        if (!alerts.length) alerts.push({ cls: 'a-info', ic: 'shield-check', t: 'Không có cảnh báo', s: 'Mọi thứ đang ổn định' });
-        document.getElementById('alertList').innerHTML = alerts.map(function (x) {
+        var cocBu = cur.deals.filter(function (d) { return d.trang_thai === 'doi_coc_bu'; }).length;
+        if (cocBu) alerts.push({ cls: 'a-warn', ic: 'wallet', t: cocBu + ' deal đang đợi cọc bù (' + p.label + ')', s: 'Nhắc khách hoàn tất cọc' });
+        var doiHH = cur.deals.filter(function (d) { return d.trang_thai === 'doi_nhan_hh' && !d.released; }).length;
+        if (doiHH) alerts.push({ cls: 'a-warn', ic: 'banknote', t: doiHH + ' deal đợi nhận hoa hồng (' + p.label + ')', s: 'Vào Deal & Hợp đồng để release' });
+        var choXacNhan = lich.filter(function (l) { return (l.trang_thai || 'cho') === 'cho'; }).length;
+        if (choXacNhan) alerts.push({ cls: 'a-info', ic: 'calendar-days', t: choXacNhan + ' lịch hẹn chờ xác nhận', s: 'Xem ở Lịch hẹn (hiện tại)' });
+        var all = allRooms();
+        var stop = all.filter(function (r) { return r.status === 'stop'; }).length;
+        var nhap = all.filter(function (r) { return r.status === 'nháp'; }).length;
+        if (stop) alerts.push({ cls: 'a-danger', ic: 'package', t: stop + ' phòng đang ngưng cho thuê', s: 'Kiểm tra lại ở Kho phòng' });
+        if (nhap) alerts.push({ cls: 'a-info', ic: 'package', t: nhap + ' phòng đang lưu nháp', s: 'Hoàn tất để đăng tin' });
+        var trongToa = blds.filter(function (b) { return !(b.rooms && b.rooms.length); }).length;
+        if (trongToa) alerts.push({ cls: 'a-warn', ic: 'building', t: trongToa + ' toà nhà chưa có phòng nào', s: 'Thêm phòng để đăng tin' });
+        document.getElementById('alertList').innerHTML = alerts.length ? alerts.map(function (x) {
           return '<div class="alert-item"><span class="alert-item__ic ' + x.cls + '">' + I(x.ic, 17) + '</span>' +
-            '<span><span class="alert-item__t">' + HT.esc(x.t) + '</span>' +
-            '<span class="alert-item__s">' + HT.esc(x.s) + '</span></span></div>';
-        }).join('');
+            '<span><span class="alert-item__t">' + esc(x.t) + '</span>' +
+            '<span class="alert-item__s">' + esc(x.s) + '</span></span></div>';
+        }).join('') : '<div class="alert-item"><span class="alert-item__ic a-info">' + I('shield-check', 17) + '</span>' +
+          '<span><span class="alert-item__t">Không có cảnh báo</span><span class="alert-item__s">Mọi thứ đang ổn định</span></span></div>';
+
+        view = { period: p, kpis: kpis, data: data, areas: areas, stages: stages, alerts: alerts };
+      }
+
+      // ===== Xuất CSV — theo kỳ đang chọn =====
+      function csvCell(v) {
+        var s = (v == null ? '' : String(v));
+        if (/[",\r\n]/.test(s)) { s = '"' + s.replace(/"/g, '""') + '"'; }
+        return s;
+      }
+      function stripTags(v) { return String(v == null ? '' : v).replace(/<[^>]*>/g, '').trim(); }
+      document.getElementById('btnExport').addEventListener('click', function () {
+        if (!view) { HT.toast ? HT.toast('Dữ liệu chưa tải xong', 'danger') : alert('Dữ liệu chưa tải xong'); return; }
+        var rows = [];
+        rows.push(['BÁO CÁO TỔNG HỢP — ' + view.period.label]);
+        rows.push([]);
+        rows.push(['KPI', 'Giá trị', 'Biến động']);
+        view.kpis.forEach(function (k) { rows.push([k.label, k.val, stripTags(k.delta)]); });
+        rows.push([]);
+        rows.push(['Doanh thu theo kỳ', 'Đã nhận (tr)', 'Chờ release (tr)']);
+        view.data.forEach(function (d) { rows.push([d[3], d[1], d[2]]); });
+        rows.push([]);
+        rows.push(['Doanh thu theo khu vực', 'Số deal', 'Doanh thu (tr)']);
+        view.areas.forEach(function (a) { rows.push([a.area, a.deal, trNum(a.rev)]); });
+        rows.push([]);
+        rows.push(['Pipeline khách (tạo trong kỳ)', 'Số khách']);
+        view.stages.forEach(function (s) { rows.push([s.lb, s.n]); });
+        rows.push([]);
+        rows.push(['Cảnh báo']);
+        if (view.alerts.length) view.alerts.forEach(function (x) { rows.push([x.t]); }); else rows.push(['Không có cảnh báo']);
+
+        var csv = '﻿' + rows.map(function (r) { return r.map(csvCell).join(','); }).join('\r\n');
+        var blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'bao-cao-' + view.period.slug + '.csv';
+        a.click();
+        URL.revokeObjectURL(a.href);
+      });
+
+      // ===== Tải dữ liệu THẬT rồi vẽ =====
+      render(); // vẽ trạng thái rỗng (toàn số 0) trong lúc tải
+      Promise.all([
+        fetch('/api/khach').then(function (r) { return r.json(); }).catch(function () { return []; }),
+        fetch('/api/deal').then(function (r) { return r.json(); }).catch(function () { return []; }),
+        fetch('/api/toa-nha').then(function (r) { return r.json(); }).catch(function () { return {}; }),
+        fetch('/api/lich-hen').then(function (r) { return r.json(); }).catch(function () { return []; })
+      ]).then(function (a) {
+        khach = Array.isArray(a[0]) ? a[0] : [];
+        deals = Array.isArray(a[1]) ? a[1] : [];
+        blds = [].concat((a[2] && a[2].ptro) || [], (a[2] && a[2].cc) || []);
+        lich = Array.isArray(a[3]) ? a[3] : [];
+        render();
       });
     })();
   </script>

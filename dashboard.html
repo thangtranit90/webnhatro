@@ -63,6 +63,7 @@
     .act-row__time { font-size: 11px; color: var(--muted-fg); margin-top: 2px; }
     .pill-cnt { background: var(--danger-soft); color: var(--danger); font-size: 12px; font-weight: 700; border-radius: 999px; padding: 2px 10px; }
     .tag-up { background: var(--success-soft); color: var(--success); font-size: 12px; font-weight: 700; border-radius: 999px; padding: 3px 9px; }
+    .tag-up.tag-down { background: var(--danger-soft); color: var(--danger); }
   </style>
 </head>
 <body>
@@ -75,7 +76,7 @@
           <button class="btn-sidebar" id="btnSidebar" aria-label="Menu"></button>
           <div>
             <div class="app-topbar__title">Chào buổi sáng, Minh 👋</div>
-            <div class="app-topbar__sub">Bạn có 3 việc cần xử lý hôm nay</div>
+            <div class="app-topbar__sub">Đang tải dữ liệu…</div>
           </div>
         </div>
         <div class="app-topbar__actions">
@@ -94,12 +95,12 @@
           <div class="stack">
             <!-- Bảng xếp hạng -->
             <section class="card">
-              <div class="card__head"><div><h3>Bảng xếp hạng tháng 7</h3></div><a class="card__link" href="doanhthu.html">Xem tất cả</a></div>
+              <div class="card__head"><div><h3 id="lbTitle">Bảng xếp hạng tháng này</h3></div><a class="card__link" href="doanhthu.html">Xem tất cả</a></div>
               <div class="card__body" id="leaderboard"></div>
             </section>
             <!-- Biểu đồ doanh thu -->
             <section class="card">
-              <div class="card__head"><div><h3>Doanh thu hoa hồng</h3><div class="sub">6 tháng gần nhất (triệu đồng)</div></div><span class="tag-up">↑ 18%</span></div>
+              <div class="card__head"><div><h3>Doanh thu hoa hồng</h3><div class="sub">6 tháng gần nhất (triệu đồng)</div></div><span class="tag-up" id="chartTag" style="display:none"></span></div>
               <div class="card__body"><div class="chart" id="chart"></div></div>
             </section>
           </div>
@@ -107,7 +108,7 @@
           <div class="stack">
             <!-- Cần xử lý -->
             <section class="card">
-              <div class="card__head"><div><h3>Cần xử lý</h3></div><span class="pill-cnt">5 mới</span></div>
+              <div class="card__head"><div><h3>Cần xử lý</h3></div><span class="pill-cnt" id="alertCnt" style="display:none"></span></div>
               <div class="card__body" id="alerts"></div>
             </section>
             <!-- Nhật ký -->
@@ -123,7 +124,7 @@
 
   <script src="data.js"></script>
   <script src="assets/js/ht-ui.js?v=15"></script>
-  <script src="assets/js/ht-internal.js?v=17"></script>
+  <script src="assets/js/ht-internal.js?v=18"></script>
   <script>
     var I = HTI.icon;
     document.getElementById('btnSidebar').innerHTML = I('menu', 22);
@@ -131,100 +132,205 @@
     document.getElementById('btnAdd').innerHTML = I('plus', 16) + 'Thêm phòng';
     document.getElementById('topSearch').innerHTML = I('search', 16) + '<span>Tìm phòng, tòa nhà, khách...</span>';
 
-    // KPI
-    var kpis = [
-      { label: 'Doanh thu tháng này', ic: 'wallet', val: '32,4 tr', delta: '+18% vs tháng trước', up: true },
-      { label: 'Deal chốt (tháng)', ic: 'file-text', val: '12', delta: '3 deal đang chờ cọc' },
-      { label: 'Phòng còn trống', ic: 'package', val: '247', delta: 'trên 1.024 phòng' },
-      { label: 'Khách đang chăm', ic: 'users', val: '28', delta: '2 khách sắp hết khóa' }
-    ];
-    // ---- Phân quyền: Dashboard Sale (KPI cá nhân, dữ liệu thật) ----
+    var esc = (window.HT && HT.esc) || function (x) { return String(x == null ? '' : x).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+
+    // ---- Người dùng hiện tại (admin xem cả team · sale xem của mình) ----
     var me = null; try { me = JSON.parse(localStorage.getItem('ht_staff')); } catch (e) {}
-    var isSale = me && me.roleKey !== 'admin';
-    // Lời chào theo user thật
-    var firstName = me ? (String(me.name).trim().split(/\s+/).pop()) : 'bạn';
+    var isSale = !!(me && me.roleKey !== 'admin');
+    var myName = me ? String(me.name || '').trim().toLowerCase() : '';
+    function sameName(x) { return !!myName && String(x || '').trim().toLowerCase() === myName; }
+    function listHas(s) { return String(s || '').split(',').some(sameName); }
+    function isMyDeal(d) { return sameName(d.sale) || sameName(d.tim_khach) || listHas(d.dan_khach); }
+
+    var firstName = me ? (String(me.name || '').trim().split(/\s+/).pop() || 'bạn') : 'bạn';
     var titleEl = document.querySelector('.app-topbar__title');
-    if (titleEl) titleEl.textContent = 'Chào buổi sáng, ' + firstName + ' 👋';
-    if (isSale) {
-      titleEl.nextElementSibling && (titleEl.nextElementSibling.textContent = 'Hiệu suất cá nhân của bạn hôm nay');
-      Promise.all([
-        fetch('/api/deal').then(function (r) { return r.json(); }).catch(function () { return []; }),
-        fetch('/api/khach').then(function (r) { return r.json(); }).catch(function () { return []; }),
-        fetch('/api/lich-hen').then(function (r) { return r.json(); }).catch(function () { return []; })
-      ]).then(function (a) {
-        var nm = (me.name || '').trim();
-        var myDeals = (a[0] || []).filter(function (d) { return (d.sale || '').trim() === nm; });
-        var myKhach = (a[1] || []).filter(function (c) { return (c.sale || '').trim() === nm; });
-        var myLich = (a[2] || []).length; // demo: tổng lịch tuần
-        var hh = myDeals.reduce(function (s, d) { return s + (Number(d.hh) || 0); }, 0);
-        var chot = myDeals.filter(function (d) { return d.trang_thai === 'chot' || d.trang_thai === 'release'; }).length;
-        function tr(n) { return (Math.round(n / 1e5) / 10) + ' tr'; }
-        kpis = [
-          { label: 'Hoa hồng của tôi', ic: 'wallet', val: tr(hh), delta: 'Tháng này', up: true },
-          { label: 'Deal đã chốt', ic: 'file-text', val: chot, delta: myDeals.length + ' deal tổng' },
-          { label: 'Khách đang chăm', ic: 'users', val: myKhach.length, delta: 'Của bạn' },
-          { label: 'Lịch xem tuần', ic: 'calendar-days', val: myLich, delta: 'Lịch dẫn xem' }
-        ];
-        renderKpis();
-      });
+    var subEl = document.querySelector('.app-topbar__sub');
+
+    // ---- Ngày giờ (giờ Việt Nam, UTC+7) ----
+    var VN = 7 * 3600 * 1000;
+    function vnNow() { return new Date(Date.now() + VN); } // đọc bằng getUTC*
+    function parseTs(v) { // trả về ms UTC hoặc NaN
+      if (!v) return NaN;
+      var s = String(v).trim(), m;
+      if ((m = s.match(/^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2})(?::(\d{2}))?)?/)) && !/[zZ]|[+-]\d{2}:?\d{2}$/.test(s.slice(10))) {
+        if (m[4] === undefined) return Date.UTC(+m[1], +m[2] - 1, +m[3]) - VN; // chỉ có ngày → nửa đêm giờ VN
+        return Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +(m[6] || 0)); // 'YYYY-MM-DD HH:MM:SS' = UTC
+      }
+      if ((m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/))) return Date.UTC(+m[3], +m[2] - 1, +m[1]) - VN;
+      var t = Date.parse(s); return isNaN(t) ? NaN : t;
     }
-    function renderKpis() {
+    function monthKey(ms) { if (isNaN(ms)) return ''; var d = new Date(ms + VN); return d.getUTCFullYear() + '-' + (d.getUTCMonth() + 1); }
+    var now = vnNow();
+    var curKey = now.getUTCFullYear() + '-' + (now.getUTCMonth() + 1);
+    var prevD = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1));
+    var prevKey = prevD.getUTCFullYear() + '-' + (prevD.getUTCMonth() + 1);
+    function dealTs(d) { var t = parseTs(d.ngay); return isNaN(t) ? parseTs(d.created_at) : t; }
+    function relTime(ms) {
+      var diff = Math.max(0, Date.now() - ms), mi = Math.floor(diff / 60000);
+      if (mi < 1) return 'Vừa xong';
+      if (mi < 60) return mi + ' phút trước';
+      var h = Math.floor(mi / 60); if (h < 24) return h + ' giờ trước';
+      var dd = Math.floor(h / 24); if (dd < 30) return dd + ' ngày trước';
+      var mo = Math.floor(dd / 30); return mo < 12 ? mo + ' tháng trước' : Math.floor(mo / 12) + ' năm trước';
+    }
+    var hr = now.getUTCHours();
+    if (titleEl) titleEl.textContent = (hr < 11 ? 'Chào buổi sáng, ' : hr < 14 ? 'Chào buổi trưa, ' : hr < 18 ? 'Chào buổi chiều, ' : 'Chào buổi tối, ') + firstName + ' 👋';
+
+    // ---- Hoa hồng: đúng công thức deal.html (40% công ty · 60% sale = tìm khách 30% + dẫn khách 30% chia đều) ----
+    function tinhHH(d) {
+      var goc = Math.max(0, Math.round((Number(d.gia_tri) || 0) * (Number(d.hh_pct) || 0) / 100) - (Number(d.offer) || 0));
+      var congTy = Math.round(goc * 0.4), timKhach = Math.round(goc * 0.3), danTotal = goc - congTy - timKhach;
+      var danList = String(d.dan_khach || '').split(',').map(function (x) { return x.trim(); }).filter(Boolean);
+      var perDan = danList.length ? Math.round(danTotal / danList.length) : danTotal;
+      return { goc: goc, timKhach: timKhach, danList: danList, perDan: perDan };
+    }
+    function shares(d) { // [{name, amt}] phần của từng sale trong deal
+      var c = tinhHH(d), out = [];
+      if (String(d.tim_khach || '').trim()) out.push({ name: String(d.tim_khach).trim(), amt: c.timKhach });
+      c.danList.forEach(function (n) { out.push({ name: n, amt: c.perDan }); });
+      return out;
+    }
+    function myShare(d) { return shares(d).reduce(function (s, x) { return s + (sameName(x.name) ? x.amt : 0); }, 0); }
+    // Admin: hoa hồng gốc của cả team · Sale: phần hoa hồng của chính mình
+    function hhOf(d) { return isSale ? myShare(d) : tinhHH(d).goc; }
+    function live(d) { return d.trang_thai !== 'bo_coc'; }
+    function tr(n) { return (Math.round((n || 0) / 1e5) / 10).toString().replace('.', ',') + ' tr'; }
+    function pct(cur, prev) { if (!prev) return null; return Math.round((cur - prev) / prev * 100); }
+    function initials(name) {
+      var p = String(name || '').trim().split(/\s+/).filter(Boolean);
+      if (!p.length) return '?';
+      return (p.length === 1 ? p[0].slice(0, 2) : p[p.length - 2].charAt(0) + p[p.length - 1].charAt(0)).toUpperCase();
+    }
+    function emptyRow(t) { return '<div class="row-item__s" style="padding:14px 0">' + esc(t) + '</div>'; }
+
+    function getJSON(u) { return fetch(u).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }); }
+    function arr(x) { return Array.isArray(x) ? x : []; }
+
+    Promise.all([getJSON('/api/deal'), getJSON('/api/khach'), getJSON('/api/lich-hen'), getJSON('/api/toa-nha')]).then(function (a) {
+      var deals = arr(a[0]), khach = arr(a[1]), lich = arr(a[2]), tn = a[3] || {};
+      if (isSale) {
+        deals = deals.filter(isMyDeal);
+        khach = khach.filter(function (c) { return sameName(c.sale); });
+      }
+      var liveDeals = deals.filter(live);
+      var dealsCur = liveDeals.filter(function (d) { return monthKey(dealTs(d)) === curKey; });
+      var dealsPrev = liveDeals.filter(function (d) { return monthKey(dealTs(d)) === prevKey; });
+      var hhCur = dealsCur.reduce(function (s, d) { return s + hhOf(d); }, 0);
+      var hhPrev = dealsPrev.reduce(function (s, d) { return s + hhOf(d); }, 0);
+
+      // Phòng thật từ /api/toa-nha
+      var rooms = [];
+      ['ptro', 'cc'].forEach(function (g) { arr(tn[g]).forEach(function (b) { arr(b && b.rooms).forEach(function (r) { rooms.push(r); }); }); });
+      var openN = rooms.filter(function (r) { return r.status === 'open'; }).length;
+      var soonN = rooms.filter(function (r) { return r.status === 'soon'; }).length;
+
+      var khachCham = khach.filter(function (c) { return c.cot !== 'chot'; });
+      var hotN = khachCham.filter(function (c) { return c.nhiet === 'hot'; }).length;
+      var cocBu = liveDeals.filter(function (d) { return d.trang_thai === 'doi_coc_bu'; }).length;
+
+      // 1. KPI (tháng hiện tại, giờ VN)
+      var p1 = pct(hhCur, hhPrev), p2 = pct(dealsCur.length, dealsPrev.length);
+      var kpis = [
+        { label: isSale ? 'Hoa hồng của tôi (tháng)' : 'Doanh thu HH tháng này', ic: 'wallet', val: tr(hhCur),
+          delta: p1 === null ? 'Tháng trước: ' + tr(hhPrev) : (p1 >= 0 ? '+' : '') + p1 + '% vs tháng trước', up: p1 !== null && p1 >= 0 },
+        { label: 'Deal chốt (tháng)', ic: 'file-text', val: dealsCur.length,
+          delta: (p2 === null ? 'Tháng trước: ' + dealsPrev.length : (p2 >= 0 ? '+' : '') + p2 + '% vs tháng trước') + (cocBu ? ' · ' + cocBu + ' đợi cọc bù' : ''), up: p2 !== null && p2 >= 0 },
+        { label: 'Phòng còn trống', ic: 'package', val: openN, delta: (soonN ? soonN + ' sắp trống · ' : '') + 'trên ' + rooms.length + ' phòng' },
+        { label: 'Khách đang chăm', ic: 'users', val: khachCham.length, delta: hotN ? hotN + ' khách hot chưa chốt' : (isSale ? 'Của bạn' : 'Toàn team') }
+      ];
       document.getElementById('kpiRow').innerHTML = kpis.map(function (k) {
-      return '<div class="kpi"><div class="kpi__top"><span>' + k.label + '</span><span class="kpi__ic">' + I(k.ic, 18) + '</span></div>' +
-        '<div class="kpi__val">' + k.val + '</div><div class="kpi__delta' + (k.up ? ' up' : '') + '">' + k.delta + '</div></div>';
+        return '<div class="kpi"><div class="kpi__top"><span>' + esc(k.label) + '</span><span class="kpi__ic">' + I(k.ic, 18) + '</span></div>' +
+          '<div class="kpi__val">' + esc(k.val) + '</div><div class="kpi__delta' + (k.up ? ' up' : '') + '">' + esc(k.delta) + '</div></div>';
       }).join('');
-    }
-    renderKpis();
 
-    // Leaderboard
-    var lb = [
-      { av: 'TH', nm: 'Thu Hà', role: 'Sale · 18 deal', rev: '48,2 tr' },
-      { av: 'MT', nm: 'Minh Trọ', role: 'Sale · 12 deal', rev: '32,4 tr' },
-      { av: 'QB', nm: 'Quốc Bảo', role: 'Sale · 10 deal', rev: '27,1 tr' },
-      { av: 'LA', nm: 'Lan Anh', role: 'Sale · 7 deal', rev: '19,5 tr' },
-      { av: 'ĐH', nm: 'Đức Huy', role: 'Sale · 5 deal', rev: '13,2 tr' }
-    ];
-    document.getElementById('leaderboard').innerHTML = lb.map(function (r, i) {
-      return '<div class="lb-row"><span class="lb-rank">' + (i + 1) + '</span><span class="avatar" style="width:36px;height:36px;font-size:13px">' + r.av + '</span>' +
-        '<span><span class="lb-name" style="display:block">' + r.nm + '</span><span class="lb-role">' + r.role + '</span></span>' +
-        '<span class="lb-rev">' + r.rev + '</span></div>';
-    }).join('');
+      // 2. Biểu đồ 6 tháng gần nhất
+      var bars = [];
+      for (var i = 5; i >= 0; i--) {
+        var dt = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - i, 1));
+        var key = dt.getUTCFullYear() + '-' + (dt.getUTCMonth() + 1);
+        var v = liveDeals.filter(function (d) { return monthKey(dealTs(d)) === key; }).reduce(function (s, d) { return s + hhOf(d); }, 0);
+        bars.push(['T' + (dt.getUTCMonth() + 1), Math.round(v / 1e5) / 10]);
+      }
+      var max = Math.max.apply(null, bars.map(function (b) { return b[1]; })) || 1;
+      document.getElementById('chart').innerHTML = bars.map(function (b) {
+        return '<div class="chart__col"><span class="chart__v">' + String(b[1]).replace('.', ',') + '</span>' +
+          '<div class="chart__bar" style="height:' + Math.max(b[1] > 0 ? 2 : 0, Math.round(b[1] / max * 100)) + '%"></div>' +
+          '<span class="chart__m">' + b[0] + '</span></div>';
+      }).join('');
+      var tag = document.getElementById('chartTag');
+      if (tag && p1 !== null) { tag.textContent = (p1 >= 0 ? '↑ ' : '↓ ') + Math.abs(p1) + '%'; tag.classList.toggle('tag-down', p1 < 0); tag.style.display = ''; }
 
-    // Chart
-    var bars = [['T2', 18], ['T3', 22], ['T4', 16], ['T5', 25], ['T6', 27], ['T7', 32]];
-    var max = 32;
-    document.getElementById('chart').innerHTML = bars.map(function (b) {
-      return '<div class="chart__col"><span class="chart__v">' + b[1] + '</span>' +
-        '<div class="chart__bar" style="height:' + Math.round(b[1] / max * 100) + '%"></div>' +
-        '<span class="chart__m">' + b[0] + '</span></div>';
-    }).join('');
+      // 3. Bảng xếp hạng tháng hiện tại (phần 60% của sale theo deal.html)
+      document.getElementById('lbTitle').textContent = 'Bảng xếp hạng tháng ' + (now.getUTCMonth() + 1);
+      var rank = {};
+      var allCur = arr(a[0]).filter(live).filter(function (d) { return monthKey(dealTs(d)) === curKey; });
+      allCur.forEach(function (d) {
+        var seen = {};
+        shares(d).forEach(function (x) {
+          var k = x.name.toLowerCase();
+          if (!rank[k]) rank[k] = { nm: x.name, amt: 0, n: 0 };
+          rank[k].amt += x.amt;
+          if (!seen[k]) { rank[k].n++; seen[k] = 1; }
+        });
+      });
+      var lb = Object.keys(rank).map(function (k) { return rank[k]; }).sort(function (x, y) { return y.amt - x.amt; }).slice(0, 5);
+      document.getElementById('leaderboard').innerHTML = lb.length ? lb.map(function (r, i) {
+        return '<div class="lb-row"><span class="lb-rank">' + (i + 1) + '</span><span class="avatar" style="width:36px;height:36px;font-size:13px">' + esc(initials(r.nm)) + '</span>' +
+          '<span><span class="lb-name" style="display:block">' + esc(r.nm) + (sameName(r.nm) ? ' (bạn)' : '') + '</span><span class="lb-role">Sale · ' + r.n + ' deal</span></span>' +
+          '<span class="lb-rev">' + tr(r.amt) + '</span></div>';
+      }).join('') : emptyRow('Chưa có deal nào trong tháng này.');
 
-    // Alerts
-    var alerts = [
-      { t: '2 khách sắp hết khóa 30 ngày', s: 'Còn 2 ngày · nhấn để chăm lại' },
-      { t: 'HĐ P.302 Nguyễn Oanh sắp hết hạn', s: 'Còn 28 ngày · tư vấn tái chốt' },
-      { t: "3 phòng 'Sắp trống' tới ngày dự kiến", s: 'Cập nhật trạng thái ngay' },
-      { t: '1 yêu cầu SĐT chủ nhà chờ duyệt', s: 'Từ Quốc Bảo · P.12 Lê Đức Thọ' },
-      { t: 'Deal #1042 chưa upload hợp đồng', s: 'Đã cọc 4 ngày trước' }
-    ];
-    document.getElementById('alerts').innerHTML = alerts.map(function (a) {
-      return '<div class="row-item"><span class="row-item__ic">' + I('bell', 16) + '</span>' +
-        '<span style="flex:1"><span class="row-item__t" style="display:block">' + a.t + '</span><span class="row-item__s">' + a.s + '</span></span>' +
-        '<span class="row-item__chev" style="font-size:18px">›</span></div>';
-    }).join('');
+      // 4. Cần xử lý
+      var today0 = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) - VN;
+      var lichCho = lich.filter(function (l) { return l.trang_thai === 'cho'; }).length;
+      var doiHH = liveDeals.filter(function (d) { return d.trang_thai === 'doi_nhan_hh'; }).length;
+      var noHd = liveDeals.filter(function (d) {
+        var x = d.anh_hd; if (!x) return true;
+        try { var j = JSON.parse(x); return Array.isArray(j) ? j.length === 0 : false; } catch (e) { return false; }
+      }).length;
+      var sapHan = khachCham.filter(function (c) { var t = parseTs(c.deadline); return !isNaN(t) && t <= today0 + 3 * 86400000; }).length;
+      var alerts = [
+        { n: lichCho, t: ' lịch hẹn chờ xác nhận', s: 'Xác nhận hoặc hủy lịch xem phòng', href: 'lichhen.html', ic: 'calendar-days' },
+        { n: cocBu, t: ' deal đang đợi cọc bù', s: 'Nhắc khách hoàn tất tiền cọc', href: 'deal.html', ic: 'file-text' },
+        { n: doiHH, t: ' deal đợi nhận hoa hồng', s: 'Theo dõi chủ nhà thanh toán HH', href: 'deal.html', ic: 'wallet' },
+        { n: noHd, t: ' deal chưa có ảnh hợp đồng', s: 'Upload ảnh hợp đồng vào deal', href: 'deal.html', ic: 'file-text' },
+        { n: sapHan, t: ' khách quá hạn / sắp đến hạn chuyển bước', s: 'Hạn trong 3 ngày tới hoặc đã quá hạn', href: 'crm.html', ic: 'users' },
+        { n: hotN, t: ' khách hot chưa chốt', s: 'Ưu tiên chăm sóc để chốt', href: 'crm.html', ic: 'users' }
+      ].filter(function (x) { return x.n > 0; });
+      document.getElementById('alerts').innerHTML = alerts.length ? alerts.map(function (x) {
+        return '<a class="row-item" href="' + x.href + '" style="color:inherit;text-decoration:none"><span class="row-item__ic">' + I(x.ic, 16) + '</span>' +
+          '<span style="flex:1"><span class="row-item__t" style="display:block">' + x.n + esc(x.t) + '</span><span class="row-item__s">' + esc(x.s) + '</span></span>' +
+          '<span class="row-item__chev" style="font-size:18px">›</span></a>';
+      }).join('') : emptyRow('Không có việc cần xử lý 🎉');
+      var cnt = document.getElementById('alertCnt');
+      if (cnt && alerts.length) { cnt.textContent = alerts.length + ' mục'; cnt.style.display = ''; }
+      if (subEl) subEl.textContent = alerts.length ? 'Bạn có ' + alerts.length + ' nhóm việc cần xử lý' : (isSale ? 'Hiệu suất cá nhân của bạn' : 'Không có việc tồn đọng');
 
-    // Activity
-    var acts = [
-      { av: 'TH', t: 'Thu Hà chốt deal 12tr tại HT Nguyễn Oanh', time: '5 phút trước' },
-      { av: 'AD', t: 'Admin thêm 5 phòng mới tại HT Lê Đức Thọ', time: '1 giờ trước' },
-      { av: 'QB', t: "Quốc Bảo đưa khách sang bước 'Đã dẫn xem'", time: '2 giờ trước' },
-      { av: 'MT', t: 'Bạn vừa chốt deal 8,5tr tại HT Phạm Văn Đồng 🎉', time: 'Hôm qua' },
-      { av: 'LA', t: 'Lan Anh có khách mới từ Facebook Ads', time: 'Hôm qua' }
-    ];
-    document.getElementById('activity').innerHTML = acts.map(function (a) {
-      return '<div class="act-row"><span class="avatar">' + a.av + '</span>' +
-        '<span style="flex:1"><span class="act-row__t" style="display:block">' + a.t + '</span><span class="act-row__time">' + a.time + '</span></span></div>';
-    }).join('');
+      // 5. Nhật ký hoạt động (8 sự kiện gần nhất)
+      var ev = [];
+      deals.forEach(function (d) {
+        var t = parseTs(d.created_at); if (isNaN(t)) return;
+        var nm = String(d.sale || '').trim() || 'Admin';
+        var loc = [d.toanha, d.phong].filter(Boolean).join(' · ');
+        ev.push({ t: t, who: nm, txt: nm + ' tạo deal ' + (d.khach || '') + (loc ? ' · ' + loc : '') });
+      });
+      khach.forEach(function (c) {
+        var t = parseTs(c.created_at); if (isNaN(t)) return;
+        var nm = String(c.sale || '').trim();
+        ev.push({ t: t, who: nm || c.ten, txt: 'Khách mới: ' + (c.ten || '') + (nm ? ' · ' + nm + ' phụ trách' : '') });
+      });
+      lich.forEach(function (l) {
+        var t = parseTs(l.created_at); if (isNaN(t)) return;
+        var st = l.trang_thai === 'xacnhan' ? 'Lịch hẹn đã xác nhận: ' : l.trang_thai === 'huy' ? 'Lịch hẹn đã hủy: ' : 'Lịch hẹn mới: ';
+        ev.push({ t: t, who: l.khach, txt: st + (l.khach || '') + (l.phong ? ' · ' + l.phong : '') + (l.ngay ? ' · ' + l.ngay + (l.gio ? ' ' + l.gio : '') : '') });
+      });
+      ev.sort(function (x, y) { return y.t - x.t; });
+      ev = ev.slice(0, 8);
+      document.getElementById('activity').innerHTML = ev.length ? ev.map(function (e) {
+        return '<div class="act-row"><span class="avatar">' + esc(initials(e.who)) + '</span>' +
+          '<span style="flex:1"><span class="act-row__t" style="display:block">' + esc(e.txt) + '</span><span class="act-row__time">' + relTime(e.t) + '</span></span></div>';
+      }).join('') : emptyRow('Chưa có hoạt động nào.');
+    });
 
     // Ô tìm kiếm topbar → mở tìm kiếm toàn cục
     var ts = document.getElementById('topSearch');
