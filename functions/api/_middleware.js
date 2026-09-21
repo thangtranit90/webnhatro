@@ -18,12 +18,24 @@ function cookieVal(request, name) {
   return m ? m[1] : '';
 }
 
+// Lỗi DB (D1 chập chờn) KHÁC "chưa đăng nhập": ném DB_BUSY để trả 503, không trả 401 (tránh đá người dùng ra).
+const DB_BUSY = Symbol('DB_BUSY');
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+async function lookupSession(env, tk) {
+  const q = () => env.DB.prepare('SELECT * FROM phien_dang_nhap WHERE token=?').bind(tk).first();
+  try { return await q(); }
+  catch (_) {
+    await sleep(150); // thử lại 1 lần
+    try { return await q(); }
+    catch (_) { throw DB_BUSY; }
+  }
+}
+
 async function getUser(request, env) {
   const tk = cookieVal(request, 'ht_sess');
   if (!tk) return null;
-  let row;
-  try { row = await env.DB.prepare('SELECT * FROM phien_dang_nhap WHERE token=?').bind(tk).first(); }
-  catch (_) { return null; }
+  const row = await lookupSession(env, tk); // có thể ném DB_BUSY
   if (!row) return null;
   if (row.het_han && row.het_han < new Date().toISOString()) return null; // hết hạn
   return row;
@@ -42,7 +54,12 @@ export async function onRequest(context) {
   if (ep === 'phong' && method === 'GET') return next(); // /api/phong: field an toàn cho khách
 
   // 2) Cần phiên đăng nhập hợp lệ
-  const user = await getUser(request, env);
+  let user;
+  try { user = await getUser(request, env); }
+  catch (e) {
+    if (e === DB_BUSY) return json({ error: 'Máy chủ đang bận, vui lòng thử lại.' }, 503);
+    throw e;
+  }
   if (!user) return json({ error: 'Phiên đăng nhập không hợp lệ hoặc đã hết hạn. Vui lòng đăng nhập.' }, 401);
   if (data) data.user = user;
 

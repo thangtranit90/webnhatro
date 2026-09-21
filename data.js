@@ -166,6 +166,12 @@ window.HT_rebuildRooms = function(){
     if(/^https?:/i.test(v)) return v;               // đã là URL
     return 'https://www.tiktok.com/@ht.home/video/' + v; // chỉ có ID
   }
+  // Ảnh: ưu tiên ảnh RIÊNG của phòng (r.imgs có ≥1 URL thật), không có thì dùng ảnh toà nhà
+  function isPhoto(x){ return typeof x === 'string' && /^https?:|^\/img\//.test(x); }
+  function roomImgs(r, b){
+    const own = (r.imgs || []).filter(isPhoto);
+    return own.length ? own : (b.imgs || []);
+  }
   const rooms = [];
   const all = [].concat(window.HT_BUILDINGS.ptro, window.HT_BUILDINGS.cc);
   all.forEach(b => {
@@ -174,7 +180,7 @@ window.HT_rebuildRooms = function(){
       rooms.push({
         rid: r.rid,
         t: r.loai + ' — ' + b.addr,
-        imgs: b.imgs || [],
+        imgs: roomImgs(r, b),
         p: priceTrieu(r.price),
         ty: LOAI_TO_TY[r.loai] || r.loai,
         a: r.m2 ? (r.m2 + 'm²') : '',

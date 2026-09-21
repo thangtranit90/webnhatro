@@ -34,11 +34,26 @@
   }
   if (typeof window.fetch === 'function' && !window.fetch.__htSessionGuard) {
     var origFetch = window.fetch;
+    // 1 lần 401 lẻ (vd DB chập chờn) KHÔNG đủ để đá ra: xác nhận lại bằng fetch GỐC (không qua bộ bọc).
+    // Chỉ khi xác nhận cũng 401 mới đăng xuất. 200 / 5xx / lỗi mạng → giữ phiên.
+    // Single-flight: nhiều 401 song song dùng chung 1 lần xác nhận.
+    var confirmPending = null;
+    function confirmSessionExpired() {
+      if (sessionExpiredHandled) return Promise.resolve(true);
+      if (confirmPending) return confirmPending;
+      confirmPending = origFetch.call(window, '/api/lich-hen', { method: 'GET', credentials: 'same-origin', cache: 'no-store' })
+        .then(function (r) { return !!r && r.status === 401; }, function () { return false; })
+        .then(function (expired) { confirmPending = null; return expired; });
+      return confirmPending;
+    }
     var guardedFetch = function (input, init) {
       var guarded = isGuardedApi(input);
       return origFetch.apply(this, arguments).then(function (res) {
-        if (guarded && res && res.status === 401) handleSessionExpired();
-        return res; // luôn trả Response gốc cho nơi gọi
+        if (!(guarded && res && res.status === 401)) return res; // 5xx/503 không bao giờ đá ra
+        return confirmSessionExpired().then(function (expired) {
+          if (expired) handleSessionExpired();
+          return res; // luôn trả Response gốc cho nơi gọi
+        });
       });
     };
     guardedFetch.__htSessionGuard = true;

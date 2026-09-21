@@ -229,8 +229,8 @@
 
   <script src="data.js"></script>
   <script src="assets/js/ht-ui.js?v=15"></script>
-  <script src="assets/js/ht-internal.js?v=16"></script>
-  <script src="assets/js/ht-room-modal.js?v=5"></script>
+  <script src="assets/js/ht-internal.js?v=17"></script>
+  <script src="assets/js/ht-room-modal.js?v=6"></script>
   <script>
     (function () {
       // Bộ icon bổ sung (lucide) không có trong HT.icon/HTI.icon — fallback về HTI.icon
@@ -889,9 +889,73 @@
             '<div class="kpm-field col2"><label>Mô tả phòng</label><textarea data-f="desc" rows="3" placeholder="Mô tả ngắn gọn về phòng, tiện ích nổi bật...">' + esc(d.desc || '') + '</textarea></div>' +
           '</div>';
         }
+        // ---- Trình sửa ảnh phòng (upload R2 qua /api/upload; ảnh [0] = ảnh bìa) ----
+        // host: phần tử chứa; initial: danh sách URL ban đầu; onBusy(bool): báo đang upload.
+        function htPhotoEditor(host, initial, onBusy) {
+          function isPhoto(x) { return typeof x === 'string' && /^https?:|^\/img\//.test(x); }
+          var items = (initial || []).filter(isPhoto).map(function (u) { return { url: u, up: false }; });
+          host.innerHTML = '<div class="rm-grid" data-pe-grid></div>' +
+            '<label class="btn btn--ghost btn--sm" style="margin-top:8px;cursor:pointer">+ Thêm ảnh' +
+            '<input type="file" accept="image/*" multiple hidden data-pe-file></label>' +
+            '<div style="font-size:12px;color:var(--muted-fg,#888);margin-top:4px">JPG/PNG/WebP/GIF, tối đa 8MB · ảnh đầu tiên là ảnh bìa</div>';
+          var grid = host.querySelector('[data-pe-grid]'), file = host.querySelector('[data-pe-file]');
+          function busy() { return items.some(function (it) { return it.up; }); }
+          function render() {
+            grid.innerHTML = items.length ? items.map(function (it, i) {
+              if (it.up) return '<div class="rm-thumb" style="display:flex;align-items:center;justify-content:center;font-size:11px;background:var(--muted)">Đang tải…</div>';
+              return '<div class="rm-thumb"><img src="' + HT.esc(it.url) + '" alt="">' +
+                '<button type="button" data-pe-rm="' + i + '" aria-label="Xoá ảnh" title="Xoá ảnh">×</button>' +
+                (i === 0
+                  ? '<span style="position:absolute;left:2px;bottom:2px;background:var(--primary);color:#fff;font-size:10px;padding:1px 5px;border-radius:4px">Bìa</span>'
+                  : '<button type="button" data-pe-cover="' + i + '" title="Đặt làm ảnh bìa" aria-label="Đặt làm ảnh bìa" style="top:auto;right:auto;bottom:2px;left:2px;width:auto;border-radius:4px;padding:0 5px;font-size:10px">Đặt làm ảnh bìa</button>') +
+                '</div>';
+            }).join('') : '<div style="font-size:13px;color:var(--muted-fg,#888)">Chưa có ảnh riêng cho phòng</div>';
+            if (onBusy) onBusy(busy());
+          }
+          grid.addEventListener('click', function (e) {
+            var rm = e.target.closest('[data-pe-rm]'), cv = e.target.closest('[data-pe-cover]');
+            if (rm) { items.splice(+rm.getAttribute('data-pe-rm'), 1); render(); }
+            else if (cv) { var it = items.splice(+cv.getAttribute('data-pe-cover'), 1)[0]; if (it) items.unshift(it); render(); }
+          });
+          file.addEventListener('change', function () {
+            Array.prototype.slice.call(file.files || []).forEach(function (f) {
+              if (!/^image\/(jpeg|png|webp|gif)$/.test(f.type)) { HT.toast('Chỉ nhận ảnh JPG/PNG/WebP/GIF: ' + f.name, 'danger'); return; }
+              if (f.size > 8 * 1024 * 1024) { HT.toast('Ảnh quá lớn (tối đa 8MB): ' + f.name, 'danger'); return; }
+              var it = { url: '', up: true };
+              items.push(it); render();
+              fetch('/api/upload', { method: 'POST', headers: { 'content-type': f.type }, body: f })
+                .then(function (r) { return r.json(); })
+                .then(function (res) {
+                  it.up = false;
+                  if (res && res.url) it.url = res.url;
+                  else { items.splice(items.indexOf(it), 1); HT.toast((res && res.error) || 'Tải ảnh thất bại', 'danger'); }
+                  render();
+                })
+                .catch(function () { it.up = false; items.splice(items.indexOf(it), 1); HT.toast('Lỗi mạng khi tải ảnh', 'danger'); render(); });
+            });
+            file.value = '';
+          });
+          render();
+          return {
+            busy: busy,
+            list: function () { return items.filter(function (it) { return !it.up && isPhoto(it.url); }).map(function (it) { return it.url; }); }
+          };
+        }
+        function htStartImgs(room, bld) {
+          var real = function (x) { return typeof x === 'string' && /^https?:|^\/img\//.test(x); };
+          var own = ((room && room.imgs) || []).filter(real);
+          return own.length ? own : ((bld && bld.imgs) || []).filter(real);
+        }
         function openRoomEdit(d) {
           d = d || {};
-          HT.modal({ wide: true, title: 'Sửa phòng', sub: d.name || 'Cập nhật thông tin phòng', submitLabel: 'Lưu thay đổi', bodyHTML: roomFormBody(d), onSubmit: function (bd, close) {
+          // Dò phòng trong D1 ngay khi mở để lấy ảnh hiện tại
+          var eb0 = d.bid ? buildings.filter(function (x) { return x.bid === d.bid; })[0] : null, er0 = null;
+          if (eb0) { (eb0.rooms || []).forEach(function (x, j) { if (!er0 && (x.rid || (eb0.bid + '_r' + j)) === d.rid) er0 = x; }); }
+          var pe = null;
+          var em = HT.modal({ wide: true, title: 'Sửa phòng', sub: d.name || 'Cập nhật thông tin phòng', submitLabel: 'Lưu thay đổi',
+            bodyHTML: roomFormBody(d) + (er0 ? '<div class="kpm-field col2" style="margin-top:12px"><label>Ảnh phòng</label><div data-pe-host></div></div>' : ''),
+            onSubmit: function (bd, close) {
+            if (pe && pe.busy()) { HT.toast('Đang tải ảnh, vui lòng chờ', 'warning'); return false; }
             if (!d.bid || !d.rid) { HT.toast('Đã lưu thay đổi phòng'); render(); return true; } // fallback: không có tham chiếu D1
             function v(f) { var el = bd.querySelector('[data-f="' + f + '"]'); return el ? el.value.trim() : ''; }
             var b = buildings.filter(function (x) { return x.bid === d.bid; })[0];
@@ -907,12 +971,17 @@
             if (floor) b.rooms[k].tang = floor;
             if (noithat) b.rooms[k].noithatMuc = noithat;
             b.rooms[k].desc = desc;
+            if (pe) b.rooms[k].imgs = pe.list();
             fetch('/api/toa-nha', { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ bid: b.bid, building: b }) })
               .then(function (r) { return r.json(); })
               .then(function (res) { if (res && res.error) { HT.toast(res.error, 'danger'); return; } HT.toast('Đã lưu phòng', 'success'); location.reload(); })
               .catch(function () { HT.toast('Lỗi mạng, vui lòng thử lại', 'danger'); });
             return false;
           } });
+          if (er0) {
+            var sb = em.el.querySelector('[data-msubmit]');
+            pe = htPhotoEditor(em.el.querySelector('[data-pe-host]'), htStartImgs(er0, eb0), function (b) { if (sb) sb.disabled = b; });
+          }
         }
         // ---- Nhân bản phòng (clone → PATCH tòa nguồn → reload) ----
         function dupRoom(id) {

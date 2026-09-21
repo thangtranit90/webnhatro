@@ -38,6 +38,13 @@ function videoUrl(v) {
   return 'https://www.tiktok.com/@ht.home/video/' + v;
 }
 
+// Ảnh: ưu tiên ảnh RIÊNG của phòng (≥1 URL thật), không có thì dùng ảnh toà nhà
+function isPhoto(x) { return typeof x === 'string' && /^https?:|^\/img\//.test(x); }
+function roomImgs(r, b) {
+  var own = (Array.isArray(r.imgs) ? r.imgs : []).filter(isPhoto);
+  return own.length ? own : (b.imgs || []);
+}
+
 export async function onRequestGet({ env }) {
   try {
     const { results } = await env.DB.prepare('SELECT bid,grp,data FROM toa_nha ORDER BY id ASC').all();
@@ -59,7 +66,7 @@ export async function onRequestGet({ env }) {
         rooms.push({
           rid: r.rid,
           t: r.loai + ' — ' + (b.addr || ''),
-          imgs: b.imgs || [],
+          imgs: roomImgs(r, b),
           p: priceTrieu(r.price),
           ty: LOAI_TO_TY[r.loai] || r.loai,
           a: r.m2 ? (r.m2 + 'm²') : '',

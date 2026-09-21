@@ -112,7 +112,7 @@
 
   <script src="data.js"></script>
   <script src="assets/js/ht-ui.js?v=15"></script>
-  <script src="assets/js/ht-internal.js?v=16"></script>
+  <script src="assets/js/ht-internal.js?v=17"></script>
   <script>
     (function () {
       'use strict';
@@ -131,6 +131,66 @@
       document.getElementById('btnSidebar').innerHTML = I('menu', 22);
       document.getElementById('btnShare').innerHTML = icShare + 'Chia sẻ';
       document.getElementById('btnEdit').innerHTML = I('settings', 15) + 'Sửa';
+      // Chưa bấm được cho tới khi nạp xong dữ liệu D1 (bật lại trong callback HT_loadBuildings)
+      (function (be) { be.disabled = true; be.title = 'Đang tải dữ liệu…'; })(document.getElementById('btnEdit'));
+
+      // ---- Trình sửa ảnh phòng (upload R2 qua /api/upload; ảnh [0] = ảnh bìa) ----
+      // host: phần tử chứa; initial: danh sách URL ban đầu; onBusy(bool): báo đang upload.
+      function htPhotoEditor(host, initial, onBusy) {
+        function isPhoto(x) { return typeof x === 'string' && /^https?:|^\/img\//.test(x); }
+        var items = (initial || []).filter(isPhoto).map(function (u) { return { url: u, up: false }; });
+        host.innerHTML = '<div class="rm-grid" data-pe-grid></div>' +
+          '<label class="btn btn--ghost btn--sm" style="margin-top:8px;cursor:pointer">+ Thêm ảnh' +
+          '<input type="file" accept="image/*" multiple hidden data-pe-file></label>' +
+          '<div style="font-size:12px;color:var(--muted-fg,#888);margin-top:4px">JPG/PNG/WebP/GIF, tối đa 8MB · ảnh đầu tiên là ảnh bìa</div>';
+        var grid = host.querySelector('[data-pe-grid]'), file = host.querySelector('[data-pe-file]');
+        function busy() { return items.some(function (it) { return it.up; }); }
+        function render() {
+          grid.innerHTML = items.length ? items.map(function (it, i) {
+            if (it.up) return '<div class="rm-thumb" style="display:flex;align-items:center;justify-content:center;font-size:11px;background:var(--muted)">Đang tải…</div>';
+            return '<div class="rm-thumb"><img src="' + HT.esc(it.url) + '" alt="">' +
+              '<button type="button" data-pe-rm="' + i + '" aria-label="Xoá ảnh" title="Xoá ảnh">×</button>' +
+              (i === 0
+                ? '<span style="position:absolute;left:2px;bottom:2px;background:var(--primary);color:#fff;font-size:10px;padding:1px 5px;border-radius:4px">Bìa</span>'
+                : '<button type="button" data-pe-cover="' + i + '" title="Đặt làm ảnh bìa" aria-label="Đặt làm ảnh bìa" style="top:auto;right:auto;bottom:2px;left:2px;width:auto;border-radius:4px;padding:0 5px;font-size:10px">Đặt làm ảnh bìa</button>') +
+              '</div>';
+          }).join('') : '<div style="font-size:13px;color:var(--muted-fg,#888)">Chưa có ảnh riêng cho phòng</div>';
+          if (onBusy) onBusy(busy());
+        }
+        grid.addEventListener('click', function (e) {
+          var rm = e.target.closest('[data-pe-rm]'), cv = e.target.closest('[data-pe-cover]');
+          if (rm) { items.splice(+rm.getAttribute('data-pe-rm'), 1); render(); }
+          else if (cv) { var it = items.splice(+cv.getAttribute('data-pe-cover'), 1)[0]; if (it) items.unshift(it); render(); }
+        });
+        file.addEventListener('change', function () {
+          Array.prototype.slice.call(file.files || []).forEach(function (f) {
+            if (!/^image\/(jpeg|png|webp|gif)$/.test(f.type)) { HT.toast('Chỉ nhận ảnh JPG/PNG/WebP/GIF: ' + f.name, 'danger'); return; }
+            if (f.size > 8 * 1024 * 1024) { HT.toast('Ảnh quá lớn (tối đa 8MB): ' + f.name, 'danger'); return; }
+            var it = { url: '', up: true };
+            items.push(it); render();
+            fetch('/api/upload', { method: 'POST', headers: { 'content-type': f.type }, body: f })
+              .then(function (r) { return r.json(); })
+              .then(function (res) {
+                it.up = false;
+                if (res && res.url) it.url = res.url;
+                else { items.splice(items.indexOf(it), 1); HT.toast((res && res.error) || 'Tải ảnh thất bại', 'danger'); }
+                render();
+              })
+              .catch(function () { it.up = false; items.splice(items.indexOf(it), 1); HT.toast('Lỗi mạng khi tải ảnh', 'danger'); render(); });
+          });
+          file.value = '';
+        });
+        render();
+        return {
+          busy: busy,
+          list: function () { return items.filter(function (it) { return !it.up && isPhoto(it.url); }).map(function (it) { return it.url; }); }
+        };
+      }
+      function htStartImgs(room, bld) {
+        var real = function (x) { return typeof x === 'string' && /^https?:|^\/img\//.test(x); };
+        var own = ((room && room.imgs) || []).filter(real);
+        return own.length ? own : ((bld && bld.imgs) || []).filter(real);
+      }
 
       // ---- Đọc phòng THẬT từ D1 rồi render (bọc async) ----
       window.HT_loadBuildings(function () {
@@ -158,6 +218,8 @@
           }
         }
       }
+      // Dữ liệu đã nạp + đã dò curB/curR → cho phép bấm "Sửa"
+      (function (be) { be.disabled = false; be.removeAttribute('title'); })(document.getElementById('btnEdit'));
       var ST_LABEL = { open: 'Còn trống', soon: 'Sắp trống', rented: 'Đã cho thuê', hold: 'Giữ chỗ', stop: 'Ngưng' };
       var LABEL_ST = { 'Còn trống': 'open', 'Sắp trống': 'soon', 'Đã cho thuê': 'rented', 'Giữ chỗ': 'hold', 'Ngưng': 'stop' };
       function stOpt(cur) { return ['Còn trống', 'Sắp trống', 'Đã cho thuê', 'Giữ chỗ', 'Ngưng'].map(function (l) { return '<option' + (l === cur ? ' selected' : '') + '>' + l + '</option>'; }).join(''); }
@@ -345,7 +407,8 @@
 
       // ---- Sửa: ghi vào D1 (PATCH tòa nhà) ----
       document.getElementById('btnEdit').addEventListener('click', function () {
-        HT.modal({
+        var pe = null;
+        var em = HT.modal({
           title: 'Sửa thông tin phòng', sub: maPhong + ' · ' + toaNha,
           submitLabel: 'Lưu thay đổi',
           bodyHTML:
@@ -356,18 +419,24 @@
                 '<input type="text" data-f="dt" value="' + esc((curR && curR.m2) || r.a || '') + '" /></div>' +
             '</div>' +
             '<div class="mfield" style="margin-top:12px"><label class="mfield__label">Trạng thái</label>' +
-              '<select data-f="tt">' + stOpt(curLabel()) + '</select></div>',
+              '<select data-f="tt">' + stOpt(curLabel()) + '</select></div>' +
+            '<div class="mfield" style="margin-top:12px"><label class="mfield__label">Ảnh phòng</label>' +
+              '<div data-pe-host></div></div>',
           onSubmit: function (bd) {
-            if (!curB || !curR) { HT.toast('Đã lưu thay đổi phòng', 'success'); return true; }
+            if (!curB || !curR) { HT.toast('Không tìm thấy phòng trong dữ liệu', 'danger'); return false; }
+            if (pe && pe.busy()) { HT.toast('Đang tải ảnh, vui lòng chờ', 'warning'); return false; }
             function v(f) { var el = bd.querySelector('[data-f="' + f + '"]'); return el ? el.value.trim() : ''; }
             var gia = v('gia'), dt = v('dt'), tt = v('tt');
             if (gia) curR.price = gia;
             if (dt) curR.m2 = dt.replace(/[^\d.,]/g, '') || curR.m2;
             if (LABEL_ST[tt]) curR.status = LABEL_ST[tt];
+            if (pe) curR.imgs = pe.list();
             patchCurBuilding('Đã lưu thay đổi phòng');
             return false;
           }
         });
+        var sb = em.el.querySelector('[data-msubmit]');
+        pe = htPhotoEditor(em.el.querySelector('[data-pe-host]'), htStartImgs(curR, curB), function (b) { if (sb) sb.disabled = b; });
       });
 
       // ---- Panel nội bộ: Đổi trạng thái → ghi D1 ----
@@ -379,7 +448,7 @@
             '<div class="mfield"><label class="mfield__label">Trạng thái mới</label>' +
               '<select data-f="tt">' + stOpt(curLabel()) + '</select></div>',
           onSubmit: function (bd) {
-            if (!curB || !curR) { HT.toast('Đã đổi trạng thái phòng', 'success'); return true; }
+            if (!curB || !curR) { HT.toast('Không tìm thấy phòng trong dữ liệu', 'danger'); return false; }
             var tt = (bd.querySelector('[data-f="tt"]') || {}).value;
             if (LABEL_ST[tt]) curR.status = LABEL_ST[tt];
             patchCurBuilding('Đã đổi trạng thái phòng');

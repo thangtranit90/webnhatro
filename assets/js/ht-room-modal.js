@@ -78,8 +78,13 @@
             coc: '1 tháng', cocsố: '', hh: '50%–80%', hd: '6T–12T',
             chiPhi: { loai: 'tro' }, soLuong: 1, soTrong: 1, status: 'open'
           };
+          // Ảnh lưu RIÊNG cho phòng; toà nhà chỉ nhận ảnh này làm ảnh bìa khi chưa có ảnh thật nào
+          if (roomImgs.length) {
+            room.imgs = roomImgs.slice();
+            var bReal = (b.imgs || []).filter(function (x) { return /^https?:|^\/img\//.test(x); });
+            if (!bReal.length) b.imgs = roomImgs.slice();
+          }
           b.rooms = (b.rooms || []).concat([room]);
-          if (roomImgs.length) b.imgs = (b.imgs || []).filter(function (x) { return /^https?:|^\/img\//.test(x); }).concat(roomImgs);
           fetch('/api/toa-nha', {
             method: 'PATCH', headers: { 'content-type': 'application/json' },
             body: JSON.stringify({ bid: bid, building: b })
