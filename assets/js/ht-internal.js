@@ -9,6 +9,42 @@
 (function () {
   'use strict';
 
+  /* ---- Hết phiên đăng nhập: bắt MỌI lệnh gọi /api trả 401 ----
+     Cookie phiên (ht_sess, httpOnly) mới là xác thực thật; localStorage ht_staff chỉ để hiển thị.
+     Khi cookie hết hạn mà ht_staff còn → mọi /api trả 401. Bọc window.fetch để: xoá ht_staff,
+     báo 1 lần, rồi chuyển về trang đăng nhập (kèm next= để quay lại). /api/auth-noibo tự xử lý 401. */
+  var sessionExpiredHandled = false;
+  function handleSessionExpired() {
+    if (sessionExpiredHandled) return;
+    sessionExpiredHandled = true;
+    try { localStorage.removeItem('ht_staff'); } catch (e) {}
+    try { if (window.HT && typeof HT.toast === 'function') HT.toast('Phiên đăng nhập đã hết hạn. Đang chuyển về trang đăng nhập…', 'error'); } catch (e) {}
+    setTimeout(function () {
+      location.replace('dangnhap-noibo.html?het_phien=1&next=' + encodeURIComponent(location.pathname + location.search));
+    }, 1200);
+  }
+  function isGuardedApi(input) {
+    try {
+      var raw = (typeof Request !== 'undefined' && input instanceof Request) ? input.url : String(input);
+      var u = new URL(raw, location.href);
+      if (u.origin !== location.origin) return false;
+      if (u.pathname.indexOf('/api/') !== 0) return false;
+      return u.pathname !== '/api/auth-noibo' && u.pathname.indexOf('/api/auth-noibo/') !== 0;
+    } catch (e) { return false; }
+  }
+  if (typeof window.fetch === 'function' && !window.fetch.__htSessionGuard) {
+    var origFetch = window.fetch;
+    var guardedFetch = function (input, init) {
+      var guarded = isGuardedApi(input);
+      return origFetch.apply(this, arguments).then(function (res) {
+        if (guarded && res && res.status === 401) handleSessionExpired();
+        return res; // luôn trả Response gốc cho nơi gọi
+      });
+    };
+    guardedFetch.__htSessionGuard = true;
+    window.fetch = guardedFetch;
+  }
+
   var IC = {
     'layout-dashboard': '<rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/>',
     package: '<path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z"/><path d="M12 22V12"/><polyline points="3.29 7 12 12 20.71 7"/><path d="m7.5 4.27 9 5.15"/>',
@@ -153,6 +189,10 @@
     var active = host.getAttribute('data-active') || '';
     if (s.roleKey !== 'admin' && ADMIN_ONLY.indexOf(active) >= 0) { location.replace('dashboard.html'); return; }
     host.innerHTML = sidebarHTML(active);
+
+    // Kiểm tra phiên server ngay khi mở trang (kể cả trang không gọi API lúc tải, vd doanhthu).
+    // Nếu cookie hết hạn → 401 → bộ bọc fetch ở trên tự đưa về trang đăng nhập.
+    fetch('/api/lich-hen', { method: 'GET', credentials: 'same-origin' }).catch(function () {});
 
     var lo = document.getElementById('htLogout');
     if (lo) lo.addEventListener('click', function (e) {

@@ -126,6 +126,8 @@
         <h2 class="auth-card__h">Đăng nhập</h2>
         <p class="auth-card__sub">Chỉ tài khoản do Admin cấp mới có thể truy cập.</p>
 
+        <div id="sessionNotice" role="status" style="display:none;margin-bottom:14px;padding:10px 12px;border-radius:var(--radius-s);border:1px solid var(--danger);color:var(--danger);font-size:13px;font-weight:600">Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.</div>
+
         <form id="loginForm" novalidate>
           <div class="field">
             <label class="field__label" for="fEmail">Email</label>
@@ -182,6 +184,14 @@
       toggle.setAttribute('aria-label', show ? 'Ẩn mật khẩu' : 'Hiện mật khẩu');
     });
 
+    /* Hết phiên: hiện thông báo; next= (đường dẫn tương đối an toàn) để quay lại sau khi đăng nhập */
+    var qs = new URLSearchParams(location.search);
+    if (qs.get('het_phien') === '1') document.getElementById('sessionNotice').style.display = 'block';
+    function safeNext() {
+      var n = qs.get('next') || '';
+      return (n.charAt(0) === '/' && n.charAt(1) !== '/' && n.indexOf('\\') < 0 && n.indexOf(':') < 0) ? n : '';
+    }
+
     /* Đăng nhập nội bộ THẬT qua API D1 (email + mật khẩu) */
     var form = document.getElementById('loginForm');
     var errEl = document.getElementById('formError');
@@ -202,7 +212,7 @@
         .then(function (res) {
           if (!res.ok) { errEl.textContent = res.d.error || 'Đăng nhập thất bại.'; btn.disabled = false; btn.textContent = oldTxt; return; }
           try { localStorage.setItem('ht_staff', JSON.stringify(res.d.user)); } catch (e2) {}
-          window.location.href = 'dashboard.html';
+          window.location.href = safeNext() || 'dashboard.html';
         })
         .catch(function () { errEl.textContent = 'Lỗi kết nối, vui lòng thử lại.'; btn.disabled = false; btn.textContent = oldTxt; });
     });
