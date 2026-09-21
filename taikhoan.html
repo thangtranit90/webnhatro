@@ -122,7 +122,7 @@
           <span class="cur">Tài khoản của tôi</span>
         </nav>
         <h1 class="acc-header__h" id="greeting">Xin chào, bạn 👋</h1>
-        <p class="acc-header__sub">Quản lý thông tin, phòng đã lưu, lịch xem phòng và giao dịch của bạn</p>
+        <p class="acc-header__sub">Quản lý thông tin và phòng đã lưu của bạn</p>
       </div>
     </section>
 
@@ -174,24 +174,6 @@
             <div class="acc-main__head"><div><h2 class="acc-main__title">Thông tin cá nhân</h2>
               <p class="acc-main__sub">Cập nhật thông tin liên hệ của bạn</p></div></div>
             <div class="acc-card" id="profileForm"></div>
-          </div>
-          <!-- Lịch xem phòng -->
-          <div class="acc-pane is-hidden" data-pane="schedule">
-            <div class="acc-main__head"><div><h2 class="acc-main__title">Lịch xem phòng</h2>
-              <p class="acc-main__sub" id="schSub"></p></div></div>
-            <div id="schList"></div>
-          </div>
-          <!-- Giao dịch của tôi -->
-          <div class="acc-pane is-hidden" data-pane="tx">
-            <div class="acc-main__head"><div><h2 class="acc-main__title">Giao dịch của tôi</h2>
-              <p class="acc-main__sub">Lịch sử cọc & thanh toán</p></div></div>
-            <div id="txList"></div>
-          </div>
-          <!-- Thông báo -->
-          <div class="acc-pane is-hidden" data-pane="notif">
-            <div class="acc-main__head"><div><h2 class="acc-main__title">Thông báo</h2>
-              <p class="acc-main__sub">Cập nhật mới nhất cho bạn</p></div></div>
-            <div id="notifList"></div>
           </div>
           <!-- Đổi mật khẩu -->
           <div class="acc-pane is-hidden" data-pane="password">
@@ -248,9 +230,6 @@
     var NAV = [
       { pane: 'profile',  label: 'Thông tin cá nhân', icon: 'user' },
       { pane: 'saved',    label: 'Phòng đã lưu',      icon: 'heart', active: true },
-      { pane: 'schedule', label: 'Lịch xem phòng',    icon: 'calendar' },
-      { pane: 'tx',       label: 'Giao dịch của tôi', icon: 'receipt' },
-      { pane: 'notif',    label: 'Thông báo',         icon: 'bell' },
       { pane: 'password', label: 'Đổi mật khẩu',      icon: 'key' }
     ];
     function navIcon(name) { return name === 'heart' ? ico('heart', 18) : pico(name, 18); }
@@ -365,51 +344,6 @@
         '<div class="af-field"><label>Số điện thoại</label><input id="pfPhone" value="' + esc(user.phone) + '" placeholder="09xx xxx xxx" readonly></div>' +
         '<div class="af-field"><label>Email</label><input id="pfEmail" value="' + esc(email) + '" placeholder="ten@email.com" readonly></div>' +
         '<div class="af-field"><label>Địa chỉ</label><input id="pfAddr" value="' + esc(addr) + '" placeholder="Địa chỉ liên hệ" readonly></div>';
-    })();
-
-    /* ===== Lịch xem phòng (demo) ===== */
-    (function () {
-      var list = document.getElementById('schList'), sub = document.getElementById('schSub');
-      var data = [
-        { room: 'Ký túc xá — Huỳnh Khương An, P.8', when: 'T4 15/07 · 15:00', st: 'ok', stl: 'Đã xác nhận' },
-        { room: 'Phòng trọ — Nguyễn Oanh, P.17', when: 'T6 17/07 · 10:00', st: 'wait', stl: 'Chờ xác nhận' },
-        { room: 'Căn hộ DV — Đinh Tiên Hoàng, P.3', when: 'T2 13/07 · 09:00', st: 'cancel', stl: 'Đã huỷ' }
-      ];
-      sub.textContent = data.length + ' lịch xem phòng';
-      list.innerHTML = data.map(function (x) {
-        return '<div class="acc-item"><span class="acc-item__ic">' + pico('calendar', 18) + '</span>' +
-          '<span><span class="acc-item__t">' + esc(x.room) + '</span><span class="acc-item__s">' + esc(x.when) + '</span></span>' +
-          '<span class="badge-st ' + x.st + '">' + esc(x.stl) + '</span></div>';
-      }).join('');
-    })();
-
-    /* ===== Giao dịch của tôi (demo) ===== */
-    (function () {
-      var list = document.getElementById('txList');
-      var data = [
-        { t: 'Cọc giữ phòng — Nguyễn Oanh, P.17', s: 'Chuyển khoản · 12/07', amt: '−2.800.000đ', dir: 'out' },
-        { t: 'Hoàn cọc — Đinh Tiên Hoàng (đổi phòng)', s: 'Chuyển khoản · 05/07', amt: '+1.500.000đ', dir: 'in' },
-        { t: 'Thanh toán tháng đầu — Huỳnh Khương An', s: 'Tiền mặt · 01/07', amt: '−1.400.000đ', dir: 'out' }
-      ];
-      list.innerHTML = data.map(function (x) {
-        return '<div class="acc-item"><span class="acc-item__ic">' + pico('receipt', 18) + '</span>' +
-          '<span><span class="acc-item__t">' + esc(x.t) + '</span><span class="acc-item__s">' + esc(x.s) + '</span></span>' +
-          '<span class="acc-item__amt ' + x.dir + '">' + esc(x.amt) + '</span></div>';
-      }).join('');
-    })();
-
-    /* ===== Thông báo (demo) ===== */
-    (function () {
-      var list = document.getElementById('notifList');
-      var data = [
-        { t: 'Lịch xem phòng đã được xác nhận', s: 'Ký túc xá Huỳnh Khương An · 2 giờ trước' },
-        { t: 'Có 3 phòng mới ở Gò Vấp phù hợp với bạn', s: 'Gợi ý theo khu vực quan tâm · Hôm qua' },
-        { t: 'Ưu đãi: giảm 500k cho lần thuê đầu tiên', s: 'Áp dụng đến 31/07 · 2 ngày trước' }
-      ];
-      list.innerHTML = data.map(function (x) {
-        return '<div class="acc-item"><span class="acc-item__ic">' + pico('bell', 18) + '</span>' +
-          '<span><span class="acc-item__t">' + esc(x.t) + '</span><span class="acc-item__s">' + esc(x.s) + '</span></span></div>';
-      }).join('');
     })();
 
     /* ===== Đổi mật khẩu ===== */
