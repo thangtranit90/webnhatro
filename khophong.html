@@ -704,7 +704,7 @@
           var act = btn.getAttribute('data-act');
           if (act === 'clear') { clearSel(); syncSelectionUI(); updateActionBar(); return; }
           var n = selCount();
-          if (act === 'delete') { confirmDelete(n + ' mục đã chọn', function () { clearSel(); render(); }); return; }
+          if (act === 'delete') { deleteItems(Object.keys(state.sel)); return; }
           if (act === 'status') { openStatusModal(Object.keys(state.sel)); return; }
           if (act === 'move') { moveRooms(Object.keys(state.sel)); return; }
         });
@@ -757,7 +757,7 @@
             if (act === 'status') { openStatusModal(bulk ? Object.keys(state.sel) : [targetId]); return; }
             if (act === 'dup') { dupRoom(targetId); return; }
             if (act === 'share') { shareRoom(targetId); return; }
-            if (act === 'delete') { confirmDelete(scope, function () { if (bulk) { clearSel(); } else { delete state.sel[targetId]; } render(); }); return; }
+            if (act === 'delete') { deleteItems(bulk ? Object.keys(state.sel) : [targetId]); return; }
             HT.toast('Đã thực hiện ' + scope);
           });
         }
@@ -870,9 +870,68 @@
           }
           return null;
         }
-        function confirmDelete(scope, cb) {
-          if (HT.confirm) HT.confirm({ title: 'Xóa ' + scope + '?', message: 'Hành động này không thể hoàn tác.', danger: true, confirmLabel: 'Xóa', onConfirm: cb });
-          else if (confirm('Xóa ' + scope + '?')) cb();
+        function confirmDelete(title, message, cb) {
+          if (HT.confirm) HT.confirm({ title: title, message: message, danger: true, confirmLabel: 'Xóa', onConfirm: cb });
+          else if (confirm(message)) cb();
+        }
+        function findBld(bid) {
+          for (var i = 0; i < buildings.length; i++) { if (buildings[i].bid === bid) return buildings[i]; }
+          return null;
+        }
+        // ---- Xoá THẬT: toà (DELETE) + phòng (bỏ khỏi rooms rồi PATCH toà, mỗi toà 1 lần) ----
+        function deleteItems(ids) {
+          var delB = {}, roomsBy = {}, nB = 0, nR = 0;
+          ids.forEach(function (id) {
+            if (id.indexOf('bld:') === 0) {
+              var b = findBld(id.slice(4)); if (b && !delB[b.bid]) { delB[b.bid] = b; nB++; }
+            } else if (id.indexOf('brm:') === 0) {
+              var fv = findBrm(id); if (!fv) return;
+              (roomsBy[fv.b.bid] = roomsBy[fv.b.bid] || { b: fv.b, rs: [] }).rs.push(fv.r);
+              nR++;
+            }
+          });
+          if (!nB && !nR) { HT.toast('Không tìm thấy mục cần xoá', 'danger'); return; }
+          var title, msg;
+          if (nB === 1 && !nR) {
+            var b1 = delB[Object.keys(delB)[0]];
+            title = 'Xoá toà nhà';
+            msg = 'Xoá toà "' + (b1.addr || b1.bid) + '" và TẤT CẢ ' + ((b1.rooms || []).length) + ' phòng bên trong? Không khôi phục được.';
+          } else if (!nB && nR === 1) {
+            var g = roomsBy[Object.keys(roomsBy)[0]], r1 = g.rs[0];
+            title = 'Xoá phòng';
+            msg = 'Xoá phòng ' + (r1.ma || r1.ten || r1.rid || '') + ' của toà ' + (g.b.addr || g.b.bid) + '?';
+          } else {
+            title = 'Xoá mục đã chọn';
+            msg = 'Xoá ' + nB + ' toà nhà và ' + nR + ' phòng đã chọn? Không khôi phục được.';
+          }
+          confirmDelete(title, msg, function () {
+            var reqs = [];
+            Object.keys(delB).forEach(function (bid) {
+              reqs.push({ method: 'DELETE', body: { bid: bid } });
+            });
+            Object.keys(roomsBy).forEach(function (bid) {
+              if (delB[bid]) return; // toà bị xoá luôn → bỏ qua PATCH phòng
+              var g = roomsBy[bid];
+              g.b.rooms = (g.b.rooms || []).filter(function (r) { return g.rs.indexOf(r) < 0; });
+              reqs.push({ method: 'PATCH', body: { bid: bid, building: g.b } });
+            });
+            Promise.all(reqs.map(function (q) {
+              return fetch('/api/toa-nha', { method: q.method, headers: { 'content-type': 'application/json' }, body: JSON.stringify(q.body) })
+                .then(function (r) {
+                  return r.json().catch(function () { return {}; }).then(function (j) {
+                    if (!r.ok || (j && j.error)) return { error: (j && j.error) || ('Lỗi máy chủ (' + r.status + ')') };
+                    return j;
+                  });
+                })
+                .catch(function () { return { error: 'Lỗi mạng, vui lòng thử lại' }; });
+            })).then(function (results) {
+              var err = results.filter(function (x) { return x && x.error; })[0];
+              if (err) HT.toast(err.error, 'danger');
+              else HT.toast('Đã xoá ' + (nB ? nB + ' toà nhà' : '') + (nB && nR ? ' và ' : '') + (nR ? nR + ' phòng' : ''), 'success');
+              clearSel();
+              setTimeout(function () { location.reload(); }, err ? 1500 : 600);
+            });
+          });
         }
         function fld(label, val, ph, col, key) { return '<div class="kpm-field' + (col ? ' col2' : '') + '"><label>' + esc(label) + '</label><input' + (key ? ' data-f="' + key + '"' : '') + ' value="' + esc(val == null ? '' : val) + '" placeholder="' + esc(ph || '') + '"></div>'; }
         function selFld(label, val, opts, key) { return '<div class="kpm-field"><label>' + esc(label) + '</label><select' + (key ? ' data-f="' + key + '"' : '') + '>' + opts.map(function (o) { return '<option' + (o === val ? ' selected' : '') + '>' + esc(o) + '</option>'; }).join('') + '</select></div>'; }

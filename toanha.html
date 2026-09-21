@@ -42,8 +42,16 @@
     .topbar-search { width: 240px; max-width: 42vw; }
 
     /* ===== Bảng ===== */
-    .tn-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-    table.tn-table { width: 100%; border-collapse: collapse; min-width: 880px; }
+    /* min-width:0 để cột flex/grid không bị nội dung bảng kéo giãn quá khung nhìn */
+    .app-main, .app-content, .card { min-width: 0; }
+    .tn-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }
+    table.tn-table { width: 100%; border-collapse: collapse; min-width: 820px; }
+    /* Cột thao tác luôn dính mép phải — Xem/Xoá luôn thấy được, không cần cuộn */
+    .tn-table th.tn-act, .tn-table td.tn-act { position: sticky; right: 0; z-index: 1; background: var(--card); border-left: 1px solid var(--border); box-shadow: -6px 0 8px -6px rgba(0,0,0,.15); }
+    .tn-table th.tn-act { background: var(--bg); }
+    .tn-table tbody tr:hover td.tn-act { background: var(--bg); }
+    /* Cột tên được xuống dòng để bớt bề ngang */
+    .tn-table td.tn-col-name { white-space: normal; min-width: 200px; max-width: 300px; }
     .tn-table th, .tn-table td { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--border); font-size: 13px; white-space: nowrap; }
     .tn-table th { font-size: 12px; font-weight: 700; color: var(--muted-fg); text-transform: uppercase; letter-spacing: .03em; background: var(--bg); }
     .tn-table tbody tr:hover { background: var(--bg); }
@@ -107,7 +115,7 @@
                   <th>Tỉ lệ lấp đầy</th>
                   <th>Chủ sở hữu</th>
                   <th>Cập nhật</th>
-                  <th></th>
+                  <th class="tn-act"></th>
                 </tr>
               </thead>
               <tbody id="tnBody"></tbody>
@@ -209,7 +217,7 @@
           var pct = total ? Math.round(rented / total * 100) : 0;
           var addrSmall = b.addrFull || (b.quan || '');
           return '<tr>' +
-            '<td><div class="tn-name"><span class="tn-name__ic">' + I('building', 18) + '</span>' +
+            '<td class="tn-col-name"><div class="tn-name"><span class="tn-name__ic">' + I('building', 18) + '</span>' +
               '<span><span class="tn-name__t" style="display:block">' + esc(b.addr || '—') + '</span>' +
               '<span class="tn-name__s">' + esc(addrSmall) + '</span></span></div></td>' +
             '<td><span class="tn-badge">' + esc(loaiLabel(b)) + '</span></td>' +
@@ -219,7 +227,7 @@
               '<span class="tn-fill__pct">' + pct + '%</span></div></td>' +
             '<td>' + esc(b.nv || '—') + '</td>' +
             '<td>' + esc(b.date || 'Hôm nay') + '</td>' +
-            '<td><div style="display:flex;align-items:center;justify-content:flex-end;gap:14px">' +
+            '<td class="tn-act"><div style="display:flex;align-items:center;justify-content:flex-end;gap:14px">' +
               '<a class="tn-view" href="toanha-chitiet.html?bid=' + encodeURIComponent(b.bid) + '">' + HT.icon('arrow-right', 14) + 'Xem</a>' +
               '<button class="tn-view" type="button" data-delbid="' + esc(b.bid) + '" style="color:var(--danger);background:transparent;border:0;cursor:pointer;font:inherit">' + I('x', 14) + 'Xoá</button>' +
             '</div></td>' +
