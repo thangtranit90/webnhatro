@@ -725,7 +725,7 @@
           items.push(
             { act: 'edit', ic: 'pencil-line', label: 'Chỉnh sửa' },
             { act: 'dup', ic: 'copy', label: 'Nhân bản' },
-            { act: 'share', ic: 'share-2', label: 'Chia sẻ' },
+            { act: 'share', ic: 'share-2', label: 'Copy link gửi khách' },
             { act: 'status', ic: 'repeat', label: 'Đổi trạng thái' },
             { sep: true },
             { act: 'delete', ic: 'trash-2', label: (kind === 'bld' ? 'Xóa tòa nhà' : 'Xóa phòng'), danger: true }
@@ -1088,15 +1088,25 @@
           } });
         }
         // ---- Chia sẻ link phòng (copy clipboard, fallback toast) ----
-        function copyLink(url) {
+        // Luôn copy link CÔNG KHAI (detail.html) để gửi khách — không phải trang nội bộ.
+        function copyLink(url, msg, type) {
           if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(url).then(function () { HT.toast('Đã copy link', 'success'); }, function () { HT.toast(url, 'success'); });
+            navigator.clipboard.writeText(url).then(function () { HT.toast(msg || 'Đã copy link gửi khách', type || 'success'); }, function () { HT.toast(url, 'success'); });
           } else { HT.toast(url, 'success'); }
         }
+        function sharePublic(rid) {
+          var fv = rid ? findBrm('brm:' + rid) : null;
+          if (!rid || !fv) { HT.toast('Không tìm thấy mã phòng', 'danger'); return; }
+          var url = location.origin + '/' + window.HT_roomUrl({ rid: rid, t: (fv.r.loai || 'Phòng') + ' — ' + (fv.b.addr || '') });
+          var st = fv.r.status;
+          var hidden = st === 'rented' || st === 'stop' || st === 'nháp';
+          copyLink(url, hidden ? 'Đã copy link — lưu ý: phòng đang ẩn trên web khách (' + (st === 'nháp' ? 'Nháp' : (ST_LABEL[st] || st)) + '), khách mở sẽ thấy \'không còn cho thuê\'.' : 'Đã copy link gửi khách', hidden ? 'warning' : 'success');
+        }
         function shareRoom(id) {
-          var url = location.origin + '/phong-noibo.html';
-          if (id && id.indexOf('brm:') === 0) { var fv = findBrm(id); if (fv) url += '?rid=' + encodeURIComponent(fv.r.rid); }
-          copyLink(url);
+          var rid = '';
+          if (id && String(id).indexOf('brm:') === 0) rid = String(id).slice(4);
+          else if (rooms[id]) rid = rooms[id].rid;
+          sharePublic(rid);
         }
         function buildingFormBody(b) {
           b = b || {};
@@ -1203,12 +1213,12 @@
               '<div class="kpm-spec"><b>' + esc(loai || '—') + '</b><span>Loại phòng</span></div>' +
             '</div>' + chips +
             '<div class="kpm-sec">Giới thiệu</div><div style="font-size:13.5px;line-height:1.6">' + esc(desc || 'Phòng đầy đủ nội thất, thoáng mát, thuận tiện di chuyển.') + '</div>' +
-            '<div style="display:flex;gap:8px;margin-top:16px"><button class="btn btn--primary btn--sm" data-detedit>' + I('pencil-line', 15) + 'Sửa phòng</button><button class="btn btn--ghost btn--sm" data-detshare>' + I('share-2', 15) + 'Chia sẻ</button></div>';
+            '<div style="display:flex;gap:8px;margin-top:16px"><button class="btn btn--primary btn--sm" data-detedit>' + I('pencil-line', 15) + 'Sửa phòng</button><button class="btn btn--ghost btn--sm" data-detshare>' + I('share-2', 15) + 'Copy link gửi khách</button></div>';
         }
         function wireDetail(m, editData) {
           var eb = m.el.querySelector('[data-detedit]'); if (eb) eb.addEventListener('click', function () { m.close(); openRoomEdit(editData); });
           var sb = m.el.querySelector('[data-detshare]'); if (sb) sb.addEventListener('click', function () {
-            copyLink(location.origin + '/phong-noibo.html' + (editData && editData.rid ? '?rid=' + encodeURIComponent(editData.rid) : ''));
+            sharePublic(editData && editData.rid);
           });
         }
         function openRoomDetail(idx) {

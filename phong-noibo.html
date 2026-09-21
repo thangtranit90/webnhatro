@@ -134,7 +134,7 @@
 
       // ---- Topbar tĩnh ----
       document.getElementById('btnSidebar').innerHTML = I('menu', 22);
-      document.getElementById('btnShare').innerHTML = icShare + 'Chia sẻ';
+      document.getElementById('btnShare').innerHTML = icShare + 'Copy link gửi khách';
       document.getElementById('btnEdit').innerHTML = I('settings', 15) + 'Sửa';
       // Chưa bấm được cho tới khi nạp xong dữ liệu D1 (bật lại trong callback HT_loadBuildings)
       (function (be) { be.disabled = true; be.title = 'Đang tải dữ liệu…'; })(document.getElementById('btnEdit'));
@@ -426,10 +426,20 @@
 
       // ---- Chia sẻ ----
       document.getElementById('btnShare').addEventListener('click', function () {
-        var url = location.href;
+        // Copy link CÔNG KHAI (detail.html) để gửi khách — không phải trang nội bộ.
+        var sRid = (curR && curR.rid) || keyRid || (r && r.rid) || '';
+        if (!sRid) { HT.toast('Không tìm thấy mã phòng', 'danger'); return; }
+        var sLoai = (curR && curR.loai) || (r && r.ty) || 'Phòng';
+        var sAddr = (curB && curB.addr) || '';
+        var url = location.origin + '/' + window.HT_roomUrl({ rid: sRid, t: sAddr ? sLoai + ' — ' + sAddr : ((r && r.t) || sLoai) });
+        var sSt = curR && curR.status;
+        var sHidden = sSt === 'rented' || sSt === 'stop' || sSt === 'nháp';
+        var okMsg = sHidden
+          ? 'Đã copy link — lưu ý: phòng đang ẩn trên web khách (' + (sSt === 'nháp' ? 'Nháp' : (ST_LABEL[sSt] || sSt)) + '), khách mở sẽ thấy \'không còn cho thuê\'.'
+          : 'Đã copy link gửi khách';
         if (navigator.clipboard && navigator.clipboard.writeText) {
           navigator.clipboard.writeText(url).then(
-            function () { HT.toast('Đã copy link phòng', 'success'); },
+            function () { HT.toast(okMsg, sHidden ? 'warning' : 'success'); },
             function () { HT.toast(url, 'success'); }
           );
         } else { HT.toast(url, 'success'); }
