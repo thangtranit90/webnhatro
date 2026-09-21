@@ -361,23 +361,10 @@
       var email = '', addr = '';
       try { var u = JSON.parse(localStorage.getItem('ht_user') || '{}'); email = u.email || ''; addr = u.addr || ''; } catch (_) {}
       wrap.innerHTML =
-        '<div class="af-field"><label>Họ tên</label><input id="pfName" value="' + esc(user.name) + '" placeholder="Nguyễn Văn A"></div>' +
-        '<div class="af-field"><label>Số điện thoại</label><input id="pfPhone" value="' + esc(user.phone) + '" placeholder="09xx xxx xxx"></div>' +
-        '<div class="af-field"><label>Email</label><input id="pfEmail" value="' + esc(email) + '" placeholder="ten@email.com"></div>' +
-        '<div class="af-field"><label>Địa chỉ</label><input id="pfAddr" value="' + esc(addr) + '" placeholder="Địa chỉ liên hệ"></div>' +
-        '<button class="btn btn--primary" id="pfSave">Lưu thay đổi</button>';
-      wrap.querySelector('#pfSave').addEventListener('click', function () {
-        var nm = wrap.querySelector('#pfName').value.trim();
-        if (!nm) { HT.toast('Nhập họ tên', 'danger'); return; }
-        try {
-          localStorage.setItem('ht_user', JSON.stringify({
-            name: nm, phone: wrap.querySelector('#pfPhone').value.trim(),
-            email: wrap.querySelector('#pfEmail').value.trim(), addr: wrap.querySelector('#pfAddr').value.trim()
-          }));
-        } catch (_) {}
-        var g = document.getElementById('greeting'); if (g) g.textContent = 'Xin chào, ' + nm + ' 👋';
-        HT.toast('Đã lưu thông tin', 'success');
-      });
+        '<div class="af-field"><label>Họ tên</label><input id="pfName" value="' + esc(user.name) + '" placeholder="Nguyễn Văn A" readonly></div>' +
+        '<div class="af-field"><label>Số điện thoại</label><input id="pfPhone" value="' + esc(user.phone) + '" placeholder="09xx xxx xxx" readonly></div>' +
+        '<div class="af-field"><label>Email</label><input id="pfEmail" value="' + esc(email) + '" placeholder="ten@email.com" readonly></div>' +
+        '<div class="af-field"><label>Địa chỉ</label><input id="pfAddr" value="' + esc(addr) + '" placeholder="Địa chỉ liên hệ" readonly></div>';
     })();
 
     /* ===== Lịch xem phòng (demo) ===== */
