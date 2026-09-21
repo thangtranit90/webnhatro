@@ -210,6 +210,7 @@ window.HT_loadBuildings = function(cb){
   fetch('/api/toa-nha').then(function(r){ return r.json(); }).then(function(d){
     if (d && (d.ptro || d.cc)) {
       window.HT_BUILDINGS = { ptro: d.ptro || [], cc: d.cc || [] };
+      window.HT_BUILDINGS_LIVE = true;
       window.HT_rebuildRooms();
     }
     if (cb) cb();

@@ -145,8 +145,8 @@
     lichReq.then(jsonOrNull).then(function (rows) {
       if (Array.isArray(rows)) setBadge('lichhen', rows.filter(function (l) { return l && l.trang_thai === 'cho'; }).length);
     }).catch(function () {});
-    // Kho phòng: dùng HT_BUILDINGS nếu trang đã có, không thì tải
-    var bdP = (window.HT_BUILDINGS && (HT_BUILDINGS.ptro || HT_BUILDINGS.cc))
+    // Kho phòng: chỉ dùng HT_BUILDINGS khi đã nạp dữ liệu THẬT (không phải seed tĩnh data.js), không thì tải
+    var bdP = (window.HT_BUILDINGS_LIVE === true && window.HT_BUILDINGS && (HT_BUILDINGS.ptro || HT_BUILDINGS.cc))
       ? Promise.resolve(window.HT_BUILDINGS)
       : fetch('/api/toa-nha', { credentials: 'same-origin' }).then(jsonOrNull);
     bdP.then(function (bd) { if (bd && !bd.error) setBadge('khophong', countOpen(bd)); }).catch(function () {});
@@ -161,6 +161,25 @@
     }).catch(function () {});
   }
 
+  /* Nạp tòa nhà THẬT 1 lần (cache), gán vào HT_BUILDINGS + dựng lại ROOMS để tái dùng */
+  var liveBdP = null, liveFailed = false;
+  function loadLiveBuildings() {
+    if (window.HT_BUILDINGS_LIVE === true) return Promise.resolve(true);
+    if (!liveBdP) {
+      liveFailed = false;
+      liveBdP = fetch('/api/toa-nha', { credentials: 'same-origin' }).then(jsonOrNull).then(function (d) {
+        if (d && !d.error && (d.ptro || d.cc)) {
+          window.HT_BUILDINGS = { ptro: d.ptro || [], cc: d.cc || [] };
+          window.HT_BUILDINGS_LIVE = true;
+          if (typeof window.HT_rebuildRooms === 'function') window.HT_rebuildRooms();
+          return true;
+        }
+        liveFailed = true; liveBdP = null; return false;
+      }).catch(function () { liveFailed = true; liveBdP = null; return false; });
+    }
+    return liveBdP;
+  }
+
   /* Tìm kiếm toàn cục (⌘K / bấm ô tìm kiếm) — tìm phòng + tòa nhà thật */
   function globalSearch() {
     if (!window.HT || !HT.modal) return;
@@ -170,14 +189,18 @@
         '<div id="gsres" style="display:flex;flex-direction:column;gap:2px;max-height:340px;overflow:auto"></div>'
     });
     var q = m.el.querySelector('#gsq'), res = m.el.querySelector('#gsres');
+    var live = window.HT_BUILDINGS_LIVE === true; // chỉ tìm trên dữ liệu THẬT, không dùng seed tĩnh
+    if (!live) loadLiveBuildings().then(function (ok) { live = ok; render(q.value); });
     function render(kw) {
       kw = (kw || '').trim().toLowerCase();
       if (!kw) { res.innerHTML = '<div class="empty-state" style="padding:16px"><div class="empty-state__s">Gõ để tìm phòng & tòa nhà…</div></div>'; return; }
+      if (window.HT_BUILDINGS_LIVE !== true && !liveFailed) { res.innerHTML = '<div class="empty-state" style="padding:16px"><div class="empty-state__s">Đang tải…</div></div>'; return; }
       var out = [];
+      if (!live) { res.innerHTML = '<div class="empty-state" style="padding:16px"><div class="empty-state__s">Không tìm thấy kết quả.</div></div>'; return; }
       (window.ROOMS || []).forEach(function (r, i) {
         if (out.length >= 8) return;
         var hay = ((r.t || '') + ' ' + (r.l || '') + ' ' + (r.quan || '')).toLowerCase();
-        if (hay.indexOf(kw) >= 0) out.push('<a class="search-result" href="detail.html?i=' + i + '"><span class="search-result__ic">' + ic('package', 16) + '</span><span><span class="search-result__t" style="display:block">' + HT.esc(r.t || '') + '</span><span class="search-result__s">' + HT.esc(r.p || '') + ' · ' + HT.esc(r.quan || '') + '</span></span></a>');
+        if (hay.indexOf(kw) >= 0) out.push('<a class="search-result" href="phong-noibo.html?rid=' + encodeURIComponent(r.rid || '') + '"><span class="search-result__ic">' + ic('package', 16) + '</span><span><span class="search-result__t" style="display:block">' + HT.esc(r.t || '') + '</span><span class="search-result__s">' + HT.esc(r.p || '') + ' · ' + HT.esc(r.quan || '') + '</span></span></a>');
       });
       var bd = [].concat((window.HT_BUILDINGS && HT_BUILDINGS.ptro) || [], (window.HT_BUILDINGS && HT_BUILDINGS.cc) || []);
       bd.forEach(function (b) {
@@ -200,7 +223,13 @@
   function sidebarHTML(active) {
     var s = staff() || { name: 'Minh Trọ', role: 'Sale', initials: 'MT', roleKey: 'sale' };
     var isAdmin = s.roleKey === 'admin';
-    var roleLabel = (isAdmin ? '👑 ' : '⭐ ') + s.role;
+    if (!s.name) s.name = 'Nhân viên';
+    if (!s.initials) {
+      var w = String(s.name).trim().split(/\s+/).filter(Boolean);
+      s.initials = !w.length ? 'NV'
+        : (w.length === 1 ? w[0].slice(0, 2) : w[0].charAt(0) + w[w.length - 1].charAt(0)).toUpperCase();
+    }
+    var roleLabel = (isAdmin ? '👑 ' : '⭐ ') + (s.role || (isAdmin ? 'Admin' : 'Sale'));
     // Admin: NAV_MAIN + khu QUẢN TRỊ. Sale: NAV_SALE (không có khu quản trị).
     var mainNav = isAdmin ? NAV_MAIN : NAV_SALE;
     var adminSection = isAdmin
