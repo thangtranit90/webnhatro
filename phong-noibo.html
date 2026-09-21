@@ -152,7 +152,7 @@
               '<button type="button" data-pe-rm="' + i + '" aria-label="Xoá ảnh" title="Xoá ảnh">×</button>' +
               (i === 0
                 ? '<span style="position:absolute;left:2px;bottom:2px;background:var(--primary);color:#fff;font-size:10px;padding:1px 5px;border-radius:4px">Bìa</span>'
-                : '<button type="button" data-pe-cover="' + i + '" title="Đặt làm ảnh bìa" aria-label="Đặt làm ảnh bìa" style="top:auto;right:auto;bottom:2px;left:2px;width:auto;border-radius:4px;padding:0 5px;font-size:10px">Đặt làm ảnh bìa</button>') +
+                : '<button type="button" data-pe-cover="' + i + '" title="Đặt làm ảnh bìa" aria-label="Đặt làm ảnh bìa" style="top:auto;right:auto;bottom:2px;left:2px;width:auto;border-radius:4px;padding:0 5px;font-size:10px;line-height:16px;white-space:nowrap">★ Bìa</button>') +
               '</div>';
           }).join('') : '<div style="font-size:13px;color:var(--muted-fg,#888)">Chưa có ảnh riêng cho phòng</div>';
           if (onBusy) onBusy(busy());
@@ -255,7 +255,7 @@
 
       // Mã phòng + tên tòa (suy từ r.t = "Loại — Địa chỉ tòa")
       var toaNha = (r.t || '').split('—').slice(1).join('—').trim() || (r.quan || 'HT HOME');
-      var maPhong = r.rid || ('P.' + (i + 201));
+      var maPhong = (curR && (curR.ma || curR.ten)) || r.ma || r.rid || ('P.' + (i + 201));
 
       document.title = maPhong + ' · ' + toaNha + ' — HT HOME Nội bộ';
 
@@ -272,17 +272,20 @@
         var cols = String(v).split(',').map(function (s) { return s.trim(); });
         return 'background:' + (cols.length > 1 ? 'linear-gradient(135deg,' + cols.join(',') + ')' : cols[0]);
       }
-      var thumbs = [];
-      for (var t = 0; t < 4; t++) thumbs.push(imgs[t % imgs.length]);
+      // Chỉ đếm/hiện ảnh THẬT (URL), không lặp ảnh cho đủ 4 ô
+      var realImgs = imgs.filter(function (x) { return typeof x === 'string' && /^https?:|^\//.test(x); });
+      var thumbs = realImgs.slice(0, 4);
+      var extra = realImgs.length - thumbs.length;
       var galleryHTML =
         '<div class="gal-main" id="galMain" style="' + gradOf(imgs[0]) + '">' +
-          '<span class="gal-count">' + HT.icon('area', 13) + Math.max(imgs.length, 4) + ' ảnh</span></div>' +
-        '<div class="gal-thumbs" id="galThumbs">' +
+          (realImgs.length ? '<span class="gal-count">' + HT.icon('area', 13) + realImgs.length + ' ảnh</span>' : '<span class="gal-count">Chưa có ảnh</span>') + '</div>' +
+        (thumbs.length > 1 ? '<div class="gal-thumbs" id="galThumbs">' +
           thumbs.map(function (v, idx) {
+            var more = (idx === 3 && extra > 0) ? '<span style="display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.5);color:#fff;font-weight:600;font-size:14px">+' + extra + '</span>' : '';
             return '<div class="gal-thumb' + (idx === 0 ? ' is-active' : '') + '" data-g="' + esc(v) + '">' +
-              '<span style="' + gradOf(v) + '"></span></div>';
+              '<span style="' + gradOf(v) + '"></span>' + more + '</div>';
           }).join('') +
-        '</div>' +
+        '</div>' : '') +
         (r.video ? '<button class="video-btn" id="videoBtn" type="button">' + HT.icon('play', 14) + 'Video review (TikTok)</button>' : '');
 
       // ---- Specs (suy từ tags) ----
@@ -376,7 +379,8 @@
 
       // ---- Sự kiện gallery ----
       var galMain = document.getElementById('galMain');
-      document.getElementById('galThumbs').addEventListener('click', function (e) {
+      var galThumbsEl = document.getElementById('galThumbs');
+      if (galThumbsEl) galThumbsEl.addEventListener('click', function (e) {
         var th = e.target.closest('.gal-thumb'); if (!th) return;
         var keep = galMain.querySelector('.gal-count');
         galMain.setAttribute('style', gradOf(th.getAttribute('data-g')));

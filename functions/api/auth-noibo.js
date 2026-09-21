@@ -10,8 +10,8 @@ function json(data, status, extraHeaders) {
   return new Response(JSON.stringify(data), { status: status || 200, headers: h });
 }
 
-// Phiên đăng nhập: cookie httpOnly ht_sess (24h). Token lưu ở bảng phien_dang_nhap.
-const SESSION_HOURS = 24;
+// Phiên đăng nhập: cookie httpOnly ht_sess (7 ngày). Token lưu ở bảng phien_dang_nhap.
+const SESSION_HOURS = 168; // 7 ngày
 function cookieFromReq(request, name) {
   const c = request.headers.get('Cookie') || '';
   const m = c.match(new RegExp('(?:^|;\\s*)' + name + '=([^;]+)'));

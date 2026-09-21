@@ -179,6 +179,7 @@ window.HT_rebuildRooms = function(){
       const cat = LOAI_TO_CAT[r.loai] || r.loai;
       rooms.push({
         rid: r.rid,
+        ma: r.ma || r.ten || '',
         t: r.loai + ' — ' + b.addr,
         imgs: roomImgs(r, b),
         p: priceTrieu(r.price),
