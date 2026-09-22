@@ -145,14 +145,7 @@
     .sale__av { width: 48px; height: 48px; font-size: 17px; }
     .sale__name { font-size: 16px; font-weight: 700; color: var(--fg); }
     .sale__role { font-size: 13px; color: var(--muted-fg); }
-    .sale__stars { display: flex; align-items: center; gap: 5px; margin-top: 4px; font-size: 12px; color: var(--muted-fg); }
-    .sale__stars .stars { display: inline-flex; color: var(--gold-fg); }
     .contact-card__actions { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
-    .qr { margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--border); text-align: center; }
-    .qr__box { width: 128px; height: 128px; margin: 0 auto 10px; border: 1px solid var(--border); border-radius: var(--radius-m); background: var(--muted); display: flex; align-items: center; justify-content: center; color: var(--muted-fg); }
-    .qr__box svg { width: 64px; height: 64px; }
-    .qr__note { font-size: 13px; color: var(--muted-fg); }
-    .qr__note a { color: var(--info); font-weight: 600; }
 
     /* Similar */
     .similar__head { margin-bottom: 20px; }
@@ -278,21 +271,16 @@
           <div class="contact-wrap">
             <div class="contact-card">
               <div class="sale">
-                <span class="avatar sale__av" id="saleAv">M</span>
+                <span class="avatar sale__av" id="saleAv">HT</span>
                 <div>
-                  <div class="sale__name">Minh Trọ · HT HOME</div>
+                  <div class="sale__name">Admin HT HOME</div>
                   <div class="sale__role">Chuyên viên tư vấn phòng</div>
-                  <div class="sale__stars"><span class="stars" id="saleStars"></span> 4.9 · 42 đánh giá</div>
                 </div>
               </div>
               <div class="contact-card__actions">
                 <button class="btn btn--primary btn--block" id="btnBook" type="button"></button>
                 <a class="btn btn--ghost btn--block" id="btnCall"></a>
                 <a class="btn btn--ghost btn--block" id="btnChat" target="_blank" rel="noopener"></a>
-              </div>
-              <div class="qr">
-                <a class="qr__box" id="qrBox" target="_blank" rel="noopener"></a>
-                <div class="qr__note">Quét mã <a id="qrLink" target="_blank" rel="noopener">Zalo QR</a> để nhắn Zalo với sale</div>
               </div>
             </div>
           </div>
@@ -340,8 +328,7 @@
         hospital:function (s) { return svg('<path d="M12 6v4M14 8h-4"/><path d="M18 22V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v18"/><path d="M4 22h16"/>', s); },
         bus:     function (s) { return svg('<path d="M8 6v6M15 6v6M2 12h19.6M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.4-.1-.8-.2-1.2l-1.4-5C20.1 6.8 19.1 6 18 6H4a2 2 0 0 0-2 2v10h3"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/>', s); },
         tree:    function (s) { return svg('<path d="M12 22v-7M9 8a3 3 0 1 1 5.8-1A3 3 0 0 1 17 12a3 3 0 0 1-2 5.2A3 3 0 0 1 9 17a3 3 0 0 1-1-6 3 3 0 0 1 1-3Z"/>', s); },
-        school:  function (s) { return svg('<path d="M14 22v-4a2 2 0 0 0-4 0v4M18 10V6l-6-4-6 4v4M4 22V10l8-5 8 5v12Z"/>', s); },
-        qr:      function (s) { return svg('<rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3M21 21v.01M12 7v3a2 2 0 0 1-2 2H7M3 12h.01M12 3h.01M12 16v.01M16 12h1M21 12v.01M12 21v-1"/>', s); }
+        school:  function (s) { return svg('<path d="M14 22v-4a2 2 0 0 0-4 0v4M18 10V6l-6-4-6 4v4M4 22V10l8-5 8 5v12Z"/>', s); }
       };
       function HTicon(name, size) { return window.HT ? window.HT.icon(name, size) : ''; }
       function esc(s) { return window.HT ? window.HT.esc(s) : String(s == null ? '' : s); }
@@ -611,9 +598,6 @@
       document.getElementById('sc4').innerHTML = IC.school(15);
 
       // ---- Contact card ----
-      var initial = (r.t || 'M').trim().charAt(0).toUpperCase() || 'M';
-      document.getElementById('saleAv').textContent = initial;
-      document.getElementById('saleStars').innerHTML = Array(5).fill(HTicon('star', 12)).join('');
       // v3.6: bỏ chat trong app → nút chính "Đặt lịch xem phòng"; phụ: Gọi ngay + Nhắn Zalo (dùng chung số tổng đài).
       var btnBook = document.getElementById('btnBook');
       btnBook.innerHTML = IC.calendar(16) + ' Đặt lịch xem phòng';
@@ -626,10 +610,6 @@
       var btnChat = document.getElementById('btnChat');
       btnChat.href = zalo;
       btnChat.innerHTML = IC.message(16) + ' Nhắn Zalo';
-      var qrBox = document.getElementById('qrBox');
-      qrBox.href = zalo;
-      qrBox.innerHTML = IC.qr(64);
-      document.getElementById('qrLink').href = zalo;
 
       // ---- Phòng tương tự ----
       renderSimilar(r, quan);
