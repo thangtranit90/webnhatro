@@ -262,7 +262,10 @@
         var menu = document.createElement('div'); menu.className = 'dl-menu';
         var items = '<button type="button" data-act="view">' + I('file-text', 15) + 'Xem chi tiết</button>' +
                     '<button type="button" data-act="edit">' + I('settings', 15) + 'Chỉnh sửa deal</button>';
-        if (!d.released && d.trang_thai !== 'bo_coc') items += '<button type="button" data-act="release">' + I('banknote', 15) + 'Release hoa hồng</button>';
+        if (!d.released && d.trang_thai !== 'bo_coc') {
+          if (isSale) items += '<div style="padding:8px 12px;font-size:12px;color:var(--muted,#888);display:flex;gap:6px;align-items:center">' + I('clock', 14) + 'Chờ Admin release</div>';
+          else items += '<button type="button" data-act="release">' + I('banknote', 15) + 'Release hoa hồng</button>';
+        }
         items += '<button type="button" data-act="del" style="color:var(--danger)">' + I('x', 15) + 'Xoá deal</button>';
         menu.innerHTML = items;
         document.body.appendChild(menu);
@@ -352,7 +355,11 @@
 
       function openEdit(d) {
         var locked = !!d.released;
-        var stOpts = ST_ORDER.map(function (k) { return '<option value="' + k + '"' + (d.trang_thai === k ? ' selected' : '') + '>' + ST[k].label + '</option>'; }).join('');
+        var stOpts = ST_ORDER.map(function (k) {
+          // Sale không được chọn 'Đã nhận HH' (chỉ Admin) — trừ khi deal đang sẵn ở trạng thái đó
+          var lock = isSale && k === 'da_nhan_hh' && d.trang_thai !== k;
+          return '<option value="' + k + '"' + (d.trang_thai === k ? ' selected' : '') + (lock ? ' disabled' : '') + '>' + ST[k].label + (lock ? ' (chỉ Admin)' : '') + '</option>';
+        }).join('');
         var lockAttr = locked ? ' disabled' : '';
         var imgs = parseImgs(d.anh_hd);
         var curImgs = imgs.slice();

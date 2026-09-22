@@ -43,12 +43,23 @@ export async function onRequestPost({ request, env }) {
   } catch (e) { return json({ error: 'Có lỗi xảy ra.' }, 500); }
 }
 
-export async function onRequestPatch({ request, env }) {
+export async function onRequestPatch({ request, env, data }) {
   try {
     const b = await request.json();
     if (!b.id) return json({ error: 'Thiếu id' }, 400);
+    // Release / huỷ release hoa hồng: CHỈ Admin (không hoàn tác, khoá số tiền)
+    const isAdmin = !!(data && data.user && data.user.role_key === 'admin');
+    if ((b.action === 'release' || b.action === 'unrelease') && !isAdmin) {
+      return json({ error: 'Chỉ Admin được release hoa hồng.' }, 403);
+    }
+    // Không ai được set cờ released qua PATCH thường — phải đi qua action
+    delete b.released;
     const cur = await env.DB.prepare('SELECT * FROM deal WHERE id=?').bind(b.id).first();
     if (!cur) return json({ error: 'Không tìm thấy deal' }, 404);
+    // Chuyển sang 'Đã nhận HH': CHỈ Admin (giữ nguyên nếu deal đã ở trạng thái này thì không chặn)
+    if (b.trang_thai === 'da_nhan_hh' && cur.trang_thai !== 'da_nhan_hh' && !isAdmin) {
+      return json({ error: 'Chỉ Admin được xác nhận đã nhận hoa hồng.' }, 403);
+    }
 
     // Hành động release: khoá các trường tài chính về sau
     if (b.action === 'release') {
