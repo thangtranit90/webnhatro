@@ -299,7 +299,8 @@
         { key: 'gt8', label: 'Trên 8 triệu', test: function (v) { return v >= 8; } }
       ];
       var LOAI_LIST = ['Studio', '1PN', '2PN', '3PN', 'Duplex', 'KTX'];
-      function priceTrieu(r) { var m = String(r.p || '').replace(',', '.').match(/([\d.]+)/); return m ? parseFloat(m[1]) : 0; }
+      function priceTrieu(r) { if (window.HT_priceMillion) return window.HT_priceMillion(r.p); var m = String(r.p || '').replace(',', '.').match(/([\d.]+)/); return m ? parseFloat(m[1]) : 0; }
+      function pl(p) { return window.HT_priceLabel ? window.HT_priceLabel(p) : (p || ''); }
       function loaiOf(r) {
         var hay = ((r.tags || []).join(' ') + ' ' + (r.t || '') + ' ' + (r.cat || '')).toLowerCase();
         if (/studio/.test(hay)) return 'Studio';
@@ -435,7 +436,7 @@
           return {
             href: 'phong-noibo.html?rid=' + encodeURIComponent(r.rid),
             img: (r.imgs && r.imgs[0]) || '',
-            price: r.p, type: shortType(catOf(r)), title: r.t,
+            price: pl(r.p), type: shortType(catOf(r)), title: r.t,
             addr: r.quan ? (r.quan + ', TP.HCM') : (r.l || ''),
             area: r.a, beds: bedsFromTags(r.tags),
             status: statusLabel(r.status), statusKey: isFreeStatus(r.status) ? 'success' : 'muted', video: !!r.video
@@ -568,7 +569,7 @@
                 '<div class="kp-cell-sub">' + esc((r.quan || '') + (r.quan ? ', TP.HCM' : (r.l || ''))) + '</div></td>' +
               '<td><span class="kp-typetag">' + esc(loaiOf(r) || shortType(catOf(r)) || '—') + '</span></td>' +
               '<td>' + esc(r.a || '—') + '</td>' +
-              '<td style="font-weight:600">' + esc(r.p || '—') + '</td>' +
+              '<td style="font-weight:600">' + esc(pl(r.p) || '—') + '</td>' +
               '<td><span class="kp-sbadge ' + (free ? 'free' : 'rented') + '"><span class="dot"></span>' + esc(statusLabel(r.status)) + '</span></td>' +
               '<td style="text-align:right"><button class="kp-kebab" type="button" data-kebab>' + I('ellipsis-vertical', 16) + '</button></td>' +
             '</tr>';
@@ -642,7 +643,7 @@
                 '<span class="kp-troom__name">' + esc(r.loai || 'Phòng') + (tags ? ' <span class="kp-typetag">' + esc(tags) + '</span>' : '') + '</span>' +
                 '<span class="kp-tspacer"></span>' +
                 '<span class="kp-troom__meta">' + esc(r.m2 || '—') + ' m²</span>' +
-                '<span class="kp-troom__meta" style="font-weight:600;color:var(--fg)">' + esc(r.price || '—') + '</span>' +
+                '<span class="kp-troom__meta" style="font-weight:600;color:var(--fg)">' + esc(pl(r.price) || '—') + '</span>' +
                 '<span class="kp-sbadge ' + (free ? 'free' : 'rented') + '"><span class="dot"></span>' + (free ? (r.soTrong + '/' + r.soLuong + ' trống') : 'Đã thuê') + '</span>' +
                 '<button class="kp-kebab" type="button" data-kebab>' + I('ellipsis-vertical', 16) + '</button>' +
               '</div>';
@@ -1201,7 +1202,7 @@
           return '<div style="display:flex;gap:16px;flex-wrap:wrap">' +
               '<div style="flex:1;min-width:220px;height:180px;border-radius:var(--radius-l);background:' + (cover ? ('linear-gradient(135deg,' + cover + ')') : 'var(--muted)') + '"></div>' +
               '<div style="flex:1;min-width:220px">' +
-                '<div style="font-size:22px;font-weight:800">' + esc(price || '—') + '/tháng</div>' +
+                '<div style="font-size:22px;font-weight:800">' + esc(pl(price) || '—') + '/tháng</div>' +
                 '<div style="color:var(--muted-fg);margin:4px 0 10px">' + esc(loai || '') + (area ? ' · ' + esc(area) : '') + '</div>' +
                 '<span class="kp-sbadge free"><span class="dot"></span>Còn trống</span>' +
                 '<div style="display:flex;gap:6px;align-items:flex-start;margin-top:12px;font-size:13.5px">' + I('map-pin', 15) + '<span>' + esc(addr || 'TP.HCM') + '</span></div>' +

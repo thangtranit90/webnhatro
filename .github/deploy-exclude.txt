@@ -41,3 +41,6 @@ _preview-components.html
 # --- Khac ---
 .gitignore
 .DS_Store
+
+# --- Hinh cho bao cao do an (khong public) ---
+bao-cao-hinh

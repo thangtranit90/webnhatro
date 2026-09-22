@@ -205,6 +205,25 @@ window.HT_rebuildRooms = function(){
 };
 window.HT_rebuildRooms();
 
+/* ── Chuẩn hoá giá phòng: "5,2TR" / "3,69 triệu" / "6500000" → số triệu ── */
+window.HT_priceMillion = function(p){
+  var s = String(p == null ? '' : p).trim().toLowerCase();
+  if(!s) return 0;
+  var m = s.match(/\d[\d.,]*/); if(!m) return 0;
+  var num = m[0];
+  if(/tr|triệu/.test(s) || /^\d{1,3}[.,]\d+$/.test(num)) return parseFloat(num.replace(',', '.')) || 0;
+  var n = parseInt(num.replace(/[^\d]/g, ''), 10);
+  if(!n) return 0;
+  return n >= 100000 ? n / 1e6 : n;
+};
+window.HT_priceLabel = function(p){
+  var s = String(p == null ? '' : p).trim();
+  if(!s) return '';
+  var v = window.HT_priceMillion(s);
+  if(!v) return s;
+  return String(Math.round(v * 100) / 100).replace('.', ',') + ' triệu';
+};
+
 /* ── Nạp danh mục toà nhà THẬT từ D1 (chỉ khu nội bộ gọi) ──
    Ghi đè HT_BUILDINGS + dựng lại ROOMS rồi gọi cb. Lỗi mạng → giữ seed tĩnh.
    Trang khách KHÔNG gọi hàm này nên vẫn đọc data.js tĩnh như cũ. */

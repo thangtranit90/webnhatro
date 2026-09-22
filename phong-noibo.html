@@ -329,7 +329,7 @@
       // ---- Header phòng ----
       var soTrong = (i % 3) + 1; // demo: số phòng trống còn lại
       var headerHTML =
-        '<div class="ph-price">' + esc(r.p || 'Liên hệ') + '<span>/tháng</span></div>' +
+        '<div class="ph-price">' + esc((window.HT_priceLabel ? window.HT_priceLabel(r.p) : r.p) || 'Liên hệ') + '<span>/tháng</span></div>' +
         '<div class="ph-line">' + esc(design) + ' · ' + (noithat === 'Full' ? 'Full nội thất' : 'Nội thất cơ bản') +
           ' · Còn ' + soTrong + ' phòng trống</div>' +
         '<span class="ph-badge"><span class="dot"></span>Còn trống</span>';
@@ -346,7 +346,7 @@
         '<p>Phòng <b>' + esc(catOf) + '</b> tại <b>' + esc(r.quan || toaNha) + '</b>, diện tích ' + esc(r.a || '20m²') +
         ', thiết kế thoáng đãng, phù hợp cho người đi làm và sinh viên. Khu vực an ninh, có camera và bảo vệ, thuận tiện di chuyển.</p>' +
         '<p>Nội thất ' + noithat.toLowerCase() + ', sẵn sàng dọn vào ở ngay. Gần chợ, siêu thị, trường học và bệnh viện. ' +
-        'Giá thuê ' + esc(r.p || 'liên hệ') + '/tháng, cọc 1 tháng, hợp đồng tối thiểu 3 tháng.</p>';
+        'Giá thuê ' + esc((window.HT_priceLabel ? window.HT_priceLabel(r.p) : r.p) || 'liên hệ') + '/tháng, cọc 1 tháng, hợp đồng tối thiểu 3 tháng.</p>';
 
       // ---- Cột phải: panel quản lý nội bộ ----
       var saleNames = ['Thu Hà', 'Minh Trọ', 'Quốc Bảo', 'Lan Anh', 'Đức Huy'];

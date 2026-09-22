@@ -256,7 +256,7 @@
             '<span class="rm-main"><span class="rm-code" style="display:block">' + esc(code) + '</span>' +
               '<span class="rm-meta">' + esc(meta) + '</span></span>' +
             '<span class="rm-guest">' + esc(guest) + '</span>' +
-            '<span class="rm-price">' + esc(r.price || '—') + '</span>' +
+            '<span class="rm-price">' + esc((window.HT_priceLabel ? window.HT_priceLabel(r.price) : r.price) || '—') + '</span>' +
             '<span class="rm-status ' + o.st + '">' + esc(STATUS_LABEL[o.st]) + '</span>' +
             '<button class="rm-more" type="button" aria-label="Tùy chọn" data-gi="' + gi + '" data-code="' + esc(code) + '" data-rid="' + esc(r.rid || '') + '">⋮</button>' +
           '</div>';
