@@ -137,17 +137,25 @@
       if (!b) b = buildings[0] || null;
 
       var rooms = (b && b.rooms) || [];
-      var total = rooms.length;
+      // Phòng nháp không tính vào mọi tổng/tỉ lệ
+      var draftCnt = rooms.filter(function (r) { return r && r.status === 'nháp'; }).length;
+      var total = rooms.length - draftCnt;
 
-      // Trạng thái demo suy từ soTrong/status của mỗi phòng
-      function statusOf(r, idx) {
-        if (r.status === 'open' || (r.soTrong != null && r.soTrong > 0)) return 'trong';
-        if (r.status === 'wait') return 'sap';
-        return 'thue';
+      // Trạng thái theo room.status (cùng quy tắc với các thẻ KPI)
+      function statusOf(r) {
+        var st = r && r.status;
+        if (st === 'open') return 'trong';
+        if (st === 'soon' || st === 'wait') return 'sap'; // 'wait' = alias cũ
+        if (st === 'rented') return 'thue';
+        if (st === 'hold') return 'giu';
+        if (st === 'stop') return 'ngung';
+        if (st === 'nháp') return 'nhap';
+        return 'khac';
       }
-      var trongCnt = rooms.filter(function (r, i) { return statusOf(r, i) === 'trong'; }).length;
-      var sapCnt = rooms.filter(function (r, i) { return statusOf(r, i) === 'sap'; }).length;
-      var thueCnt = total - trongCnt - sapCnt;
+      function cntOf(k) { return rooms.filter(function (r) { return statusOf(r) === k; }).length; }
+      var trongCnt = cntOf('trong');
+      var sapCnt = cntOf('sap');
+      var thueCnt = cntOf('thue');
 
       // ---- Topbar động ----
       document.getElementById('tnTitle').textContent = b ? (b.addr || 'Tòa nhà') : 'Không tìm thấy tòa nhà';
@@ -187,12 +195,20 @@
       });
 
       // ---- KPI ----
-      var occ = Math.round(total * 0.58); // demo ~58% occupancy
+      var rentedRooms = rooms.filter(function (r) { return statusOf(r) === 'thue'; });
+      var occ = rentedRooms.length;
+      var occPct = total ? Math.round(occ / total * 100) : 0;
+      function priceM(r) {
+        if (window.HT_priceMillion) return window.HT_priceMillion(r.p) || 0;
+        var m = String(r.p || '').replace(',', '.').match(/([\d.]+)/); return m ? parseFloat(m[1]) : 0;
+      }
+      var rentSum = rentedRooms.reduce(function (s, r) { return s + priceM(r); }, 0);
+      var rentVal = !occ ? '0' : (window.HT_priceLabel ? window.HT_priceLabel(rentSum) : (Math.round(rentSum * 10) / 10).toString().replace('.', ',') + ' triệu');
       var kpis = [
-        { label: 'Tổng phòng', ic: 'package', val: String(total), delta: trongCnt + ' còn trống · ' + sapCnt + ' sắp trống' },
-        { label: 'Đang cho thuê', ic: 'users', val: String(occ), delta: 'Tỉ lệ lấp đầy 58%' },
-        { label: 'Doanh thu/tháng', ic: 'wallet', val: '28,4tr', delta: 'Ổn định 40tr' },
-        { label: 'Deal chờ xử lý', ic: 'file-text', val: '1', delta: '1 quan trọng' }
+        { label: 'Tổng phòng', ic: 'package', val: String(total) + (draftCnt ? ' (+' + draftCnt + ' nháp)' : ''), delta: trongCnt + ' còn trống · ' + sapCnt + ' sắp trống' },
+        { label: 'Đang cho thuê', ic: 'users', val: String(occ), delta: 'Tỉ lệ lấp đầy ' + occPct + '%' },
+        { label: 'Tiền thuê/tháng (phòng đã thuê)', ic: 'wallet', val: rentVal, delta: occ ? occ + ' phòng đang thuê' : 'Chưa có phòng đang thuê' },
+        { label: 'Sắp trống', ic: 'file-text', val: String(sapCnt), delta: 'phòng sắp trống' }
       ];
       document.getElementById('kpiRow').innerHTML = kpis.map(function (k) {
         return '<div class="kpi"><div class="kpi__top"><span>' + esc(k.label) + '</span><span class="kpi__ic">' + I(k.ic, 18) + '</span></div>' +
@@ -204,7 +220,9 @@
         { k: 'all', label: 'Tất cả' },
         { k: 'trong', label: 'Còn trống' },
         { k: 'thue', label: 'Đã cho thuê' },
-        { k: 'sap', label: 'Sắp trống' }
+        { k: 'sap', label: 'Sắp trống' },
+        { k: 'giu', label: 'Giữ chỗ' },
+        { k: 'ngung', label: 'Ngưng' }
       ];
       var activeTab = 'all';
       var tabsEl = document.getElementById('rmTabs');
@@ -217,16 +235,39 @@
         }).join('');
       }
 
-      var STATUS_LABEL = { trong: 'Còn trống', thue: 'Đã cho thuê', sap: 'Sắp trống' };
-      var guestNames = ['Nguyễn Văn A', 'Trần Thị B', 'Lê Văn C', 'Phạm Thị D'];
+      var STATUS_LABEL = { trong: 'Còn trống', thue: 'Đã cho thuê', sap: 'Sắp trống', giu: 'Giữ chỗ', ngung: 'Ngưng', nhap: 'Nháp', khac: '—' };
+      // Khách thật: lấy từ deal khớp phòng (không bịa tên)
+      var deals = [];
+      function norm(v) { return String(v == null ? '' : v).trim().toLowerCase().replace(/^p\.\s*/, ''); }
+      function guestOf(r) {
+        var keys = [r.ma, r.rid, r.ten].map(norm).filter(Boolean);
+        if (!keys.length) return '';
+        var bNames = [b && b.addr, b && b.addrFull, b && b.bid].map(norm).filter(Boolean);
+        var strongKeys = [r.ma, r.rid].map(norm).filter(Boolean);
+        var cand = deals.filter(function (d) {
+          return d && d.khach && d.trang_thai !== 'bo_coc' && keys.indexOf(norm(d.phong)) >= 0;
+        });
+        var hit = cand.filter(function (d) {
+          var t = norm(d.toanha);
+          return t && bNames.some(function (n) { return n === t || n.indexOf(t) >= 0 || t.indexOf(n) >= 0; });
+        });
+        if (!hit.length) {
+          var strong = cand.filter(function (d) { return strongKeys.indexOf(norm(d.phong)) >= 0; });
+          if (strong.length && strong.every(function (d) { return norm(d.phong) === norm(strong[0].phong); })) hit = strong;
+        }
+        return hit.length ? String(hit[0].khach) : ''; // API trả id DESC → phần tử đầu là mới nhất
+      }
+      fetch('/api/deal').then(function (res) { return res.json(); }).then(function (d) {
+        if (Array.isArray(d)) { deals = d; renderList(); }
+      }).catch(function () {});
 
       function renderList() {
-        if (!b || !total) {
+        if (!b || !rooms.length) {
           listEl.innerHTML = '<div class="rm-empty">Tòa nhà này chưa có phòng nào.</div>';
           return;
         }
         var rows = rooms.map(function (r, idx) {
-          return { r: r, idx: idx, st: statusOf(r, idx) };
+          return { r: r, idx: idx, st: statusOf(r) };
         });
         if (activeTab !== 'all') {
           rows = rows.filter(function (o) { return o.st === activeTab; });
@@ -250,7 +291,7 @@
           var tang = (r.tang !== undefined && r.tang !== '' && r.tang !== null) ? r.tang : (o.idx + 1);
           var meta = 'Tầng ' + tang + ' · ' + (r.loai || '') + (r.m2 ? (' · ' + r.m2 + 'm²') : '') +
             (r.tags && r.tags.length ? (' · ' + r.tags[0]) : '');
-          var guest = o.st === 'thue' ? guestNames[o.idx % guestNames.length] : 'Chưa có khách';
+          var guest = o.st === 'thue' ? guestOf(r) : '';
           return '<div class="rm-row">' +
             '<span class="rm-ic">' + I('package', 18) + '</span>' +
             '<span class="rm-main"><span class="rm-code" style="display:block">' + esc(code) + '</span>' +

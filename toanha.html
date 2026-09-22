@@ -143,22 +143,36 @@
       window.HT_loadBuildings(function () {
       var buildings = [];
       var totalRooms = 0;
+      var draftRooms = 0;
+      function countedRooms(b) { return ((b && b.rooms) || []).filter(function (r) { return r && r.status !== 'nháp'; }); }
       function computeBuildings() {
         buildings = [].concat(
           (window.HT_BUILDINGS && window.HT_BUILDINGS.ptro) || [],
           (window.HT_BUILDINGS && window.HT_BUILDINGS.cc) || []
         );
-        totalRooms = buildings.reduce(function (s, b) { return s + ((b.rooms && b.rooms.length) || 0); }, 0);
+        totalRooms = buildings.reduce(function (s, b) { return s + countedRooms(b).length; }, 0);
+        draftRooms = buildings.reduce(function (s, b) { return s + ((b.rooms || []).length - countedRooms(b).length); }, 0);
       }
       computeBuildings();
 
-      // ---- KPI ----
-      var kpis = [
-        { label: 'Tổng tòa nhà', ic: 'building', val: String(buildings.length), delta: '+2 tháng này', up: true },
-        { label: 'Tổng phòng', ic: 'package', val: (totalRooms || 486).toLocaleString('vi-VN'), delta: 'trên toàn hệ thống' },
-        { label: 'Tỉ lệ lấp đầy', ic: 'shield-check', val: '87.4%', delta: '+3.2% vs tháng trước', up: true },
-        { label: 'Doanh thu tháng', ic: 'wallet', val: '1.28 tỷ', delta: '-2.1% vs tháng trước', down: true }
-      ];
+      // ---- KPI (tính từ dữ liệu thật) ----
+      function isRented(r) { return r && r.status === 'rented'; }
+      var kpis = [];
+      function computeKpis() {
+        var all = [];
+        buildings.forEach(function (b) { all = all.concat(countedRooms(b)); });
+        var rented = all.filter(isRented).length;
+        var open = all.filter(function (r) { return r.status === 'open'; }).length;
+        var soon = all.filter(function (r) { return r.status === 'soon'; }).length;
+        var pct = all.length ? (rented / all.length * 100).toFixed(1) + '%' : '0%';
+        kpis = [
+          { label: 'Tổng tòa nhà', ic: 'building', val: String(buildings.length), delta: 'đang quản lý' },
+          { label: 'Tổng phòng', ic: 'package', val: (totalRooms || 0).toLocaleString('vi-VN') + (draftRooms ? ' (+' + draftRooms + ' nháp)' : ''), delta: 'trên toàn hệ thống' },
+          { label: 'Tỉ lệ lấp đầy', ic: 'shield-check', val: pct, delta: rented + '/' + all.length + ' phòng đã cho thuê' },
+          { label: 'Phòng còn trống', ic: 'wallet', val: String(open), delta: '+ ' + soon + ' sắp trống' }
+        ];
+      }
+      computeKpis();
       function renderKpis() {
         document.getElementById('kpiRow').innerHTML = kpis.map(function (k) {
           var cls = k.up ? ' up' : (k.down ? ' down' : '');
@@ -187,9 +201,8 @@
         };
         return map[l] || l || '—';
       }
-      function occupancy(total) {
-        // demo: ~85% tổng, làm tròn
-        return Math.round(total * 0.85);
+      function occupancy(b) {
+        return countedRooms(b).filter(isRented).length;
       }
 
       var metaEl = document.getElementById('tnMeta');
@@ -212,8 +225,8 @@
         }
 
         bodyEl.innerHTML = list.map(function (b) {
-          var total = (b.rooms && b.rooms.length) || 0;
-          var rented = occupancy(total);
+          var total = countedRooms(b).length;
+          var rented = occupancy(b);
           var pct = total ? Math.round(rented / total * 100) : 0;
           var addrSmall = b.addrFull || (b.quan || '');
           return '<tr>' +
@@ -242,8 +255,7 @@
       function reloadBuildings() {
         window.HT_loadBuildings(function () {
           computeBuildings();
-          kpis[0].val = String(buildings.length);
-          kpis[1].val = (totalRooms || 486).toLocaleString('vi-VN');
+          computeKpis();
           renderKpis();
           render();
         });
@@ -347,8 +359,7 @@
               HT.toast('Đã thêm tòa nhà', 'success');
               window.HT_loadBuildings(function () {
                 computeBuildings();
-                kpis[0].val = String(buildings.length);
-                kpis[1].val = (totalRooms || 486).toLocaleString('vi-VN');
+                computeKpis();
                 renderKpis();
                 render();
               });
