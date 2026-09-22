@@ -38,3 +38,20 @@ ht-preview-mobile.png
 desktop-handoff.zip
 images/
 RA-SOAT-CANVAS-VS-CODE_05-09-26.md
+
+# ===== Bộ công cụ AI (Claude Code / Codex) — chỉ dùng trên máy, KHÔNG đưa lên repo =====
+.claude/
+.codex/
+.agents/
+process/
+AGENTS.md
+CLAUDE.md
+.vc-installed-files
+.vc-version
+.vc-*/
+
+# ===== Báo cáo đồ án & tài liệu tham khảo (không phải code web) =====
+*.pdf
+bao-cao-hinh/
+PROMPT-BAO-CAO-DOAN.md
+nhatro_v3/
